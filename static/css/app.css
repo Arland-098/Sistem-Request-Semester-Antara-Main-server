@@ -1,0 +1,351 @@
+/* Portal Akademik e-Semesta Custom Styles */
+body {
+    background-color: #f2f1f1;
+    font-family: 'Open Sans', Arial, sans-serif;
+    color: #333;
+}
+
+.topbar {
+    background-color: #1a1a1a;
+    border-bottom: 3px solid #333333;
+    padding: 10px 0;
+    color: white;
+    width: 100%;
+    clear: both;
+    position: relative;
+    z-index: 100;
+}
+
+.univ-title h1 {
+    color: #fff;
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin: 5px 0 0 10px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.univ-sub {
+    color: #d1d5db;
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+.header-user-badge {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 6px 14px;
+    border-radius: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: inline-flex;
+    align-items: center;
+    color: #fff;
+    margin-top: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    user-select: none;
+}
+
+.header-user-badge:hover,
+.dropdown.open .header-user-badge {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.header-user-badge img {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    margin-right: 10px;
+    object-fit: cover;
+}
+
+.role-pill {
+    font-size: 10px;
+    background: #343a40;
+    color: #ffffff;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    margin-left: 5px;
+    border: 1px solid #495057;
+}
+
+.nav-main-bar {
+    background: #24292e;
+    border-bottom: 1px solid #1a1a1a;
+    width: 100%;
+    clear: both;
+    position: relative;
+    z-index: 99;
+    display: block !important;
+}
+
+.nav-main-bar ul.nav-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex !important;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.nav-main-bar ul.nav-menu > li {
+    position: relative;
+}
+
+.nav-main-bar ul.nav-menu > li > a {
+    display: block;
+    padding: 12px 18px;
+    color: #e0e2e2;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.nav-main-bar ul.nav-menu > li:hover > a,
+.nav-main-bar ul.nav-menu > li.active > a {
+    background: #111111;
+    color: #ffffff;
+}
+
+.nav-main-bar ul.nav-menu > li .submenu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #24292e;
+    min-width: 230px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    padding: 0;
+    list-style: none;
+    border-top: 2px solid #555555;
+}
+
+.nav-main-bar ul.nav-menu > li:hover .submenu {
+    display: block;
+}
+
+.nav-main-bar ul.nav-menu > li .submenu li a {
+    display: block;
+    padding: 10px 16px;
+    color: #e0e2e2;
+    font-size: 12px;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.nav-main-bar ul.nav-menu > li .submenu li a:hover {
+    background: #3a3f44;
+    color: #ffffff;
+    padding-left: 20px;
+}
+
+.role-switch-container {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    padding-right: 15px;
+}
+
+.role-switch-btn {
+    background: #343a40;
+    color: #ffffff;
+    border: 1px solid #495057;
+    font-weight: 700;
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.k-breadcrumbs {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.breadcrumb {
+    background-color: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 10px 15px;
+    font-size: 12px;
+}
+
+.breadcrumb > li {
+    display: inline-block;
+}
+
+.breadcrumb > li + li:before {
+    content: ">\00a0" !important;
+    padding: 0 8px;
+    color: #888;
+    font-weight: normal;
+}
+
+.breadcrumb > li > a {
+    color: #333333;
+    font-weight: 600;
+}
+
+.col-padded {
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    padding: 24px;
+    margin-bottom: 30px;
+}
+
+.page-header {
+    margin-top: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #212529;
+    border-bottom: 2px solid #343a40;
+    padding-bottom: 10px;
+}
+
+.badge-status {
+    padding: 5px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.status-dibuka { background: #e2e3e5; color: #383d41; border: 1px solid #d6d8db; }
+.status-menunggu { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+.status-dispensasi { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+.status-dibatalkan { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+.status-lunas { background: #28a745; color: #fff; }
+.status-belum-lunas { background: #6c757d; color: #fff; }
+
+/* Global Table Styling: Baris satu (thead / header) abu-abu */
+.table thead,
+.table thead tr,
+.table > thead,
+.table > thead > tr {
+    background-color: #ecf0f2 !important;
+    color: #000000 !important;
+}
+
+.table thead th,
+.table > thead > tr > th,
+.table-bordered thead th,
+.table-bordered > thead > tr > th,
+table thead tr th {
+    color: #000000 !important;
+    font-weight: 700 !important;
+    font-size: 12px !important;
+    letter-spacing: 0.3px;
+    vertical-align: middle !important;
+    background-color: #ecf0f2 !important;
+    border-bottom: 2px solid #cbd5e1 !important;
+    border-top: none !important;
+}
+
+/* Semua baris selain baris 1 (tbody) dibuat berlatar belakang putih (#ffffff) */
+.table tbody tr,
+.table > tbody > tr,
+.table tbody td,
+.table > tbody > tr > td,
+.table tbody th,
+.table > tbody > tr > th,
+.table-striped tbody tr,
+.table-striped > tbody > tr:nth-of-type(odd),
+.table-striped > tbody > tr:nth-of-type(even),
+.table-striped tbody > tr:nth-child(2n+1) > td,
+.table-striped tbody > tr:nth-child(2n+1) > th,
+.table-striped tbody > tr:nth-child(2n) > td,
+.table-striped tbody > tr:nth-child(2n) > th,
+.table-striped > tbody > tr:nth-child(odd) > td,
+.table-striped > tbody > tr:nth-child(even) > td,
+.table-stripped tbody tr,
+.table-stripped tbody td,
+tr.table-common-even,
+tr.table-common-even td {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #212529 !important;
+}
+
+.table-hover tbody tr:hover,
+.table-hover tbody tr:hover > td,
+.table-hover tbody tr:hover > th {
+    background-color: #f8fafc !important;
+}
+
+.table td .badge-sks,
+.table td .badge:not(.badge-status),
+.col-sks {
+    background-color: transparent !important;
+    background: transparent !important;
+    color: #000000 !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    display: inline-block;
+}
+
+/* e-Semesta Paket Semester Accordion Styles */
+.urlShowingMatkul {
+    padding: 10px 15px;
+    margin-top: 10px;
+    background-color: #e3eff9;
+    color: #0c419a;
+    border-radius: 4px;
+    border: 1px solid #c9def0;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+}
+
+.urlShowingMatkul:hover {
+    background-color: #d6e8f7;
+    border-color: #b5d3ee;
+}
+
+.urlShowingMatkul a {
+    color: #1a4980;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    width: 100%;
+    display: block;
+}
+
+.scroll_label {
+    color: #777;
+    font-size: 11px;
+    margin: 6px 0;
+    font-style: italic;
+}
+
+.petunjuk-area {
+    background: #fbfbfb;
+    border: 1px solid #e2e8f0;
+    padding: 15px 18px;
+    border-radius: 6px;
+    margin-top: 25px;
+}
+
+.footer-uin {
+    background: #1a1a1a;
+    color: #aaa;
+    padding: 20px 0;
+    font-size: 12px;
+    border-top: 3px solid #333333;
+    margin-top: 40px;
+}
+
+.nfr-pill {
+    display: none !important;
+}

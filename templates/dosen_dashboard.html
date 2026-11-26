@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% block title %}Dasbor Dosen Pengampu - Konfirmasi Mengajar{% endblock %}
+
+{% block breadcrumb %}
+<li><a href="#">Dosen Pengampu</a></li>
+<li class="active">Konfirmasi Mengajar & Dispensasi</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="col-padded">
+            <h4 class="page-header">
+                Dasbor Dosen Pengampu Mata Kuliah
+            </h4>
+
+            <div class="well well-sm" style="background:#f8f9fa; border-color:#e9ecef; margin-bottom:20px;">
+                <div class="row" style="font-size:12px;">
+                    <div class="col-md-6">
+                        <strong>Nama Dosen:</strong> {{ current_user.name }}<br>
+                        <strong>NIP:</strong> {{ current_user.nim_nip }} | <strong>Program Studi:</strong> {{ current_user.prodi }}
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <span class="label label-info" style="font-size:12px;">{{ active_semester }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-info" role="alert" style="font-size:13px;">
+                <strong><i class="fa fa-info-circle"></i> Ketentuan Konfirmasi Mengajar:</strong>
+                <ul style="margin-top:5px; margin-bottom:0; padding-left:20px;">
+                    <li>Dosen pengampu mengonfirmasi kesediaan mengampu kelas mata kuliah yang ditugaskan oleh Program Studi pada masa jeda semester.</li>
+                    <li><b>Kebijakan Dispensasi (< 10 Peserta):</b> Apabila saat pendaftaran ditutup jumlah peserta kurang dari 10 mahasiswa, kelas hanya dapat dibuka apabila Dosen Pengampu memberikan konfirmasi kesediaan mengajar kelas dispensasi.</li>
+                </ul>
+            </div>
+
+            <!-- COURSES ASSIGNED TABLE -->
+            <h5 style="font-weight:700; color:#212529; margin-top:25px;">
+                Daftar Mata Kuliah Penugasan & Status Konfirmasi
+            </h5>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" style="font-size:13px; vertical-align:middle;">
+                    <thead style="background:#ecf0f2; color:#000;">
+                        <tr>
+                            <th class="text-center" style="width: 40px;">No</th>
+                            <th style="width: 90px;">Kode MK</th>
+                            <th>Nama Mata Kuliah</th>
+                            <th class="text-center" style="width: 50px;">SKS</th>
+                            <th>Jadwal Sesi Perkuliahan</th>
+                            <th>Ruang Luring</th>
+                            <th class="text-center" style="width: 100px;">Pendaftar / Kuota</th>
+                            <th class="text-center" style="width: 130px;">Status Kelas</th>
+                            <th class="text-center" style="width: 220px;">Aksi Konfirmasi Mengajar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if not courses %}
+                        <tr>
+                            <td colspan="9" class="text-center text-muted" style="padding:25px;">
+                                <i class="fa fa-info-circle"></i> Belum ada mata kuliah yang ditugaskan kepada Anda pada Semester Antara ini.
+                            </td>
+                        </tr>
+                        {% endif %}
+
+                        {% for c in courses %}
+                        {% set is_dispensation_needed = (c.enrolled_count < 10) %}
+                        <tr>
+                            <td class="text-center">{{ loop.index }}</td>
+                            <td><strong>{{ c.code }}</strong></td>
+                            <td><b>{{ c.name }}</b></td>
+                            <td class="text-center col-sks"><b style="color:#000; font-size:13px;">{{ c.sks }}</b></td>
+                            <td>{{ c.schedule_day }}, {{ c.schedule_time }}</td>
+                            <td>{{ c.room }}</td>
+                            <td class="text-center">
+                                <b>{{ c.enrolled_count }}</b> / {{ c.quota }}
+                                {% if is_dispensation_needed %}
+                                    <br><span class="label label-warning" style="font-size:10px;">Di Bawah 10 Peserta</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if c.status == 'Dibuka' %}
+                                    <span class="badge-status status-dibuka"><i class="fa fa-check"></i> Dibuka</span>
+                                {% elif c.status == 'Dispensasi Buka' %}
+                                    <span class="badge-status status-dispensasi"><i class="fa fa-handshake-o"></i> Dispensasi Buka</span>
+                                {% elif c.status == 'Dibatalkan' %}
+                                    <span class="badge-status status-dibatalkan"><i class="fa fa-times"></i> Dibatalkan</span>
+                                {% else %}
+                                    <span class="badge-status status-menunggu"><i class="fa fa-clock-o"></i> Menunggu Konfirmasi</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <!-- STANDING CONFIRMATION -->
+                                <div style="margin-bottom:6px;">
+                                    <span style="font-size:11px; font-weight:bold; color:#444;">Kesediaan Mengajar:</span><br>
+                                    {% if c.lecturer_agreed == 1 %}
+                                        <span class="label label-success"><i class="fa fa-check"></i> Bersedia Mengajar</span>
+                                    {% elif c.lecturer_agreed == -1 %}
+                                        <span class="label label-danger"><i class="fa fa-times"></i> Menolak Mengajar</span>
+                                    {% else %}
+                                        <form action="/dosen/confirm/{{ c.id }}" method="POST" style="display:inline-block;">
+                                            <input type="hidden" name="agreed" value="1">
+                                            <button type="submit" class="btn btn-xs btn-primary"><i class="fa fa-check"></i> Bersedia</button>
+                                        </form>
+                                        <form action="/dosen/confirm/{{ c.id }}" method="POST" style="display:inline-block;">
+                                            <input type="hidden" name="agreed" value="0">
+                                            <button type="submit" class="btn btn-xs btn-danger"><i class="fa fa-times"></i> Menolak</button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+
+                                <!-- DISPENSATION CONFIRMATION (< 10 STUDENTS) -->
+                                {% if is_dispensation_needed %}
+                                <div style="border-top:1px dashed #ccc; padding-top:5px; margin-top:5px;">
+                                    <span style="font-size:11px; font-weight:bold; color:#b78103;">Kelas Dispensasi (&lt;10):</span><br>
+                                    {% if c.lecturer_dispensation_agreed == 1 %}
+                                        <span class="label label-info"><i class="fa fa-check"></i> Bersedia Dispensasi</span>
+                                    {% elif c.lecturer_dispensation_agreed == -1 %}
+                                        <span class="label label-danger"><i class="fa fa-times"></i> Tolak Dispensasi</span>
+                                    {% else %}
+                                        <form action="/dosen/dispensasi/{{ c.id }}" method="POST" style="display:inline-block;">
+                                            <input type="hidden" name="agreed" value="1">
+                                            <button type="submit" class="btn btn-xs btn-warning" title="Setujui buka kelas dispensasi dengan honor penyesuaian">
+                                                <i class="fa fa-handshake-o"></i> Setuju Dispensasi
+                                            </button>
+                                        </form>
+                                        <form action="/dosen/dispensasi/{{ c.id }}" method="POST" style="display:inline-block;">
+                                            <input type="hidden" name="agreed" value="0">
+                                            <button type="submit" class="btn btn-xs btn-default" title="Tolak kelas dispensasi">
+                                                <i class="fa fa-ban"></i> Tolak
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

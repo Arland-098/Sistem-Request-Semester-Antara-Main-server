@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>{% block title %}Portal Akademik - Sistem Pengajuan Semester Antara{% endblock %}</title>
+
+    <!-- Portal Akademik Stylesheets & Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/gsFontsEmbed.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dropdown-menu.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/gsStyle_main_eCampuz_v2.0.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/gsStyle_content_eCampuz_v2.0.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ionicons.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dataTables.bootstrap.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body id="common">
+
+<!-- TOPBAR -->
+<div class="topbar clearfix">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-7 col-sm-6">
+                <a href="/" style="text-decoration:none; display:flex; align-items:center;">
+                    <img src="{{ url_for('static', filename='img/logo_client.png') }}" width="56" alt="UIN Jakarta Logo">
+                    <div style="margin-left: 12px;">
+                        <h1 style="margin:0; font-size:18px; color:#fff; font-weight:700;">UNIVERSITAS ISLAM NEGERI SYARIF HIDAYATULLAH</h1>
+                        <div class="univ-sub">
+                            Portal Akademik e-Semesta &mdash; 
+                            <span style="color:#fff;">Semester Aktif: {{ active_semester }}</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-5 col-sm-6 text-right">
+                <div class="dropdown" style="display:inline-block;">
+                    <div class="header-user-badge dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" title="Klik untuk membuka menu layanan dan ganti akun">
+                        <img src="{{ url_for('static', filename='img/' ~ (current_user.avatar or '25110120414.png')) }}" alt="User Avatar">
+                        <div style="text-align:left; line-height:1.2;">
+                            <div style="font-weight:700; font-size:12px;">
+                                {{ current_user.name }} <i class="fa fa-caret-down" style="font-size:11px; margin-left:3px; opacity:0.8;"></i>
+                            </div>
+                            <div style="font-size:11px; opacity:0.9;">
+                                {{ current_user.nim_nip }}
+                                <span class="role-pill">{{ current_user.role }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <ul class="dropdown-menu dropdown-menu-right" style="min-width: 280px; padding: 0; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); border: 1px solid #333; background: #fff; text-align: left; z-index: 1200; overflow: hidden; margin-top: 6px;">
+                        <!-- USER PROFILE HEADER -->
+                        <li style="background: #24292e; color: #fff; padding: 14px 16px; border-bottom: 2px solid #343a40;">
+                            <div style="display:flex; align-items:center;">
+                                <img src="{{ url_for('static', filename='img/' ~ (current_user.avatar or '25110120414.png')) }}" style="width:42px; height:42px; border-radius:50%; border:2px solid #fff; margin-right:12px; object-fit:cover;">
+                                <div>
+                                    <div style="font-weight:700; font-size:13px; color:#fff;">{{ current_user.name }}</div>
+                                    <div style="font-size:11px; color:#bbb;">{{ current_user.nim_nip }}</div>
+                                    <div style="font-size:11px; color:#ddd; margin-top:2px;">{{ current_user.prodi }}</div>
+                                </div>
+                            </div>
+                        </li>
+
+                        <!-- DYNAMIC SERVICES ACCORDING TO CURRENT ROLE -->
+                        <li class="dropdown-header" style="font-weight:700; font-size:11px; color:#212529; background:#f8f9fa; padding:8px 16px; border-bottom:1px solid #eee; text-transform:uppercase;">
+                            <i class="fa fa-th-large text-primary"></i> Layanan {{ current_user.role }}
+                        </li>
+
+                        {% if current_user.role.lower() == 'mahasiswa' %}
+                            <li><a href="/krs" style="padding:10px 16px; font-weight:700; color:#212529;"><i class="fa fa-pencil-square-o text-primary" style="width:20px;"></i> Buka KRS Mahasiswa</a></li>
+                            <li><a href="/katalog" style="padding:9px 16px; color:#333;"><i class="fa fa-book text-muted" style="width:20px;"></i> Katalog Mata Kuliah Dibuka</a></li>
+                            <li><a href="/tagihan" style="padding:9px 16px; color:#333;"><i class="fa fa-credit-card text-muted" style="width:20px;"></i> Tagihan Virtual Account (VA)</a></li>
+                            <li><a href="/cetak_krs" target="_blank" style="padding:9px 16px; color:#333;"><i class="fa fa-print text-muted" style="width:20px;"></i> Cetak Kartu Rencana Studi Sah</a></li>
+                        {% elif current_user.role.lower() == 'dpa' %}
+                            <li><a href="/dpa" style="padding:10px 16px; font-weight:700; color:#212529;"><i class="fa fa-check-square-o text-primary" style="width:20px;"></i> Verifikasi Pengajuan KRS</a></li>
+                        {% elif current_user.role.lower() == 'dosen' %}
+                            <li><a href="/dosen" style="padding:10px 16px; font-weight:700; color:#212529;"><i class="fa fa-calendar-check-o text-primary" style="width:20px;"></i> Kesediaan Mengajar & Dispensasi</a></li>
+                        {% elif current_user.role.lower() == 'prodi' %}
+                            <li><a href="/prodi/monitoring" style="padding:10px 16px; font-weight:700; color:#212529;"><i class="fa fa-bar-chart text-primary" style="width:20px;"></i> Monitoring Kelas & Kuota</a></li>
+                            <li><a href="/prodi/katalog" style="padding:9px 16px; color:#333;"><i class="fa fa-list-alt text-muted" style="width:20px;"></i> Pengelolaan Katalog MK & Kuota</a></li>
+                            <li><a href="/prodi/jadwal_ruang" style="padding:9px 16px; color:#333;"><i class="fa fa-building-o text-muted" style="width:20px;"></i> Jadwal & Alokasi Ruang Luring</a></li>
+                            <li><a href="/prodi/periode" style="padding:9px 16px; color:#333;"><i class="fa fa-clock-o text-muted" style="width:20px;"></i> Pengaturan Periode & Status</a></li>
+                            <li><a href="/prodi/rekap" style="padding:9px 16px; color:#333;"><i class="fa fa-file-excel-o text-muted" style="width:20px;"></i> Penutupan & Ekspor Rekap Peserta</a></li>
+                        {% elif current_user.role.lower() == 'keuangan' %}
+                            <li><a href="/keuangan/pembayaran" style="padding:10px 16px; font-weight:700; color:#212529;"><i class="fa fa-exchange text-primary" style="width:20px;"></i> Rekonsiliasi VA & Pembayaran</a></li>
+                            <li><a href="/keuangan/tarif" style="padding:9px 16px; color:#333;"><i class="fa fa-calculator text-muted" style="width:20px;"></i> Tarif Biaya per SKS</a></li>
+                        {% endif %}
+
+                        <!-- SWITCH ACCOUNT / ROLE -->
+                        <li class="divider" style="margin:4px 0;"></li>
+                        <li class="dropdown-header" style="font-weight:700; font-size:11px; color:#555; background:#f8f9fa; padding:8px 16px; border-top:1px solid #eee; border-bottom:1px solid #eee; text-transform:uppercase;">
+                            <i class="fa fa-refresh"></i> Ganti Akun / Peran Akses:
+                        </li>
+                        <li><a href="/switch_role/mahasiswa" style="padding:8px 16px; font-size:12px;"><i class="fa fa-user" style="width:18px;"></i> <b>Mahasiswa</b> (Ihsan Mubarok)</a></li>
+                        <li><a href="/switch_role/dpa" style="padding:8px 16px; font-size:12px;"><i class="fa fa-check-circle" style="width:18px;"></i> <b>Dosen PA</b> (Dr. Dewi Khairani)</a></li>
+                        <li><a href="/switch_role/dosen" style="padding:8px 16px; font-size:12px;"><i class="fa fa-briefcase" style="width:18px;"></i> <b>Dosen Pengampu</b> (Luh Kesuma)</a></li>
+                        <li><a href="/switch_role/prodi" style="padding:8px 16px; font-size:12px;"><i class="fa fa-institution" style="width:18px;"></i> <b>Program Studi</b> (Admin TIF)</a></li>
+                        <li><a href="/switch_role/keuangan" style="padding:8px 16px; font-size:12px;"><i class="fa fa-bank" style="width:18px;"></i> <b>Bagian Keuangan</b> (Biro Keuangan)</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MAIN NAVIGATION -->
+<div class="nav-main-bar">
+    <div class="container">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <ul class="nav-menu">
+                <li class="{% if active_tab == 'home' %}active{% endif %}">
+                    <a href="/"><i class="fa fa-home"></i> Beranda</a>
+                </li>
+
+                <!-- MAHASISWA -->
+                <li class="{% if active_tab in ['katalog', 'krs', 'tagihan', 'cetak_krs'] %}active{% endif %}">
+                    <a href="#"><i class="fa fa-graduation-cap"></i> Mahasiswa <i class="fa fa-angle-down"></i></a>
+                    <ul class="submenu">
+                        <li><a href="/katalog"><i class="fa fa-book"></i> Katalog Mata Kuliah Dibuka</a></li>
+                        <li><a href="/krs"><i class="fa fa-pencil-square-o"></i> Pengisian KRS Semester Antara</a></li>
+                        <li><a href="/tagihan"><i class="fa fa-credit-card"></i> Tagihan Virtual Account (VA)</a></li>
+                        <li><a href="/cetak_krs"><i class="fa fa-print"></i> Cetak Kartu Rencana Studi Sah</a></li>
+                    </ul>
+                </li>
+
+                <!-- DOSEN PEMBIMBING AKADEMIK (DPA) -->
+                <li class="{% if active_tab in ['dpa'] %}active{% endif %}">
+                    <a href="#"><i class="fa fa-check-square-o"></i> Dosen PA <i class="fa fa-angle-down"></i></a>
+                    <ul class="submenu">
+                        <li><a href="/dpa"><i class="fa fa-users"></i> Verifikasi KRS Bimbingan</a></li>
+                    </ul>
+                </li>
+
+                <!-- DOSEN PENGAMPU -->
+                <li class="{% if active_tab in ['dosen'] %}active{% endif %}">
+                    <a href="#"><i class="fa fa-user-tie"></i> Dosen Pengampu <i class="fa fa-angle-down"></i></a>
+                    <ul class="submenu">
+                        <li><a href="/dosen"><i class="fa fa-calendar-check-o"></i> Kesediaan Mengajar</a></li>
+                        <li><a href="/dosen"><i class="fa fa-handshake-o"></i> Konfirmasi Kelas Dispensasi</a></li>
+                    </ul>
+                </li>
+
+                <!-- PROGRAM STUDI -->
+                <li class="{% if active_tab in ['prodi_periode', 'prodi_katalog', 'prodi_jadwal', 'prodi_monitoring', 'prodi_rekap'] %}active{% endif %}">
+                    <a href="#"><i class="fa fa-sitemap"></i> Program Studi <i class="fa fa-angle-down"></i></a>
+                    <ul class="submenu">
+                        <li><a href="/prodi/periode"><i class="fa fa-clock-o"></i> Pengaturan Periode & Status</a></li>
+                        <li><a href="/prodi/katalog"><i class="fa fa-list-alt"></i> Pengelolaan Katalog MK & Kuota</a></li>
+                        <li><a href="/prodi/jadwal_ruang"><i class="fa fa-building-o"></i> Jadwal & Alokasi Ruang Luring</a></li>
+                        <li><a href="/prodi/monitoring"><i class="fa fa-bar-chart"></i> Monitoring Kuota & Status Kelas</a></li>
+                        <li><a href="/prodi/rekap"><i class="fa fa-file-excel-o"></i> Penutupan & Ekspor Rekap Peserta</a></li>
+                    </ul>
+                </li>
+
+                <!-- BAGIAN KEUANGAN -->
+                <li class="{% if active_tab in ['keuangan_tarif', 'keuangan_pembayaran'] %}active{% endif %}">
+                    <a href="#"><i class="fa fa-money"></i> Bagian Keuangan <i class="fa fa-angle-down"></i></a>
+                    <ul class="submenu">
+                        <li><a href="/keuangan/tarif"><i class="fa fa-calculator"></i> Tarif Biaya per SKS</a></li>
+                        <li><a href="/keuangan/pembayaran"><i class="fa fa-exchange"></i> Pemantauan VA & Rekonsiliasi</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- CONTENT WRAPPER -->
+<div id="k-body" style="padding-top: 15px;">
+    <div class="container">
+        <!-- BREADCRUMBS -->
+        <div class="row">
+            <div class="k-breadcrumbs col-lg-12">
+                <ol class="breadcrumb">
+                    <li><a href="/">Home</a></li>
+                    {% block breadcrumb %}{% endblock %}
+                </ol>
+            </div>
+        </div>
+
+        <!-- FLASH MESSAGES -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="row">
+                    <div class="col-lg-12">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible" role="alert">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                {% if category == 'success' %}
+                                    <i class="fa fa-check-circle"></i>
+                                {% elif category in ['error', 'danger'] %}
+                                    <i class="fa fa-exclamation-triangle"></i>
+                                {% else %}
+                                    <i class="fa fa-info-circle"></i>
+                                {% endif %}
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- MAIN BODY CONTENT -->
+        {% block content %}{% endblock %}
+    </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer-uin text-center">
+    <div class="container">
+        <p style="margin:0; font-weight:600;">Sistem Pengajuan Semester Antara Terpusat &mdash; UIN Syarif Hidayatullah Jakarta</p>
+        <p style="margin:4px 0 0 0; font-size:11px; opacity:0.8;">
+            Berdasarkan SK Rektor Nomor 686 Tahun 2025 | Terintegrasi dengan Portal Akademik e-Semesta
+        </p>
+    </div>
+</div>
+
+<!-- SCRIPTS -->
+<script src="{{ url_for('static', filename='js/jquery-2.2.3.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

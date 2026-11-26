@@ -1,0 +1,57 @@
+from flask import Flask, session
+from werkzeug.middleware.proxy_fix import ProxyFix
+
+from config import Config
+from database import init_db
+from routes import register_blueprints
+from services import get_config, get_user_by_id, get_user_by_username
+
+
+def create_app(config_overrides: dict | None = None) -> Flask:
+    flask_app = Flask(
+        __name__,
+        static_folder='static',
+        static_url_path='/static',
+        template_folder='templates',
+    )
+    flask_app.config.from_object(Config)
+    if config_overrides:
+        flask_app.config.update(config_overrides)
+
+    # Support reverse proxies on PaaS hosting (Render, Railway, Nginx, etc.)
+    flask_app.wsgi_app = ProxyFix(flask_app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
+    with flask_app.app_context():
+        init_db(flask_app.config['DATABASE_PATH'])
+
+    @flask_app.context_processor
+    def inject_global_vars():
+        user_id = session.get('user_id')
+        user = get_user_by_id(user_id) if user_id else None
+        if not user:
+            user = get_user_by_username('1251420125')
+
+        return {
+            'current_user': user,
+            'active_semester': get_config('active_semester', 'Semester Antara 2026/2027'),
+            'reg_status': get_config('registration_status', 'Buka'),
+            'reg_start': get_config('registration_start', '2026-07-01'),
+            'reg_end': get_config('registration_end', '2026-07-25'),
+            'sks_rate': int(get_config('sks_rate', '220000') or 220000),
+            'max_sks': int(get_config('max_sks', '9') or 9),
+            'min_quota': int(get_config('min_quota', '10') or 10),
+        }
+
+    register_blueprints(flask_app)
+    return flask_app
+
+
+app = create_app()
+
+
+if __name__ == '__main__':
+    app.run(
+        host=app.config.get('HOST', '127.0.0.1'),
+        port=app.config.get('PORT', 5000),
+        debug=app.config.get('DEBUG', False),
+    )
