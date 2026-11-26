@@ -17,7 +17,7 @@ def _resolve_student_id() -> int:
     user = get_logged_in_user()
     if user and normalize_role(user['role']) == 'mahasiswa':
         return user['id']
-    default_student = get_user_by_username('1251420125')
+    default_student = get_user_by_username('1084729301')
     return default_student['id'] if default_student else 1
 
 

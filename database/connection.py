@@ -187,7 +187,10 @@ def _init_postgres_schema(conn: CompatConnection) -> None:
         has_superadmin = conn.execute(
             "SELECT 1 FROM users WHERE username = 'superadmin'"
         ).fetchone()
-        return bool(cfg_cnt >= 7 and has_superadmin)
+        has_new_student = conn.execute(
+            "SELECT 1 FROM users WHERE username = '1084729301'"
+        ).fetchone()
+        return bool(cfg_cnt >= 7 and has_superadmin and has_new_student)
 
     if _is_ready():
         conn.commit()

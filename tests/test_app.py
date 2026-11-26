@@ -61,10 +61,10 @@ class SemesterAntaraAuthAndRbacTestCase(unittest.TestCase):
         with self.app.test_request_context('/cetak_krs'):
             html = render_template(
                 'mahasiswa_cetak_krs.html',
-                student={'nim_nip': '1251420125', 'name': 'IHSAN', 'prodi': 'TI', 'semester': 6, 'ipk': 3.75, 'dpa_name': 'Dr. Dewi'},
+                student={'nim_nip': '1084729301', 'name': 'IHSAN', 'prodi': 'TI', 'semester': 6, 'ipk': 3.75, 'dpa_name': 'Dr. Dewi'},
                 app={'id': 1, 'total_sks': 3, 'submitted_at': datetime.datetime(2026, 11, 26, 8, 30, 0), 'verified_at': datetime.datetime(2026, 11, 26, 9, 0, 0)},
                 items=[],
-                invoice={'va_number': '8871420125123456'},
+                invoice={'va_number': '8871729301123456'},
             )
         self.assertIn('Ciputat, 2026-11-26', html)
 
@@ -93,7 +93,7 @@ class SemesterAntaraAuthAndRbacTestCase(unittest.TestCase):
         with self.client.get('/login') as res_login:
             self.assertEqual(res_login.status_code, 200)
             for marker in (
-                b'1251420125',
+                b'1084729301',
                 b'mahasiswa@uinjkt.ac.id',
                 b'mhs123',
                 b'dosen1',
@@ -137,7 +137,7 @@ class SemesterAntaraAuthAndRbacTestCase(unittest.TestCase):
 
     def test_login_by_username_or_email_wrong_password_and_logout(self):
         # Wrong password fails
-        res_bad = self._login('1251420125', 'salah')
+        res_bad = self._login('1084729301', 'salah')
         self.assertIn(b'Username/email atau password salah', res_bad.data)
         res_home = self.client.get('/')
         self.assertEqual(res_home.status_code, 302)
@@ -162,7 +162,7 @@ class SemesterAntaraAuthAndRbacTestCase(unittest.TestCase):
 
     def test_rbac_menu_and_direct_url_boundaries_for_all_5_roles(self):
         # 1. Mahasiswa
-        self._login('1251420125', 'mhs123')
+        self._login('1084729301', 'mhs123')
         home_mhs = self.client.get('/').data
         self.assertIn(b'/krs', home_mhs)
         self.assertNotIn(b'/admin/users', home_mhs)
@@ -218,10 +218,10 @@ class SemesterAntaraAuthAndRbacTestCase(unittest.TestCase):
         with self.app.app_context():
             courses = get_courses_list()
             by_code = {c['code']: c for c in courses}
-            student = get_user_by_username('1251420125')
+            student = get_user_by_username('1084729301')
 
         # 1. Mahasiswa logs in, checks validation & submits 6 SKS KRS
-        self._login('1251420125', 'mhs123')
+        self._login('1084729301', 'mhs123')
         self.assertIn(b'status pembayaran lunas', self.client.get('/cetak_krs', follow_redirects=True).data)
 
         c1_id = by_code['FST6091101']['id']  # taught by dosen1
@@ -299,7 +299,7 @@ class SemesterAntaraAuthAndRbacTestCase(unittest.TestCase):
         self._logout()
 
         # 5. Mahasiswa logs in & prints official KRS
-        self._login('1251420125', 'mhs123')
+        self._login('1084729301', 'mhs123')
         res_print = self.client.get('/cetak_krs')
         self.assertEqual(res_print.status_code, 200)
         self.assertIn(b'KARTU RENCANA STUDI (KRS) SAH', res_print.data)
@@ -309,7 +309,7 @@ class SemesterAntaraAuthAndRbacTestCase(unittest.TestCase):
         self._login('admin_tu', 'admin123')
         res_mhs = self.client.post(
             '/master/mahasiswa/add',
-            data={'nim_nip': '1251429999', 'name': 'Mahasiswa Uji', 'email': 'uji@uinjkt.ac.id', 'password': 'mhs123'},
+            data={'nim_nip': '1099887766', 'name': 'Mahasiswa Uji', 'email': 'uji@uinjkt.ac.id', 'password': 'mhs123'},
             follow_redirects=True,
         )
         self.assertIn(b'berhasil ditambahkan', res_mhs.data)
@@ -365,7 +365,7 @@ class SemesterAntaraAuthAndRbacTestCase(unittest.TestCase):
             ''')
             raw.execute('''
             INSERT INTO users (username, password, name, nim_nip, role, prodi, ipk, semester)
-            VALUES ('1251420125', '123456', 'IHSAN MUBAROK', '1251420125', 'mahasiswa', 'TI', 3.75, 6)
+            VALUES ('1251420999', '123456', 'IHSAN MUBAROK', '1251420999', 'mahasiswa', 'TI', 3.75, 6)
             ''')
             raw.commit()
             raw.close()
@@ -377,8 +377,9 @@ class SemesterAntaraAuthAndRbacTestCase(unittest.TestCase):
             self.assertIn(b'Manajemen Pengguna', res.data)
             res2 = client.post('/logout', follow_redirects=True)
             self.assertIn(b'berhasil logout', res2.data)
-            res3 = client.post('/login', data={'identifier': '1251420125', 'password': 'mhs123'}, follow_redirects=True)
+            res3 = client.post('/login', data={'identifier': '1084729301', 'password': 'mhs123'}, follow_redirects=True)
             self.assertIn(b'IHSAN MUBAROK', res3.data)
+            self.assertIn(b'1084729301', res3.data)
         finally:
             for ext in ('', '-wal', '-shm'):
                 p = f'{legacy_path}{ext}'

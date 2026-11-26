@@ -151,7 +151,7 @@ Seluruh halaman utama dilindungi oleh autentikasi berbasis Flask `session` (meng
 
 | Peran | Username | Email | Password | Hak Akses |
 | :--- | :--- | :--- | :--- | :--- |
-| **Mahasiswa** | `1251420125` | `mahasiswa@uinjkt.ac.id` | `mhs123` | Mengajukan KRS semester antara & melihat status pengajuan sendiri |
+| **Mahasiswa** | `1084729301` | `mahasiswa@uinjkt.ac.id` | `mhs123` | Mengajukan KRS semester antara & melihat status pengajuan sendiri |
 | **Dosen Pengampu** | `dosen1` | `dosen@uinjkt.ac.id` | `dosen123` | Melihat MK & pengajuan terkait serta memberi persetujuan/catatan akademik |
 | **Kaprodi / Koordinator** | `kaprodi` | `kaprodi@uinjkt.ac.id` | `kaprodi123` | Memverifikasi seluruh pengajuan, mengelola jadwal/kelas, & melihat rekap |
 | **Admin Akademik / TU** | `admin_tu` | `admin.tu@uinjkt.ac.id` | `admin123` | Mengelola data master (mahasiswa, dosen, MK) & memproses administrasi pengajuan |

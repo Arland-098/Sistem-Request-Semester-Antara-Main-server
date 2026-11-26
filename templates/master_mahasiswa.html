@@ -131,7 +131,12 @@
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label>NIM:</label>
-                                            <input type="text" name="nim_nip" class="form-control" required placeholder="1251420999">
+                                            <div class="input-group">
+                                                <input type="text" id="newStudentNim" name="nim_nip" class="form-control" required placeholder="1099112233">
+                                                <span class="input-group-btn">
+                                                    <button type="button" class="btn btn-default" onclick="generateRandomNim()" title="Isi NIM angka acak">Acak</button>
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -185,4 +190,13 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function generateRandomNim() {
+    var num = '10' + Math.floor(10000000 + Math.random() * 89999999);
+    document.getElementById('newStudentNim').value = num;
+}
+</script>
 {% endblock %}

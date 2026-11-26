@@ -14,23 +14,23 @@ DEFAULT_CONFIGS = [
 # Format: (username, raw_password, name, nim_nip, role, prodi, ipk, semester, dpa_id, avatar, email, is_active)
 SEED_USERS = [
     # 5 Akun Demo Utama sesuai RBAC
-    ('1251420125', 'mhs123', 'IHSAN MUBAROK', '1251420125', 'mahasiswa', 'Teknik Informatika', 3.75, 6, None, '25110120414.png', 'mahasiswa@uinjkt.ac.id', 1),
+    ('1084729301', 'mhs123', 'IHSAN MUBAROK', '1084729301', 'mahasiswa', 'Teknik Informatika', 3.75, 6, None, '25110120414.png', 'mahasiswa@uinjkt.ac.id', 1),
     ('dosen1', 'dosen123', 'Luh Kesuma Wardhani, S.T., M.T.', '198003152006042002', 'dosen', 'Teknik Informatika', 0.0, 0, None, None, 'dosen@uinjkt.ac.id', 1),
     ('kaprodi', 'kaprodi123', 'Dr. Dewi Khairani, M.Sc.', '197805122005012001', 'kaprodi', 'Teknik Informatika', 0.0, 0, None, None, 'kaprodi@uinjkt.ac.id', 1),
     ('admin_tu', 'admin123', 'Admin Akademik & TU FST', 'ADMIN-TU-FST-01', 'admin_akademik', 'Fakultas Sains dan Teknologi', 0.0, 0, None, None, 'admin.tu@uinjkt.ac.id', 1),
     ('superadmin', 'superadmin123', 'Super Administrator Sistem', 'SUPERADMIN-01', 'superadmin', 'Universitas', 0.0, 0, None, None, 'superadmin@uinjkt.ac.id', 1),
 
     # Mahasiswa tambahan untuk data simulasi pengajuan di dasbor Dosen/Kaprodi/Admin
-    ('1251420128', 'mhs123', 'DANUARDI SAPUTRO', '1251420128', 'mahasiswa', 'Teknik Informatika', 3.65, 6, None, '25110120414.png', 'danuardi@uinjkt.ac.id', 1),
-    ('1251420081', 'mhs123', 'MUHAMMAD BAGAS F', '1251420081', 'mahasiswa', 'Teknik Informatika', 3.42, 6, None, '25110120414.png', 'bagas@uinjkt.ac.id', 1),
-    ('1251420017', 'mhs123', 'REVAND RADITIYA D', '1251420017', 'mahasiswa', 'Teknik Informatika', 3.58, 6, None, '25110120414.png', 'revand@uinjkt.ac.id', 1),
+    ('1093847152', 'mhs123', 'DANUARDI SAPUTRO', '1093847152', 'mahasiswa', 'Teknik Informatika', 3.65, 6, None, '25110120414.png', 'danuardi@uinjkt.ac.id', 1),
+    ('1072918463', 'mhs123', 'MUHAMMAD BAGAS F', '1072918463', 'mahasiswa', 'Teknik Informatika', 3.42, 6, None, '25110120414.png', 'bagas@uinjkt.ac.id', 1),
+    ('1065829174', 'mhs123', 'REVAND RADITIYA D', '1065829174', 'mahasiswa', 'Teknik Informatika', 3.58, 6, None, '25110120414.png', 'revand@uinjkt.ac.id', 1),
 ]
 
 DEMO_ACCOUNTS_INFO = [
     {
         'label': 'Mahasiswa',
         'role': 'mahasiswa',
-        'username': '1251420125',
+        'username': '1084729301',
         'email': 'mahasiswa@uinjkt.ac.id',
         'password': 'mhs123',
         'desc': 'Mengajukan KRS semester antara & memantau status pengajuan sendiri',
@@ -132,8 +132,8 @@ SEED_COURSES = [
 
 def _seed_demo_applications(conn) -> None:
     """Seed sample KRS applications for secondary demo students on brand-new DBs."""
-    danu = conn.execute("SELECT id FROM users WHERE username = '1251420128'").fetchone()
-    revand = conn.execute("SELECT id FROM users WHERE username = '1251420017'").fetchone()
+    danu = conn.execute("SELECT id FROM users WHERE username = '1093847152'").fetchone()
+    revand = conn.execute("SELECT id FROM users WHERE username = '1065829174'").fetchone()
     c_rpl = conn.execute("SELECT id, sks FROM courses WHERE code = 'FST6091108'").fetchone()
     c_sbd = conn.execute("SELECT id, sks FROM courses WHERE code = 'FST6091103'").fetchone()
     c_pbp = conn.execute("SELECT id, sks FROM courses WHERE code = 'FST6091501'").fetchone()
@@ -187,7 +187,7 @@ def _seed_demo_applications(conn) -> None:
                 paid_at, payment_channel, reconciliation_notes
             )
             VALUES (
-                ?, ?, '88714200178205', 'Bank Mandiri', ?, 'Lunas',
+                ?, ?, '88718291748205', 'Bank Mandiri', ?, 'Lunas',
                 CURRENT_TIMESTAMP, 'Rekonsiliasi Manual Bank', 'Ref: ATM-PAY-DEMO-01 | Pembayaran Demo Awal'
             )
             ON CONFLICT (application_id) DO NOTHING
@@ -196,8 +196,30 @@ def _seed_demo_applications(conn) -> None:
         )
 
 
+LEGACY_STUDENT_NAME_TO_NIM = {
+    'IHSAN MUBAROK': '1084729301',
+    'DANUARDI SAPUTRO': '1093847152',
+    'MUHAMMAD BAGAS F': '1072918463',
+    'REVAND RADITIYA D': '1065829174',
+}
+
+
 def _ensure_rbac_demo_accounts(conn) -> None:
     """Ensure all 5 RBAC demo accounts and hashed passwords exist even on migrated DBs."""
+    legacy_rows = conn.execute(
+        "SELECT id, name FROM users WHERE role = 'mahasiswa' AND username LIKE '1251420%'"
+    ).fetchall()
+    for row in legacy_rows:
+        target_nim = LEGACY_STUDENT_NAME_TO_NIM.get(row['name'])
+        if not target_nim:
+            continue
+        exists_new = conn.execute("SELECT id FROM users WHERE username = ?", (target_nim,)).fetchone()
+        if not exists_new:
+            conn.execute(
+                "UPDATE users SET username = ?, nim_nip = ? WHERE id = ?",
+                (target_nim, target_nim, row['id']),
+            )
+
     for username, raw_pw, name, nim_nip, role, prodi, ipk, sem, dpa_id, avatar, email, is_active in SEED_USERS:
         existing = conn.execute(
             "SELECT id, password, email FROM users WHERE username = ?",
