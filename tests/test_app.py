@@ -422,6 +422,44 @@ class SemesterAntaraAuthAndRbacTestCase(unittest.TestCase):
         self.assertNotIn('id="saRulesModal"', krs_html)
         self._logout()
 
+    def test_mahasiswa_home_shows_catalog_instead_of_module_table(self):
+        self._login('1084729301', 'mhs123')
+        home_res = self.client.get('/')
+        self.assertEqual(home_res.status_code, 200)
+        home_html = home_res.data.decode('utf-8')
+        self.assertIn('Informasi Matakuliah Ditawarkan', home_html)
+        self.assertIn('Paket Semester 1', home_html)
+        self.assertIn('Lanjut Memilih Mata Kuliah di KRS', home_html)
+        self.assertNotIn('Daftar Modul &amp; Layanan Tersedia', home_html)
+        self.assertNotIn('Daftar Modul & Layanan Tersedia', home_html)
+
+        filtered_res = self.client.get('/?prodi=55')
+        self.assertEqual(filtered_res.status_code, 200)
+        filtered_html = filtered_res.data.decode('utf-8')
+        self.assertRegex(filtered_html, r'<option[^>]*value="55"[^>]*selected')
+
+        katalog_res = self.client.get('/katalog')
+        self.assertEqual(katalog_res.status_code, 200)
+        katalog_html = katalog_res.data.decode('utf-8')
+        self.assertIn('Informasi Matakuliah Ditawarkan', katalog_html)
+        self._logout()
+
+        for username, password in [
+            ('dosen1', 'dosen123'),
+            ('kaprodi', 'kaprodi123'),
+            ('admin_tu', 'admin123'),
+            ('superadmin', 'superadmin123'),
+        ]:
+            self._login(username, password)
+            role_home = self.client.get('/').data.decode('utf-8')
+            self.assertIn('Daftar Modul', role_home, f'Module table missing for {username}')
+            self.assertNotIn(
+                'Informasi Matakuliah Ditawarkan',
+                role_home,
+                f'Mahasiswa catalog leaked to {username}',
+            )
+            self._logout()
+
 
 if __name__ == '__main__':
     unittest.main()

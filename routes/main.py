@@ -1,6 +1,7 @@
-from flask import Blueprint, jsonify, render_template
+from flask import Blueprint, jsonify, render_template, request
 
-from routes.decorators import login_required
+from routes.decorators import get_logged_in_user, login_required, normalize_role
+from services import get_courses_grouped_by_semester
 
 main_bp = Blueprint('main', __name__)
 
@@ -8,7 +9,21 @@ main_bp = Blueprint('main', __name__)
 @main_bp.route('/')
 @login_required
 def index():
-    return render_template('index.html', active_tab='home')
+    user = get_logged_in_user()
+    role = normalize_role(user['role']) if user else ''
+
+    grouped_courses = {}
+    selected_prodi = '60'
+    if role == 'mahasiswa':
+        grouped_courses = get_courses_grouped_by_semester()
+        selected_prodi = request.args.get('prodi', '60')
+
+    return render_template(
+        'index.html',
+        active_tab='home',
+        grouped_courses=grouped_courses,
+        selected_prodi=selected_prodi,
+    )
 
 
 @main_bp.route('/health')

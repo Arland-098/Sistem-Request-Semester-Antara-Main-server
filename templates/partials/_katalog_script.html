@@ -1,0 +1,28 @@
+<script type="text/javascript">
+    function showMatkul(par) {
+        $('#semester_' + par).slideDown('fast', function() {
+            $('.fontAwesomeDown' + par).hide();
+            $('.fontAwesomeUp' + par).show();
+        });
+    }
+
+    function hideMatkul(par) {
+        $('#semester_' + par).slideUp('fast', function() {
+            $('.fontAwesomeDown' + par).show();
+            $('.fontAwesomeUp' + par).hide();
+        });
+    }
+
+    function toggleSemester(par) {
+        if ($('#semester_' + par).is(':visible')) {
+            hideMatkul(par);
+        } else {
+            showMatkul(par);
+        }
+    }
+
+    // Default: Buka Paket Semester 1 saat halaman pertama kali dimuat
+    $(document).ready(function() {
+        showMatkul(1);
+    });
+</script>
