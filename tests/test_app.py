@@ -386,6 +386,42 @@ class SemesterAntaraAuthAndRbacTestCase(unittest.TestCase):
                 if os.path.exists(p):
                     os.unlink(p)
 
+    def test_sa_rules_modal_only_visible_for_mahasiswa_role(self):
+        # Mahasiswa sees modal, content, button, and sessionStorage script
+        self._login('1084729301', 'mhs123')
+        for path in ('/', '/krs'):
+            html = self.client.get(path).data.decode('utf-8')
+            self.assertIn('id="saRulesModal"', html)
+            self.assertIn('Ketentuan Semester Antara (FST UIN Jakarta)', html)
+            self.assertIn('Minimal Semester 4, disetujui Dosen PA', html)
+            self.assertIn('Tidak wajib, maksimal 9 SKS', html)
+            self.assertIn('Offline (luring) 16 pertemuan termasuk UTS &amp; UAS', html)
+            self.assertIn('Cek jadwal Prodi', html)
+            self.assertIn('Saya Mengerti', html)
+            self.assertIn('Lihat Aturan SA', html)
+            self.assertIn('sessionStorage.getItem(storageKey)', html)
+        self._logout()
+
+        # Non-Mahasiswa roles NEVER see the modal, button, or script
+        for username, pw in (
+            ('dosen1', 'dosen123'),
+            ('kaprodi', 'kaprodi123'),
+            ('admin_tu', 'admin123'),
+            ('superadmin', 'superadmin123'),
+        ):
+            self._login(username, pw)
+            html = self.client.get('/').data.decode('utf-8')
+            self.assertNotIn('id="saRulesModal"', html, f'Modal leaked to {username}')
+            self.assertNotIn('Lihat Aturan SA', html, f'Button leaked to {username}')
+            self.assertNotIn('Ketentuan Semester Antara (FST UIN Jakarta)', html)
+            self._logout()
+
+        # Super Admin visiting /krs also should not see Mahasiswa-only modal
+        self._login('superadmin', 'superadmin123')
+        krs_html = self.client.get('/krs').data.decode('utf-8')
+        self.assertNotIn('id="saRulesModal"', krs_html)
+        self._logout()
+
 
 if __name__ == '__main__':
     unittest.main()

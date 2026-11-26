@@ -19,6 +19,13 @@
             <div class="alert alert-info" role="alert" style="line-height: 1.6;">
                 <strong><i class="fa fa-info-circle"></i> Selamat Datang, {{ current_user.name }}!</strong><br>
                 Anda login sebagai <b>{{ current_role_label }}</b>. Menu dan layanan di bawah ini disesuaikan secara otomatis dengan hak akses peran Anda berdasarkan <b>Keputusan Rektor UIN Syarif Hidayatullah Jakarta Nomor 686 Tahun 2025</b>.
+                {% if current_role == 'mahasiswa' %}
+                <div style="margin-top:10px;">
+                    <button type="button" id="btnOpenSaRules" class="btn btn-xs btn-primary" data-toggle="modal" data-target="#saRulesModal" style="font-weight:600; background:#24292e; border-color:#1a1a1a;">
+                        <i class="fa fa-book"></i> Lihat Aturan SA
+                    </button>
+                </div>
+                {% endif %}
             </div>
 
             <!-- MODULES & SERVICES TABLE FILTERED BY ROLE -->
@@ -169,4 +176,9 @@
         </div>
     </div>
 </div>
+{% include 'partials/_sa_rules_modal.html' %}
+{% endblock %}
+
+{% block extra_scripts %}
+{% include 'partials/_sa_rules_script.html' %}
 {% endblock %}

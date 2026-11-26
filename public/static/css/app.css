@@ -349,3 +349,97 @@ tr.table-common-even td {
 .nfr-pill {
     display: none !important;
 }
+
+/* Responsive Scrollable Modal for Aturan Semester Antara */
+.sa-modal-dialog {
+    margin: 16px auto;
+    max-width: 640px;
+    width: calc(100% - 24px);
+}
+
+.sa-modal-content {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 32px);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #2d3136;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.sa-modal-header {
+    background: #1a1a1a;
+    color: #ffffff;
+    padding: 14px 18px;
+    border-bottom: 2px solid #343a40;
+    flex-shrink: 0;
+}
+
+.sa-modal-header .close {
+    color: #ffffff;
+    opacity: 0.85;
+    text-shadow: none;
+}
+
+.sa-modal-header .close:hover {
+    opacity: 1;
+}
+
+.sa-modal-body {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    flex: 1 1 auto;
+    padding: 18px;
+    background: #ffffff;
+}
+
+.sa-rule-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #24292e;
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+}
+
+.sa-rule-card:last-child {
+    margin-bottom: 0;
+}
+
+.sa-rule-title {
+    font-weight: 700;
+    font-size: 13px;
+    color: #1a202c;
+    margin-bottom: 4px;
+}
+
+.sa-rule-text {
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: #2d3748;
+    margin: 0;
+}
+
+.sa-modal-footer {
+    background: #f8f9fa;
+    border-top: 1px solid #e2e8f0;
+    padding: 12px 18px;
+    flex-shrink: 0;
+}
+
+@media (max-width: 576px) {
+    .sa-modal-dialog {
+        margin: 10px auto;
+        width: calc(100% - 16px);
+    }
+
+    .sa-modal-content {
+        max-height: calc(100vh - 20px);
+    }
+
+    .sa-modal-header,
+    .sa-modal-body,
+    .sa-modal-footer {
+        padding: 12px 14px;
+    }
+}

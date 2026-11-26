@@ -1,0 +1,53 @@
+{% if current_role == 'mahasiswa' %}
+<!-- MODAL ATURAN SEMESTER ANTARA (KHUSUS ROLE MAHASISWA) -->
+<div class="modal fade" id="saRulesModal" tabindex="-1" role="dialog" aria-labelledby="saRulesModalLabel" aria-hidden="true">
+    <div class="modal-dialog sa-modal-dialog" role="document">
+        <div class="modal-content sa-modal-content">
+            <div class="modal-header sa-modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Tutup">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="saRulesModalLabel" style="font-weight:700; font-size:16px; margin:0;">
+                    <i class="fa fa-info-circle"></i> Ketentuan Semester Antara (FST UIN Jakarta)
+                </h4>
+            </div>
+
+            <div class="modal-body sa-modal-body">
+                <div class="sa-rule-card">
+                    <div class="sa-rule-title"><i class="fa fa-check-square-o"></i> Syarat</div>
+                    <p class="sa-rule-text">
+                        Minimal Semester 4, disetujui Dosen PA, tidak dalam sanksi akademik, &amp; memenuhi administrasi.
+                    </p>
+                </div>
+
+                <div class="sa-rule-card">
+                    <div class="sa-rule-title"><i class="fa fa-book"></i> Mata Kuliah</div>
+                    <p class="sa-rule-text">
+                        Tidak wajib, maksimal 9 SKS. Perbaikan untuk nilai C+, C, C-, D, atau E. IPK &ge; 3,00 boleh ambil MK baru (percepatan studi) sesuai ketentuan Prodi.
+                    </p>
+                </div>
+
+                <div class="sa-rule-card">
+                    <div class="sa-rule-title"><i class="fa fa-calendar"></i> Perkuliahan</div>
+                    <p class="sa-rule-text">
+                        Offline (luring) 16 pertemuan termasuk UTS &amp; UAS (atau 2&ndash;4 minggu untuk sistem modul). Minimal 10 mahasiswa per kelas.
+                    </p>
+                </div>
+
+                <div class="sa-rule-card">
+                    <div class="sa-rule-title"><i class="fa fa-random"></i> Alur</div>
+                    <p class="sa-rule-text">
+                        Cek jadwal Prodi &rarr; Konsultasi Dosen PA &rarr; Isi KRS SA &amp; tunggu ACC PA &rarr; Cetak bukti &amp; bayar &rarr; Ikuti perkuliahan.
+                    </p>
+                </div>
+            </div>
+
+            <div class="modal-footer sa-modal-footer">
+                <button type="button" id="btnAcknowledgeSaRules" class="btn btn-primary" data-dismiss="modal" style="font-weight:700; background:#24292e; border-color:#1a1a1a;">
+                    <i class="fa fa-check"></i> Saya Mengerti
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}

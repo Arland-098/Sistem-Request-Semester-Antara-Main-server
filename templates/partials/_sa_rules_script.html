@@ -1,0 +1,24 @@
+{% if current_role == 'mahasiswa' %}
+<script>
+$(document).ready(function() {
+    var storageKey = 'sa_rules_seen_' + {{ (session.get('login_nonce') or 'default')|tojson }} + '_' + {{ current_user.id|tojson }};
+    var $modal = $('#saRulesModal');
+
+    if ($modal.length && !sessionStorage.getItem(storageKey)) {
+        $modal.modal('show');
+    }
+
+    $modal.on('hidden.bs.modal', function() {
+        try {
+            sessionStorage.setItem(storageKey, '1');
+        } catch (e) {}
+    });
+
+    $('#btnAcknowledgeSaRules').on('click', function() {
+        try {
+            sessionStorage.setItem(storageKey, '1');
+        } catch (e) {}
+    });
+});
+</script>
+{% endif %}

@@ -1,3 +1,4 @@
+import secrets
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 
 from database.seed import DEMO_ACCOUNTS_INFO
@@ -36,6 +37,7 @@ def login():
 
         session.clear()
         session['user_id'] = user['id']
+        session['login_nonce'] = secrets.token_hex(8)
         session.permanent = True
 
         role_name = ROLE_LABELS.get(normalize_role(user['role']), user['role'])

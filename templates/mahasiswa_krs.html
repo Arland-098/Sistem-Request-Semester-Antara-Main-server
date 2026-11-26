@@ -10,8 +10,13 @@
 <div class="row">
     <div class="col-lg-12">
         <div class="col-padded">
-            <h4 class="page-header">
+            <h4 class="page-header clearfix">
                 Pengisian Kartu Rencana Studi (KRS) &mdash; Semester Antara
+                {% if current_role == 'mahasiswa' %}
+                <button type="button" id="btnOpenSaRules" class="btn btn-xs btn-default pull-right" data-toggle="modal" data-target="#saRulesModal" style="font-weight:600;">
+                    <i class="fa fa-book"></i> Lihat Aturan SA
+                </button>
+                {% endif %}
             </h4>
 
             <!-- STUDENT PROFILE INFO STRIP -->
@@ -253,9 +258,11 @@
         </div>
     </div>
 </div>
+{% include 'partials/_sa_rules_modal.html' %}
 {% endblock %}
 
 {% block extra_scripts %}
+{% include 'partials/_sa_rules_script.html' %}
 <script>
 function toggleKrsSemester(sem) {
     if ($('#krs_semester_' + sem).is(':visible')) {
