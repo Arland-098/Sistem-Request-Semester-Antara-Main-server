@@ -1,0 +1,1703 @@
+--- Halaman 1 ---
+DOKUMEN SPESIFIKASI KEBUTUHAN 
+DAN PERANCANGAN SISTEM  
+PENGAJUAN SEMESTER ANTARA 
+Laporan ini disusun untuk memenuhi tugas UTS mata kuliah Rekayasa Perangkat Lunak  
+yang diampu oleh Bu Dr. Dewi Khairani, M.Sc.dan Bu Luh Kesuma Wardhani, S.T., M.T. 
+ 
+ 
+ 
+Disusun Oleh: 
+Danuardi Saputro 1251420128 
+Muhammad Bagas F 1251420081 
+Ihsan Mubarok 1251420125 
+Revand Raditiya D 1251420017 
+ 
+PROGRAM STUDI TEKNIK INFORMATIKA 
+FAKULTAS SAINS DAN TEKNOLOGI 
+UIN SYARIF HIDAYATULLAH JAKARTA 
+2026  
+
+
+--- Halaman 2 ---
+BAB I 
+PENDAHULUAN 
+1.1 Latar Belakang Masalah 
+Penyelenggaraan Semester Antara di lingkungan Universitas Islam Negeri (UIN) Syarif 
+Hidayatullah Jakarta merupakan agenda akademik tahunan yang berlandaskan SK Rektor No. 
+686/2025. Program ini memfasilitasi mahasiswa untuk memperbaiki nilai mata kuliah ata u 
+mempercepat masa studi pada masa jeda antara semester genap dan ganjil. 
+Meskipun bermanfaat, pelaksanaan pengajuan dan pendaftaran saat ini masih berjalan terpisah. 
+Sebagai contoh, Program Studi Teknik Informatika umumnya masih mengandalkan Google 
+Form dan grup percakapan daring. Pola manual ini menimbulkan beberapa kendala utama: 
+1) Belum Terintegrasi Terpusat: Pendaftaran belum terintegrasi dengan portal akademik 
+e-Semesta. Akibatnya, sistem belum dapat memvalidasi data akademik mahasiswa 
+secara langsung, seperti semester aktif, riwayat perolehan nilai, dan indeks prestasi 
+kumulatif (IPK). 
+2) Beban Administrasi Manual bagi Program Studi:  Pengelola Program Studi harus 
+merekapitulasi tanggapan formulir untuk memetakan kebutuhan mata kuliah, 
+memantau batas kuota minimal 10 mahasiswa, dan mendata kesediaan dosen 
+pengampu. 
+3) Belum Tersedia Fasilitas Usulan Lintas Program Studi: Belum tersedia alur terpadu 
+bagi mahasiswa yang ingin mengusulkan atau mengambil mata kuliah setara di Prodi 
+lain berdasarkan penyetaraan kurikulum. 
+Untuk mengatasi permasalahan tersebut, pengembang merancang Sistem Pengajuan Semester 
+Antara Terpusat yang terhubung langsung ke portal e -Semesta. Sistem ini tetap memberikan 
+kewenangan penuh kepada setiap program studi untuk mengatur penawaran mata kuliah sesuai 
+kebutuhan akademiknya. 
+1.2 Rumusan Masalah 
+Berdasarkan latar belakang tersebut, rumusan masalah dalam perancangan sistem ini 
+mencakup: 
+1) Bagaimana merancang sistem pengajuan Semester Antara yang terintegrasi di portal e-
+Semesta dengan kendali penawaran kelas bagi setiap program studi? 
+
+--- Halaman 3 ---
+2) Bagaimana merancang alur kerja pengajuan terpadu yang menghubungkan peran 
+mahasiswa, Dosen Pembimbing Akademik, dosen pengampu, Prodi, dan Bagian 
+Keuangan dalam satu siklus layanan akademik yang tertib dan transparan? 
+1.3 Tujuan Pengembangan Sistem 
+Perancangan sistem ini bertujuan menghasilkan dokumen spesifikasi kebutuhan dan 
+perancangan perangkat lunak yang komprehensif, terstruktur, serta siap diimplementasikan 
+untuk mendukung kelancaran tata kelola operasional Semester Antara di lingkungan kampus. 
+1.4 Batasan Ruang Lingkup Dosen 
+Ruang lingkup sistem berfokus pada proses pengajuan dan pendaftaran Semester Antara yang 
+mencakup sembilan aspek operasional utama: 
+1) Pengusulan Mata Kuliah: Fasilitas bagi mahasiswa untuk mengusulkan pembukaan 
+mata kuliah, baik di Prodi sendiri maupun lintas Prodi melalui peninjauan kesetaraan 
+kurikulum. 
+2) Publikasi Informasi Resmi: Penyajian pengumuman, jadwal pendaftaran, dan katalog 
+resmi mata kuliah yang diselenggarakan program studi. 
+3) Konfirmasi Dosen Pengampu: Fasilitas bagi calon dosen pengampu untuk 
+mengonfirmasi kesediaan mengajar, termasuk pada kelas dispensasi. 
+4) Pengisian Rencana Studi dan Validasi Otomatis: Pengisian rencana studi oleh 
+mahasiswa yang divalidasi langsung terhadap aturan akademik, meliputi batas beban 
+maksimal 9 Satuan Kredit Semester (SKS), syarat minimal semester 4, riwayat nilai 
+perbaikan, batas indeks prestasi kumulatif mata kuliah baru, dan sanksi akademik. 
+5) Persetujuan Akademik: Peninjauan serta penetapan persetujuan atau penolakan 
+rencana studi mahasiswa oleh Dosen Pembimbing Akademik. 
+6) Perbaikan Kartu Rencana Studi:  Fasilitas bagi mahasiswa untuk memperbaiki dan 
+mengajukan kembali rencana studi yang ditolak Dosen Pembimbing Akademik selama 
+periode pendaftaran masih dibuka. 
+7) Evaluasi Kelas oleh Program Studi: Pemantauan jumlah pendaftar serta penetapan 
+status operasional kelas, yang mencakup kelas buka, kelas dispensasi, atau pembatalan 
+kelas yang tidak memenuhi kuota. 
+
+--- Halaman 4 ---
+8) Penagihan dan Pembayaran : Pengaturan tarif per Satuan Kredit Semester oleh 
+Bagian Keuangan, penerbitan tagihan Virtual Account bank mitra untuk kelas yang 
+resmi dibuka, serta pembaruan status pembayaran lunas. 
+9) Bukti Pendaftaran Resmi:  Pencetakan kartu rencana studi sah sebagai bukti resmi 
+kepesertaan mahasiswa serta ekspor data rekapitulasi pendaftar untuk program studi 
+dan dosen pengampu. 
+1.5 Landasan Regulasi dan Acuan Operasional 
+Perancangan sistem ini berpedoman pada sejumlah regulasi resmi dan panduan operasional di 
+lingkungan UIN Syarif Hidayatullah Jakarta: 
+1) Keputusan Rektor UIN Syarif Hidayatullah Jakarta Nomor 686 Tahun 2025 
+tentang Pedoman Penyelenggaraan Semester Antara: 
+a. Tautan Dokumen Resmi: 
+https://docs.tuuinjkt.com/skrektor/SK_REKTOR_686_SK_Rektor_Tentang_P
+edoman_Peny.pdf 
+b. Ketentuan Pokok:  Menjadi landasan hukum utama perkuliahan Semester 
+Antara secara tatap muka luring sebanyak 16 pertemuan. Regulasi ini mengatur 
+kuota minimal 10 mahasiswa per kelas, kesempatan mengambil mata kuliah 
+lintas program studi berbasis ekuivalensi kurikulum, serta  kriteria peserta 
+(mahasiswa jenjang sarjana reguler minimal semester 4, beban maksimal 9 
+SKS, perbaikan nilai lama C/D/E, akselerasi nilai dengan indeks prestasi 
+kumulatif minimal 3,00, dan bebas sanksi akademik). 
+2) Standar Operasional Prosedur Pelaksanaan Semester Antara Fakultas Sains dan 
+Teknologi (Pembaruan 8 Juli 2026): 
+a. Tautan Dokumen Resmi:  
+https://sop.uinjakarta.id/kb/sop-pelaksanaan-semester-antara/ 
+b. Ketentuan Pokok: Menjadi acuan alur operasional teknis pada tingkat fakultas 
+dan program studi. Alur ini mencakup pengusulan mata kuliah oleh mahasiswa, 
+penugasan dosen pengampu, verifikasi rencana studi oleh Dosen Pembimbing 
+Akademik, serta pelaporan akademik. 
+3) Kalender Akademik UIN Syarif Hidayatullah Jakarta Tahun Akademik 
+2026/2027 (Keputusan Rektor Nomor 28 Tahun 2026): 
+
+--- Halaman 5 ---
+a. Tautan Dokumen Resmi 
+https://asset.uinjkt.ac.id/uploads/fmXyXwZY/2026/02/sk-rektor-no-28-th-
+2026-ttg-kalender-akademik-ta-2026-2027.pdf 
+b. Ketentuan Pokok: Menjadi dasar penetapan kurun waktu operasional sistem. 
+Ketentuan ini meliputi jadwal pembukaan pendaftaran Kartu Rencana Studi, 
+batas akhir verifikasi akademik oleh Dosen Pembimbing Akademik, evaluasi 
+kuota kelas oleh program studi, dan batas akhir pembayaran tagihan perbankan. 
+4) Panduan Pembayaran Tagihan Akademik Biro Perencanaan dan Keuangan UIN 
+Syarif Hidayatullah Jakarta: 
+a. Tautan Pengumuman Resmi: 
+https://biropk.uinjkt.ac.id/id/uin-jakarta-terbitkan-panduan-pembayaran-ukt-
+semester-genap-20252026 
+b. Tautan Unduh Panduan PDF: 
+https://drive.google.com/file/d/1IlPxJBDB2WPkMwjd-
+Gnz4himBDcrpc5X/view 
+c. Ketentuan Pokok:  Mengatur tarif biaya per Satuan Kredit Semester, yaitu 
+Rp220.000 untuk jenjang sarjana reguler non -kesehatan dan Rp850.000 untuk 
+rumpun ilmu kesehatan. Selain itu, panduan ini mengatur tata cara pembayaran 
+melalui nomor Virtual Account bank mitra resmi, se perti Bank Mandiri, BNI, 
+BRI, BTN, dan BSI. 
+  
+
+--- Halaman 6 ---
+BAB II 
+SPESIFIKASI KEBUTUHAN SISTEM 
+2.1 Daftar Kebutuhan Fungsional/Functional Requirements 
+1) Mahasiswa 
+• FR-01: Sistem menampilkan pengumuman, jadwal, dan aturan Semester Antara 
+dari Program Studi. 
+• FR-02: Sistem menyediakan formulir usulan mata kuliah bagi mahasiswa, baik 
+untuk lingkungan program studi sendiri maupun lintas program studi. 
+• FR-03: Sistem menampilkan katalog resmi mata kuliah yang dibuka oleh Program 
+Studi, memuat informasi kode, nama mata kuliah, bobot SKS, jadwal sesi 
+perkuliahan, alokasi ruang kelas luring, kapasitas kuota pendaftar, dan dosen 
+pengampu. 
+• FR-04: Sistem menyediakan fitur pengisian Kartu Rencana Studi (KRS) dengan 
+validasi otomatis syarat akademik sesuai Keputusan Rektor Nomor 686 Tahun 
+2025. 
+• FR-05: Sistem memfasilitasi mahasiswa untuk memperbaiki susunan mata kuliah 
+dan mengajukan kembali rencana studi yang ditolak Dosen Pembimbing Akademik 
+selama periode pendaftaran Semester Antara masih dibuka. 
+• FR-06: Sistem memfasilitasi mahasiswa untuk mengubah atau membatalkan 
+pilihan mata kuliah sebelum masa pendaftaran ditutup. 
+• FR-07: Sistem menyajikan rincian tagihan Virtual Account, memantau status 
+pembayaran lunas, serta menyediakan fitur pencetakan kartu rencana studi sah bagi 
+mahasiswa yang telah menyelesaikan pembayaran. 
+2) Dosen Pembimbing Akademik 
+• FR-08: Sistem menyajikan daftar pengajuan rencana studi mahasiswa bimbingan 
+beserta riwayat akademiknya pada dasbor Dosen Pembimbing Akademik. 
+• FR-09: Sistem menyediakan opsi persetujuan (Setuju atau Tolak) bagi Dosen 
+Pembimbing Akademik untuk memverifikasi rencana studi mahasiswa bimbingan. 
+3) Dosen Pengampu Mata Kuliah 
+• FR-10: Sistem menyediakan fitur konfirmasi kesediaan mengajar bagi calon dosen 
+pengampu mata kuliah. 
+
+--- Halaman 7 ---
+• FR-11: Sistem menyediakan fitur konfirmasi kesediaan mengajar kelas dispensasi 
+di bawah 10 peserta bagi dosen pengampu. 
+• FR-12: Sistem menampilkan jadwal mengajar definitif serta daftar mahasiswa 
+resmi yang telah melunasi tagihan kepada dosen pengampu. 
+4) Program Studi/Admin Program Studi 
+• FR-13: Sistem memfasilitasi Program Studi untuk mempublikasikan pengumuman, 
+jadwal, dan ketentuan Semester Antara. 
+• FR-14: Sistem menyediakan menu pengaturan periode pendaftaran dan status 
+keaktifan Semester Antara bagi Program Studi. 
+• FR-15: Sistem menyajikan rekapitulasi usulan mata kuliah dari mahasiswa beserta 
+jumlah peminatnya bagi Program Studi. 
+• FR-16: Sistem menyediakan fitur bagi Program Studi pemilik mata kuliah untuk 
+menyetujui atau menolak usulan lintas program studi. 
+• FR-17: Sistem menyediakan menu pengelolaan katalog mata kuliah yang dibuka, 
+kuota kelas, serta penugasan dosen pengampu. 
+• FR-18: Sistem menyediakan menu pengelolaan jadwal kuliah luring dan alokasi 
+ruang kelas bagi Program Studi. 
+• FR-19: Sistem menampilkan pemantauan kuota pendaftar dan menyediakan fitur 
+penetapan status kelas (Dibuka, Dispensasi Buka, atau Dibatalkan). 
+• FR-20: Sistem menyediakan fungsi penutupan pendaftaran serta ekspor data 
+rekapitulasi peserta resmi bagi Program Studi. 
+5) Bagian Keuangan/Biro Perencanaan dan Keuangan 
+• FR-21: Sistem menyediakan antarmuka bagi Bagian Keuangan untuk mengatur 
+tarif biaya per SKS sesuai Keputusan Rektor Nomor 686 Tahun 2025. 
+• FR-22: Sistem menerbitkan nomor Virtual Account dan faktur secara otomatis 
+untuk kelas yang resmi dibuka. 
+• FR-23: Sistem menyajikan pemantauan status pembayaran serta fungsi rekonsiliasi 
+manual bagi Bagian Keuangan. 
+2.2 Daftar Kebutuhan Non-Fungsional/Non-Functional Requirements 
+Di luar fitur utama di atas, sistem dipagari standar performa agar tetap gesit, tidak keliru 
+mencatat kuota, dan nyaman diakses lewat perangkat apa pun: 
+
+--- Halaman 8 ---
+• [NFR-01] Kecepatan Respon: Validasi kelayakan rencana studi dan pembaruan kuota 
+kelas berlangsung kurang dari 2 detik pada kondisi beban puncak. 
+• [NFR-02] Keamanan dan Hak Akses:  Autentikasi terintegrasi dengan Single Sign -
+On universitas, disertai pembatasan hak akses berbasis peran (mahasiswa, dosen, 
+Program Studi, dan Bagian Keuangan). 
+• [NFR-03] Keandalan Data: Sistem menjamin sinkronisasi data pendaftaran dan status 
+pembayaran secara akurat sehingga jumlah pendaftar tidak melampaui kapasitas kuota 
+kelas. 
+• [NFR-04] Kemudahan Penggunaan:  Antarmuka web bersifat responsif, mudah 
+dipahami pengguna, serta selaras dengan tata letak portal e-Semesta. 
+2.3 Matriks Aturan Bisnis Sistem 
+Seluruh interaksi pengguna dikendalikan oleh batasan operasional kampus —menentukan 
+kapan kelas boleh dibuka, batas SKS mahasiswa, hingga skema tarif resmi: 
+• [BR-01] Penetapan Tarif Biaya per SKS: Bagian Keuangan menetapkan tarif biaya 
+per SKS berdasarkan Keputusan Rektor Nomor 686 Tahun 2025, yaitu Rp220.000 per 
+SKS untuk jenjang sarjana reguler non -kesehatan dan Rp850.000 per SKS untuk 
+rumpun ilmu kesehatan. Penetapan tarif ini dilakukan sebelum p endaftaran dibuka 
+sebagai dasar perhitungan otomatis tagihan. 
+• [BR-02] Mata Kuliah Setara Lintas Program Studi: Mahasiswa dapat mengusulkan 
+dan mengambil mata kuliah di program studi lain yang memiliki kesetaraan kurikulum. 
+Selanjutnya, Program Studi penyelenggara berwenang menyetujui atau menolak 
+alokasi kuota bagi mahasiswa dari luar program studi tersebut. 
+• [BR-03] Dua Tahap Pemeriksaan Syarat: Pemeriksaan syarat mencakup dua tahap. 
+Tahap pertama berupa validasi otomatis oleh sistem saat mahasiswa mengajukan Kartu 
+Rencana Studi (KRS). V alidasi ini memastikan mahasiswa berada minimal pada 
+semester 4, mengambil beban studi maksimal 9 SKS, bebas sanksi akademik, memiliki 
+nilai C, D, atau E untuk mata kuliah perbaikan, serta memiliki indeks prestasi kumulatif 
+minimal 3,00 untuk mata kuliah baru. Tahap kedua berupa peninjauan akademik oleh 
+Dosen Pembimbing Akademik untuk menilai kesiapan studi mahasiswa. 
+• [BR-04] Penolakan oleh Dosen Pembimbing Akademik dan Perbaikan Kartu 
+Rencana Studi: Apabila Dosen Pembimbing Akademik menolak pengajuan, status 
+pengajuan berubah menjadi Ditolak Dosen Pembimbing Akademik. Mahasiswa 
+
+--- Halaman 9 ---
+memantau status tersebut pada portal, berkonsultasi dengan Dosen Pembimbing 
+Akademik, lalu memperbaiki dan mengajukan kembali Kartu Rencana Studi (KRS) 
+selama periode pendaftaran masih dibuka. 
+• [BR-05] Kebijakan Kuota Minimal 10 Mahasiswa: Apabila jumlah pendaftar kurang 
+dari 10 orang saat masa pendaftaran ditutup, status kelas berubah menjadi Menunggu 
+Kebijakan Prodi untuk dievaluasi oleh Program Studi. Program Studi berwenang 
+memutuskan pembukaan kelas melalui status Dispensasi Buka jika d osen bersedia, 
+menggabungkan kelas, atau membatalkan pembukaan kelas. 
+• [BR-06] Otomatisasi Tagihan Kelas Dispensasi: Setelah Program Studi dan dosen 
+pengampu menyepakati pembukaan kelas dispensasi di bawah 10 peserta, sistem 
+menerbitkan tagihan Virtual Account kepada mahasiswa yang terdaftar pada kelas 
+tersebut. 
+• [BR-07] Pembatalan Sebagian Mata Kuliah: Apabila salah satu mata kuliah yang 
+diajukan dibatalkan oleh Program Studi, sistem membatalkan mata kuliah tersebut dari 
+pengajuan rencana studi mahasiswa. Mahasiswa tetap terdaftar pada mata kuliah lain 
+yang dibuka, dan tagihan Virtual Account hanya membebankan biaya SKS untuk mata 
+kuliah yang berjalan. 
+• [BR-08] Waktu Penerbitan Tagihan Virtual Account: Tagihan Virtual Account 
+diterbitkan setelah pengajuan disetujui Dosen Pembimbing Akademik dan kelas resmi 
+dinyatakan dibuka oleh Program Studi, baik karena kuota terpenuhi maupun melalui 
+dispensasi. Ketentuan ini memastikan tagihan hanya terbit untuk kelas  yang pasti 
+berjalan sehingga meniadakan proses pengembalian dana. 
+• [BR-09] Kanal Pembayaran Resmi dan Rekonsiliasi: Pembayaran dilakukan melalui 
+nomor Virtual Account bank mitra resmi (Bank Mandiri, BNI, BRI, BTN, dan BSI). 
+Setelah transaksi, status pembayaran diperbarui menjadi Lunas. Bagian Keuangan 
+dapat menjalankan rekonsiliasi manual apabila terjadi kendala teknis. 
+• [BR-10] Batas Waktu Pembayaran Tagihan Virtual Account: Masa pembayaran 
+tagihan berlangsung setelah periode pendaftaran ditutup. Tagihan yang belum 
+diselesaikan sampai batas waktu berakhir akan berubah status menjadi Expired, dan 
+hak kepesertaan mahasiswa pada kelas tersebut dinyatakan gugur. 
+2.4 Logika Layanan Latar Belakang dan Otomatisasi 
+
+--- Halaman 10 ---
+Untuk memangkas pekerjaan rutin staf program studi, sistem menugaskan proses mandiri di 
+balik layar guna memvalidasi syarat, mengunci jadwal, dan memantau pelunasan bank: 
+• [Auto-Check 1] Pemeriksaan Syarat Akademik: Fungsi ini berjalan saat mahasiswa 
+menekan tombol ajukan Kartu Rencana Studi untuk memvalidasi syarat akademik 
+sesuai Keputusan Rektor Nomor 686 Tahun 2025. Sistem memastikan mahasiswa 
+berada minimal pada semester 4, mengambil beban studi maksimal 9 SKS, bebas sanksi 
+akademik, memiliki nilai C, D, atau E untuk mata kuliah perbaikan, serta memiliki 
+indeks prestasi kumulatif minimal 3,00 untuk mata kuliah baru. 
+• [Auto-Check 2] Penghitungan Pendaftar dan Kuota: Fungsi ini menghitung jumlah 
+pendaftar per kelas secara langsung dan memperbarui sisa kuota apabila terjadi 
+pembatalan atau perubahan pilihan mata kuliah oleh mahasiswa. 
+• [Auto-Check 3] Penutupan Pendaftaran Otomatis:  Fungsi ini mengunci formulir 
+pengajuan Kartu Rencana Studi tepat pada batas waktu penutupan sesuai kalender 
+akademik. 
+• [Auto-Check 4] Pembaruan Status Pembayaran: Fungsi ini menerima callback dari 
+bank mitra segera setelah mahasiswa membayar, memperbarui status tagihan menjadi 
+Lunas, dan mengubah status kepesertaan mahasiswa menjadi Terdaftar Resmi. 
+• [Auto-Check 5] Penanganan Tagihan Kedaluwarsa: Fungsi ini mendeteksi tagihan 
+yang belum dibayar saat batas waktu pembayaran berakhir, mengubah status tagihan 
+menjadi Expired, serta menggugurkan hak kepesertaan mahasiswa pada kelas terkait. 
+  
+
+--- Halaman 11 ---
+BAB III 
+PEMODELAN USE CASE 
+3.1 Identifikasi dan Deskripsi Aktor Sistem 
+Sistem Pengajuan Semester Antara Terpusat melibatkan lima aktor utama yang saling 
+berinteraksi dalam tata kelola akademik dan keuangan: 
+1) Mahasiswa 
+Mahasiswa merupakan aktor utama yang berhak mengajukan mata kuliah pada 
+Semester Antara. Aktor ini menelusuri katalog mata kuliah yang disediakan oleh 
+Program Studi, mengusulkan pembukaan mata kuliah baru jika belum tercantum dalam 
+katalog (baik di program  studi asal maupun lintas program studi), serta mengisi dan 
+mengajukan rencana studi. Selain itu, Mahasiswa memantau status verifikasi secara 
+berkala, berkonsultasi dengan Dosen Pembimbing Akademik jika rencana studi ditolak, 
+melunasi tagihan melalui Virtual Account bank mitra, dan mencetak bukti kartu rencana 
+studi yang sah. 
+2) Dosen Pembimbing Akademik 
+Dosen Pembimbing Akademik merupakan tenaga pendidik yang memegang otoritas 
+pembimbingan akademik mahasiswa. Melalui dasbor sistem, aktor ini memeriksa 
+kesiapan studi serta kelayakan rencana studi Semester Antara yang diajukan oleh 
+mahasiswa bimbingannya. S elanjutnya, Dosen Pembimbing Akademik memberikan 
+keputusan verifikasi akademik berupa persetujuan atau penolakan. 
+3) Dosen Pengampu Mata Kuliah 
+Dosen Pengampu merupakan tenaga pengajar yang ditugaskan oleh Program Studi 
+untuk mengampu mata kuliah pada Semester Antara. Aktor ini bertugas mengonfirmasi 
+kesediaan mengajar pada masa jeda semester serta mengonfirmasi kesediaan mengajar 
+pada kelas dispensasi apabila pendaftar berjumlah kurang dari 10 mahasiswa. Setelah 
+kelas resmi berjalan, Dosen Pengampu memantau jadwal perkuliahan definitif dan 
+daftar peserta resmi yang telah melunasi tagihan. 
+4) Program Studi/Admin Program Studi 
+Program Studi bertindak sebagai unit pelaksana operasional akademik pada tingkat 
+program studi. Aktor ini mempublikasikan informasi dan ketentuan resmi, 
+
+--- Halaman 12 ---
+menyediakan katalog awal mata kuliah, serta menindaklanjuti usulan mata kuliah dari 
+mahasiswa. Di samping itu, Program Studi berkoordinasi dengan program studi mitra 
+mengenai mata kuliah lintas program studi, mengatur jadwal kuliah dan alokasi ruang 
+luring, serta mengevaluasi kuota pendaftar guna menetapkan status akhir kelas, seperti 
+Dibuka, Dispensasi Buka, atau Dibatalkan. 
+5) Bagian Keuangan/Biro Perencanaan dan Keuangan 
+Bagian Keuangan merupakan unit pengelola keuangan universitas yang berwenang 
+menetapkan parameter tarif biaya per SKS sesuai rumpun ilmu. Selain itu, unit ini 
+mengawasi penerbitan tagihan Virtual Account melalui integrasi pembayaran bank 
+mitra serta memantau dan merekonsiliasi data pembayaran mahasiswa. 
+3.2 Diagram Use Case 
+Diagram Use Case dalam Sistem Pengajuan Semester Antara Terpusat menggambarkan fungsi-
+fungsi utama yang mendukung proses pengajuan serta interaksi antara sistem dan aktor 
+eksternal. Visualisasi diagram berikut merepresentasikan hubungan fungsional sistem d alam 
+format grafis standar UML. 
+ 
+Gambar 1. Diagram Use Case Sistem Pengajuan Semester Antara Terpusat 
+
+
+--- Halaman 13 ---
+Perancangan Diagram Use Case menetapkan batasan sistem secara terstruktur serta 
+mengelompokkan fungsionalitas berdasarkan peran dan tanggung jawab masing-masing aktor. 
+Pembagian fungsionalitas tersebut merepresentasikan cakupan interaksi dalam 
+penyelenggaraan Semester Antara sebagai berikut. 
+1) Fungsionalitas Aktor Mahasiswa 
+Mahasiswa memanfaatkan sistem untuk mengakses pengumuman dan regulasi resmi 
+Semester Antara serta menelusuri katalog mata kuliah yang ditawarkan Program Studi. 
+Apabila mata kuliah yang diminati belum tersedia, Mahasiswa dapat mengusulkan 
+pembukaan mata kul iah baru, baik pada program studi asal maupun lintas program 
+studi. Selanjutnya, Mahasiswa mengisi dan mengajukan Kartu Rencana Studi (KRS) 
+Semester Antara. Apabila pengajuan ditolak oleh Dosen Pembimbing Akademik, 
+Mahasiswa dapat melakukan perbaikan dan m engajukan kembali selama masa 
+pendaftaran berlangsung. Sistem juga memfasilitasi perubahan atau pembatalan 
+rencana studi, pemantauan tagihan, serta pencetakan KRS yang sah setelah pembayaran 
+diselesaikan. Dalam proses pengisian rencana studi, sistem menera pkan relasi include 
+pada fungsi validasi persyaratan berdasarkan Keputusan Rektor. 
+2) Fungsionalitas Aktor Dosen Pembimbing Akademik 
+Dosen Pembimbing Akademik memanfaatkan dasbor sistem untuk memantau 
+pengajuan rencana studi mahasiswa bimbingan. Proses verifikasi mencakup 
+pemeriksaan riwayat indeks prestasi kumulatif dan beban studi mahasiswa sebagai 
+dasar penetapan keputusan berupa persetujuan atau penolakan pengajuan. 
+3) Fungsionalitas Aktor Dosen Pengampu Mata Kuliah. 
+Dosen Pengampu berinteraksi dengan sistem untuk mengonfirmasi kesediaan mengajar 
+pada kelas yang ditawarkan. Apabila suatu kelas memiliki pendaftar di bawah 10 orang, 
+Dosen Pengampu dapat memberikan konfirmasi kesediaan mengajar untuk kelas 
+dispensasi. Setelah masa pendaftaran selesai, Dosen Pengampu dapat mengakses daftar 
+peserta resmi dan jadwal perkuliahan. 
+4) Fungsionalitas Aktor Program Studi / Admin Program Studi 
+Program Studi bertanggung jawab mengelola publikasi pengumuman resmi, menyusun 
+katalog penawaran mata kuliah, serta meninjau rekapitulasi usulan pembukaan mata 
+kuliah baru. Dalam penyelenggaraan mata kuliah lintas program studi, Program Studi 
+
+--- Halaman 14 ---
+berkoordinasi dengan program studi mitra untuk menyepakati ekuivalensi kurikulum 
+dan alokasi kuota. Selain itu, Program Studi menetapkan jadwal dan ruang kuliah 
+luring, mengevaluasi jumlah pendaftar setelah masa pendaftaran ditutup, serta 
+menentukan status akhir kelas perkuliahan. 
+5) Fungsionalitas Aktor Bagian Keuangan / Biro Perencanaan dan Keuangan 
+Bagian Keuangan bertanggung jawab mengelola parameter tarif biaya per SKS, 
+memantau penerbitan tagihan Virtual Account secara otomatis melalui sistem 
+perbankan, serta memantau dan merekonsiliasi pembayaran biaya studi mahasiswa. 
+Fungsionalitas tersebut men dukung pengelolaan administrasi keuangan dan 
+memastikan status pembayaran dapat digunakan dalam proses administrasi Semester 
+Antara. 
+3.3 Skenario Rinci Use Case Sistem 
+Skenario use case berikut mendeskripsikan alur operasional utama pelaksanaan Semester 
+Antara. Rangkaian ini mencakup pengajuan Kartu Rencana Studi oleh Mahasiswa yang 
+terintegrasi dengan penelusuran katalog dan usulan mata kuliah, verifikasi kelayakan akademik 
+oleh Dosen Pembimbing Akademik, serta evaluasi kuota pendaftar dan penetapan status 
+operasional kelas oleh Program Studi. 
+3.3.1 Skenario UC -MHS-04: Mengisi dan Mengajukan Kartu Rencana Studi 
+Semester Antara 
+Use Case ID UC-MHS-04 
+Nama Use Case Mengisi dan Mengajukan Kartu Rencana Studi Semester 
+Antara 
+Aktor Utama Mahasiswa 
+Aktor 
+Pendukung 
+1. Program Studi Asal 
+2. Program Studi Mitra 
+3. Dosen Pembimbing Akademik 
+4. Sistem 
+Deskripsi Mahasiswa menelusuri katalog mata kuliah resmi yang 
+disediakan oleh Program Studi. Apabila mata kuliah yang 
+dicari telah tersedia, Mahasiswa langsung memilih kelas dan 
+mengajukan rencana studi. Sebaliknya, jika mata kuliah 
+
+--- Halaman 15 ---
+belum tercantum dalam katalog, Mahasiswa mengusulkan 
+pembukaan mata kuliah ke Program Studi asal atau ke 
+Program Studi mitra. Usulan tersebut kemudian 
+ditindaklanjuti melalui koordinasi antar -program studi 
+sebelum mata kuliah dapat dibuka pada katalog resmi. 
+Pra kondisi 1. Mahasiswa telah masuk ke portal e-Semesta dengan 
+akun aktif. 
+2. Mahasiswa berstatus akademik aktif dan minimal 
+berada pada semester 4. 
+3. Periode pengisian Kartu Rencana Studi Semester Antara 
+berstatus aktif dibuka. 
+Pasca Kondisi Data pengajuan rencana studi tersimpan dengan status 
+Menunggu Verifikasi Dosen Pembimbing Akademik dan 
+kuota kelas terisi. 
+Alur Normal 1. Mahasiswa membuka modul Pengajuan Kartu Rencana 
+Studi Semester Antara pada portal e-Semesta. 
+2. Sistem menampilkan katalog awal mata kuliah Semester 
+Antara yang telah disiapkan dan dipublikasikan oleh 
+Program Studi. 
+3. Mahasiswa memeriksa ketersediaan mata kuliah yang 
+ingin ditempuh pada daftar katalog. 
+4. Setelah menemukan mata kuliah yang dicari, 
+Mahasiswa memilih kelas yang ditawarkan. 
+5. Mahasiswa menekan tombol Tambah Mata Kuliah ke 
+dalam daftar draf rencana studi sementara. 
+6. Sistem menjalankan validasi otomatis aturan bisnis 
+berbasis Keputusan Rektor Nomor 686 Tahun 2025: 
+a. Memastikan status mahasiswa bebas dari sanksi 
+akademik. 
+b. Memastikan mahasiswa berada minimal pada 
+semester 4. 
+c. Memastikan akumulasi SKS yang diambil tidak 
+melebihi 9 SKS. 
+
+--- Halaman 16 ---
+d. Untuk mata kuliah perbaikan, memastikan nilai 
+terdahulu mahasiswa adalah C+, C, C-, D, atau 
+E. 
+e. Untuk mata kuliah baru akselerasi, memastikan 
+indeks prestasi kumulatif berjalan minimal 3,00. 
+7. Setelah validasi berhasil dipenuhi, sistem 
+mengalokasikan kuota kursi sementara pada kelas yang 
+dipilih. 
+8. Mahasiswa memeriksa kembali ringkasan draf rencana 
+studi, kemudian menekan tombol Kirim Pengajuan. 
+9. Sistem mencatat pengajuan ke basis data dengan status 
+Menunggu Verifikasi Dosen Pembimbing Akademik. 
+10. Sistem menampilkan pesan konfirmasi bahwa 
+pengajuan rencana studi telah terkirim kepada Dosen 
+Pembimbing Akademik. 
+Alur Alternatif 
+1: Usulan Mata 
+Kuliah ke 
+Program Studi 
+Asal 
+3a. Mahasiswa tidak menemukan mata kuliah yang ingin 
+diambil pada katalog awal yang disediakan Program 
+Studi. 
+3b. Mahasiswa memilih tombol Ajukan Usulan Mata Kuliah 
+Baru. 
+3c. Sistem menyajikan formulir usulan mata kuliah dan 
+mendeteksi bahwa mata kuliah berada di bawah 
+naungan Program Studi mahasiswa sendiri. 
+3d. Mahasiswa mengisikan nama mata kuliah, beban SKS, 
+dan alasan akademik pengusulan, lalu menekan tombol 
+Kirim Usulan. 
+3e. Sistem meneruskan data usulan ke dasbor Program 
+Studi asal untuk ditinjau kelayakannya. 
+3f. Program Studi menyetujui usulan tersebut, menetapkan 
+dosen pengampu serta jadwal, dan memasukkan mata 
+kuliah ke dalam katalog resmi. 
+
+--- Halaman 17 ---
+3g. Mahasiswa menerima pemberitahuan bahwa mata 
+kuliah telah dibuka di katalog, kemudian kembali ke 
+Langkah 3 Alur Normal. 
+Alur Alternatif 
+2: Usulan Mata 
+Kuliah Lintas 
+Program Studi 
+3a. Mahasiswa mendapati mata kuliah yang ingin diambil 
+diselenggarakan oleh program studi lain di lingkungan 
+UIN Syarif Hidayatullah Jakarta. 
+3b. Mahasiswa memilih formulir Pengajuan Mata Kuliah 
+Lintas Program Studi. 
+3c. Mahasiswa memilih Program Studi tujuan penyelenggara 
+mata kuliah dan mengunggah silabus mata kuliah asal 
+untuk verifikasi ekuivalensi. 
+3d. Sistem mengirimkan berkas pengajuan secara terpadu ke 
+Program Studi asal dan Program Studi tujuan. 
+3e. Program Studi asal dan Program Studi tujuan 
+berkoordinasi secara resmi guna menyepakati: 
+a) Kesetaraan capaian pembelajaran dan bobot SKS 
+berupa ekuivalensi kurikulum; 
+b) Alokasi kuota khusus bagi mahasiswa dari luar 
+program studi; serta 
+c) Kesediaan dosen pengampu dan kapasitas ruang 
+perkuliahan. 
+3f. Setelah kedua Program Studi menyetujui pembukaan 
+kelas, Program Studi penyelenggara menerbitkan mata 
+kuliah tersebut ke katalog. 
+3g. Mahasiswa melanjutkan proses pemilihan mata kuliah 
+pada katalog sebagaimana diuraikan pada Langkah 3 
+Alur Normal. 
+Alur Eksepsi 6a. Validasi aturan akademik tidak terpenuhi: 
+a) Apabila akumulasi beban studi melebihi 9 SKS, 
+sistem menampilkan pesan peringatan bahwa batas 
+maksimal pengambilan adalah 9 SKS. 
+
+--- Halaman 18 ---
+b) Apabila mahasiswa tercatat sedang menjalani sanksi 
+akademik, sistem menolak pengajuan dan 
+menampilkan informasi larangan pendaftaran. 
+c) Apabila mahasiswa memilih mata kuliah baru 
+dengan indeks prestasi kumulatif di bawah 3,00, 
+sistem menolak dengan pesan syarat indeks prestasi 
+kumulatif minimal 3,00. 
+d) Apabila mahasiswa memilih perbaikan atas mata 
+kuliah yang bernilai A atau B, sistem menolak 
+dengan informasi syarat nilai historis. 
+Selanjutnya, sistem membatalkan penambahan kelas 
+dan mengembalikan mahasiswa ke antarmuka 
+pemilihan. 
+7a. Kuota kelas telah penuh saat mahasiswa menekan 
+tombol simpan: 
+Sistem menginformasikan bahwa kuota kelas telah terisi 
+penuh dan menyarankan mahasiswa untuk memilih 
+kelas paralel lain. 
+8a. Batas waktu sesi pendaftaran Semester Antara telah 
+berakhir:  
+Sistem mengunci seluruh formulir transaksi dan 
+menampilkan pesan bahwa masa pendaftaran telah 
+ditutup. 
+ 
+
+--- Halaman 19 ---
+ 
+Gambar 2. Alur Kerja Skenario Pengajuan Kartu Rencana Studi (UC-MHS-04) 
+3.3.2 Skenario UC -DPA-02: Memeriksa dan Memverifikasi Kartu Rencana Studi 
+Mahasiswa Bimbingan 
+
+
+--- Halaman 20 ---
+Use Case ID UC-DPA-02 
+Nama Use Case Memeriksa dan Memverifikasi Kartu Rencana Studi 
+Mahasiswa Bimbingan 
+Aktor Utama Dosen Pembimbing Akademik 
+Aktor Pendukung 1. Mahasiswa 
+2. Sistem 
+Deskripsi Dosen Pembimbing Akademik memeriksa kesesuaian dan 
+kelayakan rencana studi Semester Antara yang diajukan 
+oleh mahasiswa bimbingannya. Selanjutnya, Dosen 
+Pembimbing Akademik memberikan keputusan verifikasi 
+akademik berupa persetujuan atau penolakan melalui 
+antarmuka sistem. 
+Pra kondisi 1. Dosen Pembimbing Akademik telah masuk ke portal e-
+Semesta dengan hak akses pembimbing akademik. 
+2. Terdapat draf pengajuan rencana studi mahasiswa 
+bimbingan dengan status Menunggu Verifikasi Dosen 
+Pembimbing Akademik. 
+Pasca Kondisi Status pengajuan rencana studi diperbarui menjadi Disetujui 
+Dosen Pembimbing Akademik atau Ditolak Dosen 
+Pembimbing Akademik. 
+Alur Normal 1. Dosen Pembimbing Akademik membuka modul 
+Verifikasi Kartu Rencana Studi Semester Antara pada 
+dasbor e-Semesta. 
+2. Sistem menampilkan daftar mahasiswa bimbingan 
+yang telah mengajukan rencana studi Semester Antara. 
+3. Dosen Pembimbing Akademik memilih salah satu 
+nama mahasiswa untuk memeriksa rincian pengajuan. 
+4. Sistem menyajikan informasi komprehensif berupa 
+riwayat indeks prestasi kumulatif mahasiswa, total 
+beban SKS yang diambil, rincian mata kuliah, serta 
+tujuan pengambilan (perbaikan nilai atau akselerasi). 
+
+--- Halaman 21 ---
+5. Dosen Pembimbing Akademik mengevaluasi 
+kelayakan beban studi dan mempertimbangkan 
+kemampuan akademik mahasiswa. 
+6. Setelah menilai rencana studi telah tepat, Dosen 
+Pembimbing Akademik menekan tombol Setuju. 
+7. Sistem memperbarui status pengajuan menjadi 
+Disetujui Dosen Pembimbing Akademik. 
+8. Sistem memperbarui tampilan antrean verifikasi pada 
+dasbor Dosen Pembimbing Akademik. 
+Alur Alternatif: 
+Keputusan 
+Penolakan dan 
+Konsultasi 
+Mandiri 
+6a. Dosen Pembimbing Akademik menilai susunan mata 
+kuliah yang diajukan terlalu memberatkan atau tidak 
+sejalan dengan prioritas studi. 
+6b. Dosen Pembimbing Akademik menekan tombol Tolak. 
+6c. Sistem memperbarui status pengajuan mahasiswa 
+menjadi Ditolak Dosen Pembimbing Akademik. 
+6d. Mahasiswa memantau pembaruan status tersebut 
+melalui menu status pada portal e-Semesta. 
+6e. Mahasiswa kemudian menghubungi dan berkonsultasi 
+dengan Dosen Pembimbing Akademik untuk 
+mendiskusikan arahan perbaikan rencana studi. 
+6f. Mahasiswa merevisi susunan mata kuliah pada 
+formulir Kartu Rencana Studi dan mengajukan kembali 
+draf tersebut selama periode pendaftaran masih dibuka. 
+6g. Pengajuan yang telah diperbaiki masuk kembali ke 
+dalam antrean verifikasi Dosen Pembimbing 
+Akademik. 
+Alur Eksepsi 1a. Sesi autentikasi Dosen Pembimbing Akademik 
+berakhir akibat inaktivitas: 
+Sistem meminta Dosen Pembimbing Akademik masuk 
+log kembali guna menjaga integritas data sebelum 
+memproses keputusan. 
+ 
+
+--- Halaman 22 ---
+ 
+Gambar 3. Alur Kerja Skenario Verifikasi Kartu Rencana Studi oleh Dosen Pembimbing 
+Akademik (UC-DP A-02) 
+3.3.3 Skenario UC-PRD-07: Mengevaluasi Kuota Pendaftar dan Menetapkan Status 
+Kelas 
+Use Case ID UC-PRD-07 
+Nama Use Case Mengevaluasi Kuota Pendaftar dan Menetapkan Status 
+Kelas 
+Aktor Utama Program Studi / Admin Program Studi 
+Aktor Pendukung 1. Dosen Pengampu Mata Kuliah 
+2. Bagian Keuangan 
+3. Sistem 
+
+
+--- Halaman 23 ---
+Deskripsi Program Studi meninjau secara menyeluruh jumlah 
+pendaftar pada setiap kelas mata kuliah Semester Antara 
+setelah masa pendaftaran resmi ditutup. Selanjutnya, 
+pengelola menetapkan status definitif kelas, yaitu Dibuka 
+secara reguler, Dibuka dengan Dispensasi (Dispensasi 
+Buka), atau Dibatalkan penyelenggaraannya. 
+Pra kondisi • Periode pendaftaran Kartu Rencana Studi Semester 
+Antara telah resmi ditutup oleh kalender akademik 
+universitas. 
+• Pengelola Program Studi telah masuk ke portal e-
+Semesta dengan hak akses administrator program 
+studi. 
+Pasca Kondisi Status kelas ditetapkan secara definitif menjadi Dibuka, 
+Dispensasi Buka, atau Dibatalkan. 
+Alur Normal 1. Pengelola Program Studi membuka panel Evaluasi 
+dan Penetapan Kelas Semester Antara pada portal e-
+Semesta. 
+2. Sistem menyajikan rekapitulasi data seluruh kelas 
+yang ditawarkan beserta jumlah pendaftar yang telah 
+disetujui Dosen Pembimbing Akademik. 
+3. Program Studi memilih kelas yang memiliki jumlah 
+pendaftar sekurang-kurangnya 10 mahasiswa. 
+4. Sistem menandai rekomendasi status kelas sebagai 
+Memenuhi Kuota Standar. 
+5. Pengelola Program Studi menekan tombol Tetapkan 
+Kelas Dibuka. 
+6. Sistem memperbarui status kelas menjadi Dibuka. 
+7. Sistem meneruskan data kelas buka kepada Bagian 
+Keuangan untuk proses penerbitan tagihan Virtual 
+Account pembayaran mahasiswa. 
+Alur Alternatif 1: 
+Pembukaan Kelas 
+3a. Jumlah pendaftar pada kelas mata kuliah kurang dari 
+10 mahasiswa. 
+
+--- Halaman 24 ---
+Berdasarkan 
+Dispensasi Khusus 
+3b. Program Studi meninjau urgensi kelulusan bagi 
+mahasiswa tingkat akhir yang mendaftar pada kelas 
+tersebut. 
+3c. Program Studi meminta konfirmasi kesediaan 
+mengajar kepada Dosen Pengampu melalui modul 
+konfirmasi sistem. 
+3d. Dosen Pengampu memberikan konfirmasi kesediaan 
+mengajar kelas kecil dengan menekan tombol 
+Bersedia. 
+3e. Pengelola Program Studi memilih opsi Tetapkan 
+Dispensasi Buka. 
+3f. Sistem memperbarui status kelas menjadi Dispensasi 
+Buka. 
+3g. Sistem meneruskan data peserta kelas dispensasi ke 
+Bagian Keuangan agar tagihan Virtual Account dapat 
+diterbitkan. 
+Alur Alternatif 2: 
+Pembatalan Kelas 
+yang Tidak 
+Memenuhi Syarat 
+Kuota 
+3h. Jumlah pendaftar kurang dari 10 mahasiswa dan 
+Dosen Pengampu menyatakan tidak bersedia 
+mengajar kelas kecil, atau Program Studi menilai 
+kelas tidak layak diselenggarakan secara operasional. 
+3i. Pengelola Program Studi menekan tombol Batalkan 
+Kelas. 
+3j. Sistem memperbarui status kelas menjadi 
+Dibatalkan. 
+3k. Sistem mencabut mata kuliah yang bersangkutan 
+dari daftar rencana studi mahasiswa pendaftar. 
+3l. Sistem memastikan mahasiswa yang kelasnya 
+dibatalkan tidak dikenakan tagihan Virtual Account 
+atas mata kuliah tersebut. 
+Alur Eksepsi 1a. Pengelola Program Studi mencoba menetapkan 
+status kelas sebelum periode pendaftaran ditutup: 
+
+--- Halaman 25 ---
+Sistem menonaktifkan fungsi penetapan kelas dan 
+menampilkan pesan bahwa evaluasi kelas hanya dapat 
+dilakukan setelah masa pendaftaran selesai. 
+ 
+ 
+Gambar 4. Alur Kerja Skenario Evaluasi Kuota Pendaftar dan Penetapan Status Kelas oleh 
+Program Studi (UC-PRD-07) 
+  
+
+
+--- Halaman 26 ---
+BAB IV 
+PEMODELAN AKTIVITAS/ACTIVITY DIAGRAM 
+Pemodelan aktivitas dalam sistem Semester Antara menggambarkan urutan aliran kontrol dan 
+proses bisnis berdasarkan kondisi operasional serta pembagian tanggung jawab antaraktor 
+melalui swimlane. Pemodelan ini merepresentasikan tahapan utama yang mendukung 
+pelaksanaan Semester Antara secara terstruktur dan sistematis. 
+4.1 AD-01: Alur Penelusuran Katalog, Usulan Mata Kuliah, dan Koordinasi Antar -
+Program Studi 
+ 
+Gambar 5. Activity Diagram Alur Penelusuran Katalog, Usulan Mata Kuliah, dan 
+Koordinasi Antar-Program Studi (AD-01) 
+1) Deskripsi Alur: Menggambarkan alur penelusuran katalog awal mata kuliah yang 
+disediakan oleh Program Studi, pengajuan usulan mata kuliah baru oleh mahasiswa 
+apabila mata kuliah belum tersedia di katalog (baik di program studi asal maupun lintas 
+program studi), serta pros es koordinasi resmi antar -program studi guna menyepakati 
+ekuivalensi kurikulum, alokasi kuota, dan dosen pengampu sebelum mata kuliah 
+diterbitkan ke dalam katalog resmi Semester Antara. 
+
+
+--- Halaman 27 ---
+2) Partisi Swimlane: Mahasiswa | Sistem e-Semesta | Program Studi Asal | Program Studi 
+Tujuan Mitra 
+3) Penjelasan Rinci Aliran Aktivitas: Rangkaian tahapan aliran aktivitas mencakup lima 
+fase operasional: 
+a. Tahap Penelusuran Katalog:  Mahasiswa membuka modul Semester Antara 
+pada portal e-Semesta dan menelusuri katalog awal mata kuliah yang disediakan 
+oleh Program Studi. Apabila mata kuliah yang diinginkan telah tercantum dalam 
+katalog, Mahasiswa dapat langsung melanjutkan ke proses pen gisian Kartu 
+Rencana Studi Semester Antara. 
+b. Tahap Pengajuan Usulan Mata Kuliah: Apabila mata kuliah belum tersedia 
+di katalog, Mahasiswa membuka formulir usulan mata kuliah baru. Mahasiswa 
+memilih apakah usulan ditujukan untuk program studi sendiri atau lintas 
+program studi, kemudian mengisi identitas mata kuliah, menguraikan alasan 
+urgensi akademik, serta mengunggah silabus mata kuliah asal untuk keperluan 
+peninjauan ekuivalensi. 
+c. Tahap Penanganan oleh Sistem:  Sistem memvalidasi keaktifan sesi 
+pengusulan. Jika usulan bersifat internal program studi sendiri, sistem mencatat 
+usulan ke tabel USULAN_MK_SA dan mengagregasi jumlah peminat untuk 
+disajikan pada dasbor rekapitulasi program studi asal. Jika usulan bersifat lintas 
+program studi, sistem meneruskan berkas usulan secara terpadu ke Program 
+Studi asal dan Program Studi tujuan. 
+d. Tahap Evaluasi dan Koordinasi Antar-Program Studi: Program Studi asal 
+meninjau kesetaraan capaian pembelajaran dan bobot SKS. Di sisi lain, Program 
+Studi tujuan memeriksa ketersediaan dosen pengampu, alokasi kuota bagi 
+mahasiswa dari luar program studi, serta kapasitas ruang kuliah tatap muka 
+luring. Setelah itu, kedua pengelola program studi berkoordinasi secara resmi. 
+e. Tahap Keputusan Pembukaan Kelas: Apabila disepakati bersama, Program 
+Studi penyelenggara menetapkan dosen pengampu serta jadwal perkuliahan, 
+kemudian sistem mempublikasikan mata kuliah tersebut ke dalam katalog resmi 
+Semester Antara. Mahasiswa pendaftar dapat memantau katalog yang telah 
+diperbarui dan melanjutkan ke pengisian Kartu Rencana Studi. Sebaliknya, jika 
+koordinasi tidak mencapai kesepakatan, berkas usulan diarsipkan dan sistem 
+menampilkan keterangan resmi pada portal mahasiswa. 
+
+--- Halaman 28 ---
+4.2 AD-02: Alur Pengajuan Kartu Rencana Studi, Validasi Syarat Keputusan Rektor, dan 
+Verifikasi Dosen Pembimbing Akademik 
+ 
+Gambar 6. Activity Diagram Alur Pengajuan Kartu Rencana Studi dan Verifikasi Dosen 
+Pembimbing Akademik (AD-02) 
+ 
+1) Deskripsi Alur:  Menggambarkan transaksi pemilihan kelas mata kuliah oleh 
+Mahasiswa pada portal e -Semesta, mekanisme validasi otomatis lapis pertama oleh 
+sistem berdasarkan parameter Keputusan Rektor Nomor 686 Tahun 2025, pembaruan 
+kuota sementara, peninjauan akademik lapis kedua oleh Dosen Pembimbing Akademik, 
+serta mekanisme konsultasi dan revisi rencana studi apabila pengajuan ditolak. 
+2) Partisi Swimlane: Mahasiswa | Sistem e-Semesta | Dosen Pembimbing Akademik 
+3) Penjelasan Rinci Aliran Aktivitas: Rangkaian tahapan aliran aktivitas mencakup lima 
+fase operasional: 
+
+
+--- Halaman 29 ---
+a. Tahap Pengisian Rencana Studi: Mahasiswa membuka menu pengisian Kartu 
+Rencana Studi Semester Antara, memilih kelas mata kuliah yang dibuka dengan 
+beban maksimal 9 SKS, menentukan opsi pengambilan (mengulang untuk 
+perbaikan nilai atau mengambil mata kuliah baru akselerasi), lalu menekan  
+tombol Ajukan Kartu Rencana Studi. 
+b. Tahap Validasi Otomatis: Sistem memeriksa aturan akademik secara langsung 
+untuk memastikan semester mahasiswa minimal semester 4, total SKS tidak 
+melebihi 9 SKS, mahasiswa berstatus bebas dari sanksi akademik, nilai mata 
+kuliah perbaikan adalah C+, C, C -, D, atau E, serta indeks prestasi kumulatif 
+berjalan minimal 3,00 untuk mata kuliah baru. 
+c. Percabangan Validasi Sistem:  Hasil validasi otomatis oleh sistem 
+menghasilkan dua kondisi: 
+• Apabila salah satu syarat tidak terpenuhi, sistem membatalkan proses 
+pengajuan, menampilkan pesan galat spesifik di layar, dan mengarahkan 
+mahasiswa kembali ke formulir untuk memperbaiki pilihan. 
+• Apabila seluruh syarat terpenuhi, sistem mengeksekusi Auto -Check 2 
+untuk menambah kuota sementara, menyimpan pengajuan dengan status 
+Menunggu Verifikasi Dosen Pembimbing Akademik, dan memunculkan 
+konfirmasi keberhasilan pengajuan. 
+d. Tahap Verifikasi Dosen Pembimbing Akademik:  Dosen Pembimbing 
+Akademik mengakses dasbor e -Semesta, memeriksa antrean mahasiswa 
+bimbingan, serta meninjau rincian beban SKS dan rekam jejak akademik 
+mahasiswa. 
+e. Percabangan Keputusan Dosen Pembimbing Akademik:  Peninjauan 
+akademik oleh Dosen Pembimbing Akademik menghasilkan dua jalur 
+keputusan: 
+• Keputusan Persetujuan: Dosen Pembimbing Akademik menekan tombol 
+Setuju. Sistem memperbarui status pengajuan menjadi Disetujui Dosen 
+Pembimbing Akademik dan menetapkan status final Menunggu 
+Kepastian Kelas Buka sehingga tahap verifikasi selesai. 
+• Keputusan Penolakan: Dosen Pembimbing Akademik menekan tombol 
+Tolak. Sistem memperbarui status pengajuan menjadi Ditolak Dosen 
+Pembimbing Akademik. Mahasiswa memantau pembaruan status 
+
+--- Halaman 30 ---
+tersebut di portal e -Semesta, menghubungi Dosen Pembimbing 
+Akademik untuk berkonsultasi, kemudian merevisi susunan mata kuliah 
+dan mengajukan kembali draf rencana studi selama periode pendaftaran 
+masih dibuka. 
+4.3 AD-03: Alur Evaluasi Kuota Pendaftar, Dispensasi, dan Penetapan Status Kelas 
+ 
+Gambar 7. Activity Diagram Alur Evaluasi Kuota dan Penetapan Status Kelas oleh Program 
+Studi (AD-03) 
+1) Deskripsi Alur: Menggambarkan prosedur evaluasi jumlah pendaftar setelah masa 
+pendaftaran ditutup, pemrosesan kelas yang memenuhi kuota minimal 10 peserta, 
+permohonan dispensasi mengajar kelas kecil kepada Dosen Pengampu, penetapan 
+status akhir kelas oleh Program Studi, serta penanganan otomatis pembatalan kelas dan 
+penerbitan tagihan. 
+2) Partisi Swimlane: Sistem e-Semesta | Program Studi / Admin Program Studi | Dosen 
+Pengampu Mata Kuliah 
+
+
+--- Halaman 31 ---
+3) Penjelasan Rinci Aliran Aktivitas: Rangkaian tahapan aliran aktivitas mencakup lima 
+fase operasional: 
+a. Tahap Penutupan dan Agregasi Kuota:  Tepat saat batas waktu pendaftaran 
+berakhir sesuai kalender akademik, sistem mengeksekusi Auto -Check 3 untuk 
+mengunci formulir pengisian rencana studi dan mengagregasi total kuota 
+pendaftar resmi per kelas. 
+b. Tahap Evaluasi Kuota oleh Program Studi:  Pengelola Program Studi 
+membuka panel pemantauan kuota kelas pada portal e-Semesta untuk meninjau 
+ketercapaian kuota setiap kelas. 
+c. Percabangan Kuota Standar dengan Pendaftar Minimal 10 Mahasiswa:  
+Untuk kelas yang mencapai kuota minimal 10 mahasiswa, pengelola Program 
+Studi memilih opsi Tetapkan Kelas Dibuka. Sistem memperbarui status kelas 
+menjadi Dibuka, yang selanjutnya memicu eksekusi aturan bisnis BR -08 guna 
+menerbitkan tagihan Virtual Account. 
+d. Percabangan Kelas Kecil dengan Pendaftar Kurang dari 10 Mahasiswa:  
+Sistem menandai kelas dengan status Menunggu Kebijakan Prodi. Pengelola 
+Program Studi mengevaluasi secara mendalam urgensi kelas, terutama bagi 
+mahasiswa tingkat akhir yang membutuhkan mata kuliah tersebut untuk 
+kelulusan. Jika dinilai tidak layak, Program Studi memilih opsi Batalkan Kelas. 
+Sebaliknya, jika dinilai mendesak, Program Studi mengirimkan permohonan 
+dispensasi mengajar ke Dosen Pengampu. 
+e. Tahap Konfirmasi Dosen Pengampu dan Penetapan Dispensasi:  Dosen 
+Pengampu membuka dasbor penugasan di e -Semesta dan memeriksa daftar 
+pendaftar kelas kecil. Jika bersedia, dosen menekan tombol Konfirmasi 
+Bersedia, lalu pengelola Program Studi memilih Tetapkan Dispensasi Buka 
+sehingga sistem menerbitkan tagihan Vir tual Account. Sebaliknya, jika dosen 
+menolak, Program Studi membatalkan pembukaan kelas dan mencabut mata 
+kuliah tersebut dari rencana studi mahasiswa. 
+ 
+  
+
+--- Halaman 32 ---
+BAB V 
+PEMODELAN INTERAKSI OBJEK/SEQUENCE DIAGRAM 
+Sequence Diagram mendeskripsikan interaksi pertukaran pesan antarentitas objek yang 
+terstruktur dalam pola perancangan Boundary, Control, Entity, dan Database dalam dimensi 
+waktu. Pemodelan interaksi berikut merepresentasikan alur komunikasi dan transaksi pesan 
+dalam sistem pengajuan Semester Antara: 
+5.1 SD-01: Pengajuan Kartu Rencana Studi Semester Antara dan Validasi Otomatis 
+Syarat Keputusan Rektor 
+ 
+Gambar 8. Sequence Diagram Pengajuan Kartu Rencana Studi dan Validasi Otomatis 
+1) Objek dan Partisipan Sistem: Entitas dan peranan objek yang terlibat dalam transaksi 
+ini meliputi: 
+a. Mahasiswa: Aktor mahasiswa yang mengakses portal e-Semesta. 
+b. HalamanKRS_UI: Objek antarmuka pengguna (Boundary) untuk formulir 
+rencana studi dan katalog kelas. 
+c. PengajuanController: Objek pengendali alur transaksi (Control) untuk 
+pengajuan rencana studi. 
+d. SyaratValidatorService: Layanan logika bisnis (Control) untuk validasi syarat 
+Keputusan Rektor Nomor 686 Tahun 2025. 
+
+
+--- Halaman 33 ---
+e. MahasiswaModel: Objek entitas data (Entity) untuk profil dan riwayat 
+akademik mahasiswa. 
+f. KelasModel: Objek entitas data (Entity) untuk data penawaran kelas dan kuota 
+pendaftar. 
+g. PengajuanKRS_Model: Objek entitas data (Entity) untuk penyimpanan 
+transaksi pengajuan rencana studi. 
+h. Database: Komponen penyimpanan data fisik (Database). 
+2) Narasi Interaksi Pesan:  Urutan pertukaran pesan antarentitas berlangsung sebagai 
+berikut: 
+a. Mahasiswa mengakses formulir pengajuan melalui HalamanKRS_UI. 
+b. HalamanKRS_UI memanggil getProfilDanKatalog(NIM) pada 
+PengajuanController. 
+c. PengajuanController mengueri data mahasiswa dan daftar penawaran kelas ke 
+Database. 
+d. Database mengembalikan data profil akademik mahasiswa dan daftar katalog 
+kelas yang dibuka. 
+e. PengajuanController menyajikan data formulir dan katalog ke 
+HalamanKRS_UI. 
+f. Mahasiswa memilih kelas mata kuliah hingga batas maksimal 9 SKS, 
+menentukan jenis pengambilan, lalu menekan tombol Ajukan rencana studi. 
+g. HalamanKRS_UI mengirimkan pesan submitKRS(NIM, ListKelasID, 
+JenisAmbil) ke PengajuanController. 
+h. PengajuanController meneruskan validasi aturan bisnis ke 
+SyaratValidatorService melalui pesan validateAll(NIM, ListKelasID). 
+i. SyaratValidatorService memanggil getRiwayatAkademik(NIM) pada 
+MahasiswaModel. 
+j. MahasiswaModel mengembalikan informasi semester berjalan, indeks prestasi 
+kumulatif, status sanksi akademik, dan riwayat nilai mata kuliah. 
+k. Percabangan Validasi pada Frame Alt: 
+• Syarat Keputusan Rektor Tidak Terpenuhi:  
+Saat parameter Auto -Check 1 tidak terpenuhi, SyaratV alidatorService 
+mengembalikan V alidationError dengan rincian pesan galat spesifik ke 
+PengajuanController. PengajuanController meneruskannya ke 
+
+--- Halaman 34 ---
+HalamanKRS_UI, lalu HalamanKRS_UI menampilkan peringatan 
+kesalahan serta meminta mahasiswa mengoreksi pilihan. 
+• Syarat Keputusan Rektor Terpenuhi: 
+Saat seluruh parameter Auto-Check 1 terpenuhi, SyaratValidatorService 
+mengembalikan V alidationSuccess ke PengajuanController. 
+PengajuanController memanggil incrementPendaftar(ListKelasID) pada 
+KelasModel untuk menambah kuota sementara melalui fungsi Auto -
+Check 2. KelasModel memperbarui jumlah pendaftar di Database. 
+Selanjutnya, PengajuanController memanggil createPengajuan(NIM, 
+ListKelasID) pada PengajuanKRS_Model. PengajuanKRS_Model 
+menyimpan data transaksi ke Database dengan status Menunggu 
+Verifikasi Dos en Pembimbing Akademik dan status final Diajukan. 
+Setelah Database mengembalikan konfirmasi sukses, HalamanKRS_UI 
+menampilkan pesan bahwa rencana studi berhasil diajukan kepada Dosen 
+Pembimbing Akademik. 
+5.2 SD-02: Review, Persetujuan, dan Penolakan Kartu Rencana Studi oleh Dosen 
+Pembimbing Akademik 
+Diagram sequence ini memodelkan interaksi pesan antara Dosen Pembimbing Akademik 
+dan sistem dalam meninjau serta memutuskan pengajuan rencana studi mahasiswa: 
+ 
+ 
+
+
+--- Halaman 35 ---
+Gambar 9. Sequence Diagram Verifikasi Rencana Studi oleh Dosen Pembimbing Akademik 
+(SD-02) 
+1) Objek dan Partisipan Sistem: Entitas dan peranan objek yang terlibat dalam transaksi 
+ini meliputi: 
+a. Dosen Pembimbing Akademik (Aktor): Tenaga pendidik yang bertugas 
+mengevaluasi beban studi dan kelayakan akademik mahasiswa bimbingan. 
+b. DasborPembimbing_UI: Antarmuka web (Boundary) bagi dosen untuk 
+meninjau antrean bimbingan rencana studi Semester Antara. 
+c. VerifikasiController: Pengendali logika (Control) yang memproses aksi 
+persetujuan atau penolakan pengajuan studi. 
+d. PengajuanKRS_Model: Entitas data (Entity) transaksi pengajuan rencana studi. 
+e. Database: Penyimpanan persisten data status verifikasi (Database). 
+f. HalamanStatusKRS_UI: Antarmuka portal (Boundary) bagi mahasiswa untuk 
+memantau perkembangan status rencana studi. 
+g. Mahasiswa (Aktor): Pengguna yang memantau hasil verifikasi dan 
+berkonsultasi lebih lanjut jika terjadi penolakan. 
+2) Narasi Interaksi Pesan:  Urutan pertukaran pesan antarentitas berlangsung sebagai 
+berikut: 
+a. Dosen Pembimbing Akademik mengakses menu verifikasi pada 
+DasborPembimbing_UI. 
+b. DasborPembimbing_UI mengirim permintaan getListBimbinganPending(NIP) 
+ke VerifikasiController. 
+c. VerifikasiController menjalankan kueri data ke Database untuk mengambil 
+seluruh berkas pengajuan berstatus Menunggu Verifikasi. 
+d. Database mengembalikan daftar pengajuan, lalu VerifikasiController 
+menampilkan data tersebut pada antrean DasborPembimbing_UI. 
+e. Dosen Pembimbing Akademik memilih mahasiswa tertentu guna meninjau 
+rincian mata kuliah dan batas maksimal beban SKS. 
+f. Skenario Persetujuan: Dosen Pembimbing Akademik Menyetujui Pengajuan 
+• Dosen Pembimbing Akademik menekan tombol Setuju pada 
+DasborPembimbing_UI. 
+• DasborPembimbing_UI mengirim pesan setujuiPengajuan(PengajuanID) 
+ke VerifikasiController. 
+
+--- Halaman 36 ---
+• VerifikasiController memanggil updateStatusVerifikasi(PengajuanID, 
+Disetujui Pembimbing) pada PengajuanKRS_Model. 
+• PengajuanKRS_Model memperbarui baris data di Database menjadi 
+Disetujui Pembimbing. 
+• Database mengonfirmasi keberhasilan pembaruan, dan 
+DasborPembimbing_UI menampilkan notifikasi sukses verifikasi kepada 
+dosen. 
+g. Skenario Penolakan: Dosen Pembimbing Akademik Menolak Pengajuan 
+• Sesuai aturan bisnis BR -04, Dosen Pembimbing Akademik menekan 
+tombol Tolak pada DasborPembimbing_UI. 
+• DasborPembimbing_UI mengirim pesan tolakPengajuan(PengajuanID) 
+ke VerifikasiController. 
+• VerifikasiController memanggil updateStatusVerifikasi(PengajuanID, 
+Ditolak Pembimbing) pada PengajuanKRS_Model. 
+• PengajuanKRS_Model memperbarui status transaksi di Database 
+menjadi Ditolak Pembimbing. 
+• Database mengonfirmasi pembaruan, dan DasborPembimbing_UI 
+memperbarui status antrean bimbingan. 
+• Mahasiswa secara berkala mengakses HalamanStatusKRS_UI untuk 
+memantau perkembangan status rencana studi. 
+• HalamanStatusKRS_UI mengambil status terbaru dari Database dan 
+menampilkan status Ditolak Pembimbing. 
+• Mahasiswa berinisiatif berkonsultasi langsung dengan Dosen 
+Pembimbing Akademik untuk meminta arahan sebelum merevisi 
+pengajuan di sistem. 
+5.3 SD-03: Penetapan Status Kelas dan Konfirmasi Dosen Pengampu oleh Program Studi 
+Diagram sequence ini memodelkan koordinasi antara Program Studi, Dosen Pengampu, dan 
+sistem dalam mengevaluasi jumlah pendaftar serta menetapkan status operasional kelas setelah 
+periode pendaftaran ditutup: 
+ 
+
+--- Halaman 37 ---
+ 
+Gambar 10. Sequence Diagram Penetapan Status Kelas dan Konfirmasi Dosen Pengampu 
+(SD-03) 
+1) Objek dan Partisipan Sistem: Entitas dan peranan objek yang terlibat dalam transaksi 
+ini meliputi: 
+a. Program Studi / Admin Program Studi (Aktor): Pengelola operasional akademik 
+yang mengevaluasi kelayakan pembukaan kelas Semester Antara. 
+b. PanelProdi_UI: Antarmuka dasbor (Boundary) untuk pengelolaan kelas dan 
+kuota. 
+c. KelasController: Pengendali alur (Control) untuk verifikasi kuota, pengajuan 
+dispensasi, dan pembaruan status final kelas. 
+d. DosenPengampu_UI: Antarmuka konfirmasi penugasan mengajar (Boundary) 
+bagi dosen pengampu. 
+e. Dosen Pengampu (Aktor): Tenaga pengajar yang memberikan persetujuan 
+kesediaan mengajar pada kelas bermuatan kecil. 
+f. KelasModel: Entitas data (Entity) rombongan belajar dan status kelas. 
+g. Database: Penyimpanan data kelas dan kuota pendaftar (Database). 
+2) Narasi Interaksi Pesan:  Urutan pertukaran pesan antarentitas berlangsung sebagai 
+berikut: 
+a. Setelah penutupan masa pendaftaran, Admin Program Studi mengakses dasbor 
+pemantauan kuota pada PanelProdi_UI. 
+
+
+--- Halaman 38 ---
+b. PanelProdi_UI meminta rekapitulasi data pendaftar melalui fungsi 
+getRekapitulasiKelas(PeriodeID) pada KelasController. 
+c. KelasController meminta Database menjalankan kueri kalkulasi pendaftar dan 
+batas minimal kuota setiap kelas. 
+d. Database mengembalikan daftar kelas beserta total mahasiswa terdaftar. 
+e. KelasController menyajikan rekapitulasi di PanelProdi_UI, dengan kelas 
+berpendaftar kurang dari 10 orang ditandai Menunggu Kebijakan Prodi. 
+f. Alur Pengajuan Dispensasi Kelas Kurang dari 10 Pendaftar: 
+• Admin Program Studi mengajukan dispensasi dengan menekan tombol 
+permohonan pada PanelProdi_UI. 
+• PanelProdi_UI mengirim requestDispensasi(KelasID, NIP_Dosen) ke 
+KelasController. 
+• KelasController memanggil setStatusDispensasi pada KelasModel untuk 
+mengubah status konfirmasi dosen menjadi Menunggu Konfirmasi di 
+Database. 
+g. Alur Konfirmasi Dosen Pengampu: 
+• Dosen Pengampu masuk ke DosenPengampu_UI untuk memeriksa daftar 
+penugasan mengajar Semester Antara. 
+• DosenPengampu_UI memanggil 
+getPermohonanDispensasi(NIP_Dosen) ke KelasController dan 
+mengambil data terkait dari Database. 
+• DosenPengampu_UI menampilkan daftar permohonan kelas dispensasi. 
+• Dosen Pengampu menekan tombol Konfirmasi Bersedia. 
+• DosenPengampu_UI mengirim pesan submitKonfirmasi(KelasID, 
+Bersedia) ke KelasController. 
+• KelasController memperbarui status kesediaan mengajar pada 
+KelasModel menjadi Bersedia di Database. 
+h. Alur Penetapan Akhir oleh Program Studi: 
+• Admin Program Studi menyegarkan PanelProdi_UI dan mendapati status 
+dosen telah bersedia. 
+• Admin Program Studi menekan tombol Tetapkan Dispensasi Buka. 
+• PanelProdi_UI mengirim setStatusFinalKelas(KelasID, Dispensasi 
+Buka) ke KelasController. 
+
+--- Halaman 39 ---
+• KelasController memperbarui StatusKelas pada KelasModel menjadi 
+Dispensasi Buka di Database. 
+• Database mengonfirmasi penyimpanan status, dan KelasController 
+menampilkan status final kelas resmi dibuka pada PanelProdi_UI. 
+• Penetapan ini secara otomatis memvalidasi syarat penerbitan tagihan 
+Virtual Account bagi mahasiswa yang telah disetujui Dosen Pembimbing 
+Akademik sesuai aturan bisnis BR-08. 
+ 
+  
+
+--- Halaman 40 ---
+BAB VI 
+PEMODELAN DATA/ERD DAN KAMUS DATA 
+Pemodelan data menetapkan arsitektur basis data relasional yang mendasari penyimpanan dan 
+manipulasi data sistem, mencakup 13 entitas data, batasan integritas referensial, serta kamus 
+data terperinci. 
+6.1 Diagram Hubungan Entitas (ERD) Conceptual dan Logical Model 
+6.1.1 Diagram ERD dan Representasi Relasi Antar-Entitas 
+ 
+Gambar 11. Diagram Hubungan Entitas Sistem Pengajuan Semester Antara 
+Diagram ERD di atas memvisualisasikan arsitektur basis data relasional yang menopang 
+seluruh proses operasional Semester Antara, menghubungkan 13 entitas inti secara menyeluruh 
+dengan derajat kardinalitas terstandarisasi: 
+1) Manajemen Akun dan Profil Pengguna: Kardinalitas relasi pengguna dan pengelola 
+akademik: 
+a. PENGGUNA 1 < ----> 1 MAHASISWA : Setiap akun autentikasi SSO 
+Mahasiswa terhubung ke tepat satu profil Mahasiswa. 
+
+
+--- Halaman 41 ---
+b. PENGGUNA 1 < ----> 1 DOSEN : Setiap akun autentikasi SSO Dosen 
+terhubung ke tepat satu profil Dosen. 
+c. PROGRAM_STUDI 1 < ----> M MAHASISWA : Program studi menaungi 
+banyak mahasiswa yang terdaftar aktif. 
+d. PROGRAM_STUDI 1 < ----> M DOSEN : Program studi mempekerjakan 
+dosen homebase untuk pengajaran dan pembimbingan. 
+e. DOSEN 1 [Sebagai Pembimbing Akademik] <----> M MAHASISWA : Dosen 
+membimbing sejumlah mahasiswa secara akademik. 
+2) Kurikulum, Penawaran Kelas, dan Pengusulan Mata Kuliah:  Kardinalitas relasi 
+penawaran kurikulum dan kelas perkuliahan: 
+a. PROGRAM_STUDI 1 <----> M MATA_KULIAH : Program studi mengelola 
+kurikulum mata kuliah di bawah naungannya. 
+b. PERIODE_SA 1 < ----> M TARIF_SA : Setiap periode Semester Antara 
+menetapkan struktur tarif biaya per SKS per rumpun ilmu. 
+c. PERIODE_SA 1 < ----> M USULAN_MK_SA : Periode Semester Antara 
+membuka jadwal pengusulan mata kuliah oleh mahasiswa. 
+d. PERIODE_SA 1 < ----> M KELAS_DITAWARKAN_SA : Periode Semester 
+Antara menjadwalkan daftar kelas resmi yang dibuka. 
+e. MATA_KULIAH 1 <----> M KELAS_DITAWARKAN_SA : Mata kuliah induk 
+ditawarkan ke dalam satu atau lebih kelas perkuliahan. 
+f. MATA_KULIAH 1 <----> M USULAN_MK_SA : Mata kuliah yang belum ada 
+di katalog awal dapat diusulkan pembukaannya. 
+g. MAHASISWA 1 <----> M USULAN_MK_SA : Mahasiswa dapat mengajukan 
+usulan pembukaan mata kuliah internal maupun lintas program studi. 
+h. DOSEN 1 [Sebagai Pengampu] < ----> M KELAS_DITAWARKAN_SA : 
+Dosen ditugaskan mengampu kelas Semester Antara yang dibuka. 
+i. MATA_KULIAH [Asal] 1 < ----> M EKUIV ALENSI_MK : Pemetaan 
+kesetaraan kurikulum untuk usulan mata kuliah lintas program studi. 
+j. MATA_KULIAH [Tujuan] 1 <----> M EKUIV ALENSI_MK : Referensi mata 
+kuliah target pada program studi mitra. 
+3) Transaksi Akademik, Pengajuan KRS, dan Pembayaran Keuangan:  Kardinalitas 
+relasi rencana studi dan sistem perbankan: 
+a. PERIODE_SA 1 <----> M PENGAJUAN_KRS_SA : Periode Semester Antara 
+memayungi seluruh transaksi pengajuan Kartu Rencana Studi mahasiswa. 
+
+--- Halaman 42 ---
+b. MAHASISWA 1 <----> M PENGAJUAN_KRS_SA : Mahasiswa mengisi dan 
+mengajukan formulir Kartu Rencana Studi Semester Antara. 
+c. PENGAJUAN_KRS_SA 1 < ----> M DETAIL_KRS_SA : Setiap berkas 
+pengajuan Kartu Rencana Studi memuat satu hingga beberapa rincian kelas 
+mata kuliah. 
+d. KELAS_DITAWARKAN_SA 1 < ----> M DETAIL_KRS_SA : Kelas yang 
+ditawarkan dipilih sebagai rincian item dalam rencana studi mahasiswa. 
+e. PENGAJUAN_KRS_SA 1 < ----> 1 PEMBAYARAN_SA : Pengajuan Kartu 
+Rencana Studi yang kelasnya resmi dibuka menghasilkan satu tagihan Virtual 
+Account. 
+6.2 Kamus Data Rinci 13 Entitas Sistem 
+Kamus data berikut memuat spesifikasi atribut, tipe data relasional, batasan kunci (Primary 
+Key/Foreign Key), sifat kebolehan nilai kosong (Nullable), serta aturan domain dan nilai enum 
+untuk ketiga belas entitas sistem: 
+1) ENTITAS: PENGGUNA 
+Menyimpan kredensial autentikasi akun Single Sign -On (SSO) pengguna portal 
+akademik e-Semesta. 
+Nama 
+Atribut 
+Tipe Data Jenis Nullable Deskripsi & 
+Nilai Domain 
+ID_User INT PK NO Identifikator 
+unik akun 
+pengguna 
+Auto-
+increment 
+Username V ARCHAR(50) - NO NIM 
+Mahasiswa, 
+NIP Dosen, 
+atau Username 
+Admin 
+
+--- Halaman 43 ---
+Nama 
+Atribut 
+Tipe Data Jenis Nullable Deskripsi & 
+Nilai Domain 
+Password V ARCHAR(255) - NO Hash kata 
+sandi 
+terenkripsi 
+Argon2 atau 
+Bcrypt 
+Role V ARCHAR(30) - NO Enum: 
+{'Mahasiswa', 
+'Dosen', 
+'Prodi', 
+'Keuangan'} 
+StatusAktif BOOLEAN - NO Status 
+keaktifan 
+login: TRUE 
+atau FALSE 
+ 
+2) ENTITAS: MAHASISWA 
+Menyimpan data profil akademik mahasiswa yang menjadi acuan validasi otomatis 
+Keputusan Rektor Nomor 686 Tahun 2025. 
+Nama Atribut Tipe Data Jenis Nullable Deskripsi & Nilai 
+Domain 
+NIM V ARCHAR(20) PK NO Nomor Induk 
+Mahasiswa resmi 
+UIN Jakarta 
+ID_User INT FK NO Relasi ke entitas 
+PENGGUNA 
+Nama V ARCHAR(100) - NO Nama lengkap 
+mahasiswa 
+KodeProdi V ARCHAR(10) FK NO Relasi ke 
+PROGRAM_STUDI 
+asal 
+
+--- Halaman 44 ---
+Nama Atribut Tipe Data Jenis Nullable Deskripsi & Nilai 
+Domain 
+Semester INT - NO Semester aktif 
+berjalan: syarat 
+minimal semester 4 
+IPK DECIMAL(3,2) - NO Indeks Prestasi 
+Kumulatif berjalan: 
+0,00 - 4,00 
+StatusSanksi V ARCHAR(30) - NO Enum: {'Aktif Bebas 
+Sanksi', 'Sedang 
+Sanksi'} 
+NIP_Pembimbing V ARCHAR(25) FK NO Relasi ke DOSEN 
+pembimbing 
+akademik 
+ 
+3) ENTITAS: DOSEN 
+Menyimpan data tenaga pengajar universitas yang berperan sebagai Dosen 
+Pembimbing Akademik atau Dosen Pengampu. 
+Nama Atribut Tipe Data Jenis Nullable Deskripsi & 
+Nilai Domain 
+NIP V ARCHAR(25) PK NO Nomor Induk 
+Pegawai 
+dosen 
+ID_User INT FK NO Relasi ke 
+entitas 
+PENGGUNA 
+Nama V ARCHAR(100) - NO Nama lengkap 
+beserta gelar 
+akademik 
+KodeProdi V ARCHAR(10) FK NO Homebase 
+program studi 
+dosen 
+
+--- Halaman 45 ---
+Nama Atribut Tipe Data Jenis Nullable Deskripsi & 
+Nilai Domain 
+JabatanFungsional V ARCHAR(50) - YES Jabatan 
+fungsional 
+contoh: 
+Asisten Ahli, 
+Lektor 
+NoHP V ARCHAR(20) - YES Kontak 
+komunikasi 
+seluler 
+ 
+4) ENTITAS: PROGRAM_STUDI 
+Menyimpan data program studi dan status penyelenggaraan Semester Antara per 
+program studi. 
+Nama Atribut Tipe Data Jenis Nullable Deskripsi & Nilai 
+Domain 
+KodeProdi V ARCHAR(10) PK NO Kode identifikasi 
+resmi program studi 
+contoh: 'TI-FST' 
+NamaProdi V ARCHAR(100) - NO Nama resmi Program 
+Studi 
+Fakultas V ARCHAR(100) - NO Nama Fakultas induk 
+StatusBukaSA V ARCHAR(30) - NO Enum: 
+{'Menyelenggarakan', 
+'Tidak Buka'} 
+ 
+5) ENTITAS: MATA_KULIAH 
+Menyimpan master data mata kuliah kurikulum program studi. 
+
+--- Halaman 46 ---
+Nama Atribut Tipe Data Jenis Nullable Deskripsi 
+& Nilai 
+Domain 
+KodeMK V ARCHAR(15) PK NO Kode mata 
+kuliah 
+kurikulum 
+NamaMK V ARCHAR(100) - NO Nama mata 
+kuliah 
+SKS INT - NO Bobot 
+kredit SKS 
+mata 
+kuliah: 1 s/d 
+6 SKS 
+JenisMK V ARCHAR(30) - NO Enum: 
+{'Wajib 
+Program 
+Studi', 
+'Pilihan', 
+'MKU'} 
+SemesterKurikulum INT - NO Distribusi 
+semester 
+normal 
+pada 
+kurikulum 
+KodeProdi V ARCHAR(10) FK NO Program 
+studi 
+pemilik 
+kurikulum 
+mata kuliah 
+ 
+6) ENTITAS: PERIODE_SA 
+Menyimpan konfigurasi jendela waktu pelaksanaan Semester Antara sesuai kalender 
+akademik. 
+
+--- Halaman 47 ---
+Nama Atribut Tipe Data Jenis Nullable Deskripsi & 
+Nilai Domain 
+PeriodeID V ARCHAR(10) PK NO Kode periode 
+contoh: 'SA-
+2026' 
+TahunAkademik V ARCHAR(10) - NO Tahun 
+akademik 
+contoh: 
+'2026/2027' 
+TglMulaiUsulan DATE - NO Waktu awal 
+pembukaan 
+usulan 
+crowdsourcing 
+TglSelesaiUsulan DATE - NO Waktu akhir 
+usulan 
+pembukaan 
+mata kuliah 
+TglMulaiKRS DATE - NO Waktu awal 
+pembukaan 
+pendaftaran 
+rencana studi 
+TglSelesaiKRS DATE - NO Waktu akhir 
+pendaftaran: 
+penguncian 
+otomatis Auto-
+Check 3 
+TglMulaiBayar DATE - NO Waktu awal 
+masa 
+pembayaran 
+Virtual 
+Account 
+
+--- Halaman 48 ---
+Nama Atribut Tipe Data Jenis Nullable Deskripsi & 
+Nilai Domain 
+TglSelesaiBayar DATE - NO Batas akhir 
+bayar: 
+kedaluwarsa 
+Auto-Check 5 
+StatusAktif BOOLEAN - NO Status 
+operasional 
+periode saat ini 
+ 
+7) ENTITAS: TARIF_SA 
+Menyimpan parameter besaran biaya per SKS berdasarkan rumpun ilmu dan Keputusan 
+Rektor Nomor 686 Tahun 2025. 
+Nama Atribut Tipe Data Jenis Nullable Deskripsi & 
+Nilai Domain 
+TarifID V ARCHAR(10) PK NO Identifikator 
+unik aturan 
+tarif 
+PeriodeID V ARCHAR(10) FK NO Relasi ke 
+entitas 
+PERIODE_SA 
+RumpunIlmu V ARCHAR(50) - NO Enum: 
+{'Sarjana 
+Reguler', 'Ilmu 
+Kesehatan'} 
+BiayaPerSKS DECIMAL(12,2) - NO Tarif per SKS: 
+Rp220.000 
+atau 
+Rp850.000 
+
+--- Halaman 49 ---
+Nama Atribut Tipe Data Jenis Nullable Deskripsi & 
+Nilai Domain 
+SK_Rektor_Ref V ARCHAR(100) - NO Nomor surat 
+keputusan 
+rektor dasar 
+hukum tarif 
+ 
+8) ENTITAS: USULAN_MK_SA 
+Menyimpan data usulan pembukaan mata kuliah oleh mahasiswa pada fase 
+prapendaftaran. 
+Nama Atribut Tipe Data Jeni
+s 
+Nullabl
+e 
+Deskripsi & 
+Nilai Domain 
+UsulanID V ARCHAR(2
+0) 
+PK NO Kode unik 
+usulan contoh: 
+'USL-2026-
+0001' 
+NIM V ARCHAR(2
+0) 
+FK NO Mahasiswa 
+pengusul 
+KodeMK V ARCHAR(1
+5) 
+FK NO Mata kuliah 
+yang diusulkan 
+PeriodeID V ARCHAR(1
+0) 
+FK NO Periode 
+Semester 
+Antara terkait 
+TglUsulan DATE - NO Tanggal 
+mahasiswa 
+mengusulkan 
+mata kuliah 
+IsLintasProdi BOOLEAN - NO Flag apakah 
+usulan 
+ditujukan ke 
+program studi 
+lain 
+
+--- Halaman 50 ---
+Nama Atribut Tipe Data Jeni
+s 
+Nullabl
+e 
+Deskripsi & 
+Nilai Domain 
+StatusPersetujuanProdiTuj
+uan 
+V ARCHAR(3
+0) 
+- NO Enum: 
+{'Menunggu 
+Persetujuan', 
+'Setuju', 
+'Tolak'} 
+Alasan TEXT - YES Alasan 
+akademis/urge
+nsi pengusulan 
+ 
+9) ENTITAS: KELAS_DITAWARKAN_SA 
+Menyimpan katalog kelas mata kuliah resmi yang dibuka oleh Program Studi. 
+Nama Atribut Tipe Data Jenis Nullable Deskripsi & 
+Nilai 
+Domain 
+KelasID V ARCHAR(20) PK NO Identifikator 
+unik kelas 
+contoh: 
+'KLS-SA-TI-
+01' 
+PeriodeID V ARCHAR(10) FK NO Periode 
+Semester 
+Antara 
+terkait 
+KodeMK V ARCHAR(15) FK NO Mata kuliah 
+yang 
+ditawarkan 
+NIP_Dosen V ARCHAR(25) FK NO Dosen 
+pengampu 
+yang 
+ditugaskan 
+
+--- Halaman 51 ---
+Nama Atribut Tipe Data Jenis Nullable Deskripsi & 
+Nilai 
+Domain 
+KuotaMin INT - NO Batas 
+minimum 
+peserta: 
+standar 10 
+mahasiswa 
+KuotaMax INT - NO Kapasitas 
+ruangan 
+kelas contoh: 
+40 
+mahasiswa 
+Hari V ARCHAR(15) - NO Hari kuliah 
+tatap muka 
+luring: Senin 
+s/d Jumat 
+SesiJam V ARCHAR(30) - NO Jam 
+perkuliahan 
+contoh: 
+'08:00 - 
+10:30 WIB' 
+RuangKelas V ARCHAR(50) - NO Lokasi ruang 
+kelas fisik 
+tatap muka 
+luring 
+
+--- Halaman 52 ---
+Nama Atribut Tipe Data Jenis Nullable Deskripsi & 
+Nilai 
+Domain 
+StatusKelas V ARCHAR(30) - NO Enum: 
+{'Dibuka', 
+'Menunggu 
+Kebijakan 
+Prodi', 
+'Dispensasi 
+Buka', 
+'Dibatalkan'} 
+StatusKonfirmasiDosen V ARCHAR(30) - NO Enum: 
+{'Menunggu 
+Konfirmasi', 
+'Bersedia', 
+'Tidak 
+Bersedia'} 
+ 
+10) ENTITAS: PENGAJUAN_KRS_SA 
+Menyimpan dokumen transaksi pengajuan rencana studi Semester Antara mahasiswa. 
+Nama Atribut Tipe Data Jenis Nullable Deskripsi & 
+Nilai Domain 
+PengajuanID V ARCHAR(20) PK NO Nomor 
+pendaftaran 
+rencana studi 
+contoh: 'KRS-
+SA-2026-001' 
+NIM V ARCHAR(20) FK NO Mahasiswa 
+pendaftar 
+PeriodeID V ARCHAR(10) FK NO Periode 
+Semester 
+Antara 
+
+--- Halaman 53 ---
+Nama Atribut Tipe Data Jenis Nullable Deskripsi & 
+Nilai Domain 
+TglPengajuan TIMESTAMP - NO Waktu 
+mahasiswa 
+mengirimkan 
+pengajuan 
+StatusVerifikasi V ARCHAR(30) - NO Enum: 
+{'Menunggu 
+Verifikasi', 
+'Disetujui 
+Pembimbing', 
+'Ditolak 
+Pembimbing'} 
+StatusFinal V ARCHAR(30) - NO Enum: {'Draft', 
+'Diajukan', 
+'Disetujui 
+Pembimbing', 
+'Menunggu 
+Pembayaran', 
+'Terdaftar 
+Resmi', 'Gugur 
+/ Expired', 
+'Dibatalkan'} 
+TotalSKS INT - NO Akumulasi 
+beban SKS 
+yang diambil: 
+maksimal 9 
+SKS 
+TotalTagihan DECIMAL(12,2) - NO Akumulasi 
+nominal rupiah 
+biaya 
+perkuliahan 
+ 
+
+--- Halaman 54 ---
+11) ENTITAS: DETAIL_KRS_SA 
+Menyimpan rincian item kelas mata kuliah yang termuat di dalam suatu pengajuan 
+rencana studi. 
+Nama Atribut Tipe Data Jeni
+s 
+Nullabl
+e 
+Deskripsi & Nilai 
+Domain 
+DetailID V ARCHAR(2
+5) 
+PK NO Identifikator unik detail 
+pengajuan 
+PengajuanID V ARCHAR(2
+0) 
+FK NO Relasi ke entitas induk 
+PENGAJUAN_KRS_SA 
+KelasID V ARCHAR(2
+0) 
+FK NO Relasi ke 
+KELAS_DITAWARKAN_
+SA yang dipilih 
+JenisPengambil
+an 
+V ARCHAR(2
+0) 
+- NO Enum: {'Perbaikan Nilai', 
+'Mata Kuliah Baru'} 
+NilaiLama V ARCHAR(5
+) 
+- YES Nilai historis: {'C+', 'C', 
+'C-', 'D', 'E'} 
+StatusItemKela
+s 
+V ARCHAR(3
+0) 
+- NO Enum: {'Terdaftar', 
+'Dibatalkan Prodi'} 
+ 
+12) ENTITAS: PEMBAYARAN_SA 
+Menyimpan data transaksi Virtual Account perbankan dan pelunasan biaya studi. 
+Nama Atribut Tipe Data Jeni
+s 
+Nullabl
+e 
+Deskripsi & Nilai 
+Domain 
+PembayaranID V ARCHAR(25) PK NO Nomor faktur 
+penagihan contoh: 
+'INV-SA-2026-01' 
+PengajuanID V ARCHAR(20) FK NO Relasi ke 
+PENGAJUAN_KRS_S
+A 
+NomorV A V ARCHAR(30) - NO Nomor Virtual Account 
+unik Bank Mitra 
+
+--- Halaman 55 ---
+Nama Atribut Tipe Data Jeni
+s 
+Nullabl
+e 
+Deskripsi & Nilai 
+Domain 
+BankMitra V ARCHAR(30) - NO Enum: {'Mandiri', 
+'BNI', 'BRI', 'BTN', 
+'BSI'} 
+Nominal DECIMAL(12,
+2) 
+- NO Total rupiah tagihan 
+biaya SKS 
+StatusBayar V ARCHAR(20) - NO Enum: {'Pending', 
+'Lunas', 'Expired'} 
+WaktuTerbit TIMESTAMP - NO Waktu nomor tagihan 
+terbit oleh sistem 
+WaktuExpired TIMESTAMP - NO Tenggat waktu 
+pembayaran kalender 
+akademik 
+WaktuBayar TIMESTAMP - YES Waktu transaksi 
+pelunasan dicatat 
+callback 
+RefTransaksiBan
+k 
+V ARCHAR(10
+0) 
+- YES Nomor referensi audit 
+transaksi core banking 
+ 
+13) ENTITAS: EKUIV ALENSI_MK 
+Menyimpan data penyetaraan kurikulum antar -program studi untuk mata kuliah lintas 
+program studi. 
+Nama Atribut Tipe Data Jenis Nullable Deskripsi & 
+Nilai 
+Domain 
+EkuivalensiID V ARCHAR(20) PK NO Identifikator 
+unik aturan 
+ekuivalensi 
+
+--- Halaman 56 ---
+Nama Atribut Tipe Data Jenis Nullable Deskripsi & 
+Nilai 
+Domain 
+KodeMK_Asal V ARCHAR(15) FK NO Kode mata 
+kuliah pada 
+kurikulum 
+program studi 
+asal 
+KodeProdi_Asal V ARCHAR(10) FK NO Program 
+studi asal 
+mahasiswa 
+KodeMK_Tujuan V ARCHAR(15) FK NO Kode mata 
+kuliah 
+ekuivalen 
+pada program 
+studi tujuan 
+KodeProdi_Tujuan V ARCHAR(10) FK NO Program 
+studi pemilik 
+mata kuliah 
+tujuan 
+StatusEkuivalen V ARCHAR(20) - NO Enum: 
+{'Valid', 
+'Tidak Valid'} 
+ 

@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}Pengaturan Periode Pendaftaran - Program Studi{% endblock %}
+
+{% block breadcrumb %}
+<li><a href="#">Program Studi</a></li>
+<li class="active">Pengaturan Periode & Status Keaktifan</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="col-padded">
+            <h4 class="page-header">
+                Pengaturan Periode Pendaftaran & Status Keaktifan Semester Antara
+            </h4>
+
+            <div class="alert alert-info" role="alert" style="font-size:13px;">
+                <strong><i class="fa fa-info-circle"></i> Petunjuk Pengaturan Periode:</strong><br>
+                Sistem menyediakan menu pengaturan periode pendaftaran dan status keaktifan Semester Antara bagi Program Studi. 
+                Apabila status diubah menjadi <b>Tutup</b>, seluruh mahasiswa tidak dapat lagi mengajukan atau merevisi Kartu Rencana Studi (KRS).
+            </div>
+
+            <div class="row" style="margin-top:20px;">
+                <div class="col-md-7">
+                    <div class="panel panel-default" style="border-top: 3px solid #343a40;">
+                        <div class="panel-heading" style="font-weight:700;">
+                            <i class="fa fa-sliders"></i> Konfigurasi Periode Akademik
+                        </div>
+                        <div class="panel-body">
+                            <form action="/prodi/periode/update" method="POST">
+                                <div class="form-group">
+                                    <label>Nama Semester Aktif:</label>
+                                    <input type="text" name="active_semester" class="form-control" value="{{ active_semester }}" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Status Periode Pendaftaran Mahasiswa:</label>
+                                    <div class="radio">
+                                        <label>
+                                            <input type="radio" name="registration_status" value="Buka" {% if reg_status == 'Buka' %}checked{% endif %}>
+                                            <span class="label label-success" style="font-size:12px;"><i class="fa fa-check"></i> BUKA (Pendaftaran Aktif)</span>
+                                            &mdash; Mahasiswa dapat memilih mata kuliah dan mengajukan KRS.
+                                        </label>
+                                    </div>
+                                    <div class="radio">
+                                        <label>
+                                            <input type="radio" name="registration_status" value="Tutup" {% if reg_status == 'Tutup' %}checked{% endif %}>
+                                            <span class="label label-danger" style="font-size:12px;"><i class="fa fa-lock"></i> TUTUP (Pendaftaran Ditutup)</span>
+                                            &mdash; Pendaftaran dikunci untuk proses evaluasi kuota kelas.
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Tanggal Mulai Pendaftaran:</label>
+                                            <input type="date" name="registration_start" class="form-control" value="{{ reg_start }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Tanggal Akhir Pendaftaran:</label>
+                                            <input type="date" name="registration_end" class="form-control" value="{{ reg_end }}" required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Batas Maksimal Beban Studi Mahasiswa (SK Rektor 686/2025):</label>
+                                    <div class="input-group">
+                                        <input type="number" name="max_sks" class="form-control" value="{{ max_sks }}" required min="1" max="12">
+                                        <span class="input-group-addon">SKS</span>
+                                    </div>
+                                    <span class="help-block text-muted" style="font-size:11px;">Ketentuan baku Rektor: 9 SKS.</span>
+                                </div>
+
+                                <hr>
+                                <button type="submit" class="btn btn-primary" style="font-weight:700;">
+                                    <i class="fa fa-save"></i> Simpan Konfigurasi Periode Pendaftaran
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-5">
+                    <div class="panel panel-info">
+                        <div class="panel-heading" style="font-weight:700;">
+                            <i class="fa fa-calendar-check-o"></i> Alur Pelaksanaan Semester Antara
+                        </div>
+                        <div class="panel-body" style="font-size:12px; line-height:1.6;">
+                            <p><b>1. Masa Penawaran & Pendaftaran</b><br>
+                            Mulai: {{ reg_start }} s.d {{ reg_end }}<br>
+                            Mahasiswa mengisi KRS dengan validasi otomatis syarat beban studi.</p>
+
+                            <p><b>2. Verifikasi DPA & Konfirmasi Pengampu</b><br>
+                            DPA memverifikasi kelayakan akademik mahasiswa dan calon dosen mengonfirmasi kesediaan mengajar.</p>
+
+                            <p><b>3. Evaluasi Kuota Kelas & Penetapan</b><br>
+                            Kelas dengan pendaftar minimal 10 resmi dibuka; di bawah 10 peserta memerlukan konfirmasi kelas dispensasi.</p>
+
+                            <p><b>4. Pembayaran Virtual Account</b><br>
+                            Penerbitan nomor Virtual Account otomatis dan pembayaran melalui mitra bank.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

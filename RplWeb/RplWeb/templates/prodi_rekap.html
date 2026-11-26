@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block title %}Rekapitulasi & Ekspor Peserta Resmi - Program Studi{% endblock %}
+
+{% block breadcrumb %}
+<li><a href="#">Program Studi</a></li>
+<li class="active">Penutupan Pendaftaran & Ekspor Data</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="col-padded">
+            <h4 class="page-header">
+                Penutupan Pendaftaran & Ekspor Rekapitulasi Peserta Resmi
+            </h4>
+
+            <div class="alert alert-info" role="alert" style="font-size:13px;">
+                <strong><i class="fa fa-info-circle"></i> Informasi Rekapitulasi & Ekspor:</strong><br>
+                Sistem menyediakan fungsi penutupan pendaftaran serta ekspor data rekapitulasi peserta resmi bagi Program Studi. Data yang diekspor memuat daftar mahasiswa yang terdaftar pada kelas resmi beserta status kelulusan verifikasi dan pembayaran.
+            </div>
+
+            <!-- REGISTRATION LOCK / CLOSE BAR -->
+            <div class="well well-sm" style="display:flex; justify-content:space-between; align-items:center; background:#f8f9fa; border-color:#e9ecef;">
+                <div>
+                    <span style="font-size:14px; font-weight:700;">Status Pendaftaran:</span>
+                    {% if reg_status == 'Buka' %}
+                        <span class="label label-success" style="font-size:12px; margin-left:8px;"><i class="fa fa-unlock"></i> SEDANG DIBUKA</span>
+                    {% else %}
+                        <span class="label label-danger" style="font-size:12px; margin-left:8px;"><i class="fa fa-lock"></i> TELAH RESMI DITUTUP</span>
+                    {% endif %}
+                </div>
+
+                <div>
+                    {% if reg_status == 'Buka' %}
+                        <form action="/prodi/tutup" method="POST" style="display:inline-block;" onsubmit="return confirm('Apakah Anda yakin menutup pendaftaran Semester Antara sekarang? Mahasiswa tidak akan dapat mengajukan perubahan lagi.')">
+                            <button type="submit" class="btn btn-danger btn-sm" style="font-weight:700;">
+                                <i class="fa fa-lock"></i> Kunci & Tutup Pendaftaran Resmi
+                            </button>
+                        </form>
+                    {% else %}
+                        <form action="/prodi/buka" method="POST" style="display:inline-block;">
+                            <button type="submit" class="btn btn-default btn-sm">
+                                <i class="fa fa-unlock"></i> Buka Kembali Pendaftaran
+                            </button>
+                        </form>
+                    {% endif %}
+
+                    <!-- EXPORT CSV BUTTON -->
+                    <a href="/prodi/export_csv" class="btn btn-primary btn-sm" style="font-weight:700; margin-left:8px;">
+                        <i class="fa fa-download"></i> Unduh Rekapitulasi Peserta Resmi (Format CSV)
+                    </a>
+                </div>
+            </div>
+
+            <!-- OFFICIAL PARTICIPANTS TABLE -->
+            <h5 style="font-weight:700; color:#212529; margin-top:25px;">
+                Rekapitulasi Peserta Kuliah Semester Antara
+            </h5>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" style="font-size:12px; vertical-align:middle;">
+                    <thead style="background:#ecf0f2; color:#000;">
+                        <tr>
+                            <th class="text-center" style="width:35px;">No</th>
+                            <th style="width:100px;">NIM</th>
+                            <th>Nama Mahasiswa</th>
+                            <th style="width:85px;">Kode MK</th>
+                            <th>Mata Kuliah Terdaftar</th>
+                            <th>Ruang Luring</th>
+                            <th>Jadwal Sesi</th>
+                            <th>Dosen Pengampu</th>
+                            <th class="text-center" style="width:100px;">Status Bayar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if not participants %}
+                        <tr>
+                            <td colspan="9" class="text-center text-muted" style="padding:25px;">
+                                <i class="fa fa-folder-open-o fa-2x"></i><br>
+                                Belum ada peserta terdaftar pada kelas yang aktif.
+                            </td>
+                        </tr>
+                        {% endif %}
+
+                        {% for p in participants %}
+                        <tr>
+                            <td class="text-center">{{ loop.index }}</td>
+                            <td><strong>{{ p.nim_nip }}</strong></td>
+                            <td><b>{{ p.student_name }}</b></td>
+                            <td><span class="label label-info">{{ p.course_code }}</span></td>
+                            <td><b>{{ p.course_name }}</b> ({{ p.sks }} SKS)</td>
+                            <td><i class="fa fa-building-o text-muted"></i> {{ p.room }}</td>
+                            <td>{{ p.schedule_day }}, {{ p.schedule_time }}</td>
+                            <td>{{ p.lecturer_name }}</td>
+                            <td class="text-center">
+                                {% if p.payment_status == 'Lunas' %}
+                                    <span class="label label-success"><i class="fa fa-check"></i> Lunas</span>
+                                {% else %}
+                                    <span class="label label-warning">{{ p.payment_status }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

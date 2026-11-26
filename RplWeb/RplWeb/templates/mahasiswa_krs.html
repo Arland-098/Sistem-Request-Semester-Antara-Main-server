@@ -1,0 +1,328 @@
+{% extends 'base.html' %}
+{% block title %}Pengisian Kartu Rencana Studi - Semester Antara{% endblock %}
+
+{% block breadcrumb %}
+<li><a href="#">Mahasiswa</a></li>
+<li class="active">Pengisian Kartu Rencana Studi</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="col-padded">
+            <h4 class="page-header">
+                Pengisian Kartu Rencana Studi (KRS) &mdash; Semester Antara
+            </h4>
+
+            <!-- STUDENT PROFILE INFO STRIP -->
+            <div class="well well-sm" style="background:#f8f9fa; border-color:#e9ecef; margin-bottom:20px;">
+                <div class="row" style="font-size:12px;">
+                    <div class="col-md-3 col-sm-6">
+                        <strong>NIM:</strong> {{ student.nim_nip }}<br>
+                        <strong>Nama:</strong> {{ student.name }}
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <strong>Program Studi:</strong> {{ student.prodi }}<br>
+                        <strong>Semester Tempuh:</strong> {{ student.semester }}
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <strong>IPK Terakhir:</strong> <b style="color:#000;">{{ student.ipk }}</b> (Memenuhi Syarat)<br>
+                        <strong>Batas SKS Maks:</strong> <b style="color:#000;">{{ max_sks }} SKS</b>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <strong>Dosen Pembimbing Akademik:</strong><br>
+                        <i class="fa fa-user-circle"></i> {{ student.dpa_name or 'Dr. Dewi Khairani, M.Sc.' }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- REGISTRATION PERIOD STATUS CHECK -->
+            {% if reg_status != 'Buka' %}
+                <div class="alert alert-warning text-center" style="padding:30px; background:#fffcf0; border:2px dashed #f0ad4e;">
+                    <span style="font-size:36px; color:#f0ad4e;"><i class="fa fa-warning"></i></span>
+                    <h3 style="margin-top:10px; color:#8a6d3b; font-weight:700;">PERINGATAN</h3>
+                    <p style="font-size:15px; color:#8a6d3b;">
+                        <b>Bukan Periode Pengisian KRS Semester Antara.</b><br>
+                        Pendaftaran saat ini ditutup oleh Pengelola Program Studi.
+                    </p>
+                </div>
+            {% else %}
+                <div class="alert alert-info" role="alert" style="font-size: 13px;">
+                    <strong><i class="fa fa-info-circle"></i> Aturan Pengisian Rencana Studi (SK Rektor No. 686 Tahun 2025):</strong>
+                    <ul style="margin-top:5px; margin-bottom:0; padding-left:20px;">
+                        <li>Beban studi maksimal pada Semester Antara dibatasi sebanyak <b>{{ max_sks }} SKS</b>.</li>
+                        <li>Sistem secara otomatis memvalidasi jadwal agar tidak terjadi bentrok sesi kuliah luring.</li>
+                        <li>Sistem menerapkan proteksi integritas transaksi untuk memastikan jumlah mahasiswa yang terdaftar tidak melampaui kapasitas kuota kelas.</li>
+                    </ul>
+                </div>
+
+                <!-- APPLICATION STATUS ALERT -->
+                {% if app %}
+                    {% if app.status == 'Diajukan' %}
+                        <div class="alert alert-warning">
+                            <i class="fa fa-clock-o"></i> <strong>Status Pengajuan: DIAJUKAN</strong><br>
+                            KRS Anda telah berhasil dikirim pada {{ app.submitted_at }} dan sedang dalam antrean verifikasi oleh Dosen Pembimbing Akademik (DPA).
+                        </div>
+                    {% elif app.status == 'Disetujui DPA' %}
+                        <div class="alert alert-success">
+                            <i class="fa fa-check-circle"></i> <strong>Status Pengajuan: DISETUJUI DOSEN PA</strong><br>
+                            KRS Anda telah disetujui Dosen Pembimbing Akademik. Tagihan Virtual Account (VA) telah otomatis diterbitkan oleh Bagian Keuangan.
+                            <div style="margin-top:8px;">
+                                <a href="/tagihan" class="btn btn-sm btn-primary"><i class="fa fa-credit-card"></i> Lihat Rincian Tagihan & VA</a>
+                            </div>
+                        </div>
+                    {% elif app.status == 'Ditolak DPA' %}
+                        <div class="alert alert-danger">
+                            <i class="fa fa-times-circle"></i> <strong>Status Pengajuan: DITOLAK DOSEN PA (Perlu Perbaikan)</strong><br>
+                            <strong>Catatan DPA:</strong> "{{ app.dpa_notes or 'Silakan sesuaikan mata kuliah yang diambil.' }}"<br>
+                            <span style="font-size:12px;">Anda dapat mengubah pilihan mata kuliah di bawah ini dan mengajukan kembali selama masa pendaftaran masih dibuka.</span>
+                        </div>
+                    {% elif app.status == 'Lunas' %}
+                        <div class="alert alert-success">
+                            <i class="fa fa-shield"></i> <strong>Status Pengajuan: LUNAS & RESMI TERDAFTAR</strong><br>
+                            Pembayaran biaya Semester Antara telah terverifikasi lunas. Anda dapat mencetak Kartu Rencana Studi (KRS) Sah berstempel dan QR Code.
+                            <div style="margin-top:8px;">
+                                <a href="/cetak_krs" target="_blank" class="btn btn-sm btn-primary"><i class="fa fa-print"></i> Cetak Kartu Rencana Studi Sah</a>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endif %}
+
+                <!-- FORM KRS ENROLLMENT -->
+                {% if not app or app.status in ['Draft', 'Ditolak DPA'] %}
+                <form id="krsForm" action="/krs/submit" method="POST">
+                    <h5 style="font-weight:700; color:#212529; margin-top:20px;">
+                        Pilih Paket Semester & Mata Kuliah yang Ditawarkan:
+                    </h5>
+                    <p class="text-muted" style="font-size:12px; margin-bottom:15px;">
+                        Klik pada <b>Paket Semester</b> yang ingin Anda ambil untuk membuka tabel pemilihan mata kuliah. Anda dapat memilih mata kuliah lintas semester hingga batas maksimal <b>{{ max_sks }} SKS</b>.
+                    </p>
+
+                    <!-- ACCORDION PER PAKET SEMESTER (1 S/D 6 SESUAI E-SEMESTA) -->
+                    {% for sem in [1, 2, 3, 4, 5, 6] %}
+                    {% set sem_courses = grouped_courses.get(sem, []) %}
+                    <div class="urlShowingMatkul" onclick="toggleKrsSemester({{ sem }})" style="margin-bottom:6px;">
+                        <a id="krsShowing_{{ sem }}" href="javascript:void(0)" class="hideMatkul">
+                            <i class="fa fa-list-alt"></i>
+                            &nbsp;
+                            <strong>Paket Semester {{ sem }}</strong>
+                            <span style="font-weight:normal; font-size:12px; color:#555; margin-left:6px;">
+                                ({{ sem_courses|length }} Mata Kuliah Ditawarkan)
+                            </span>
+                            <div style="float:right;">
+                                <span class="krsFontDown{{ sem }}" style="display: inline;">
+                                    <i class="fa fa-chevron-circle-down"></i>
+                                </span>
+                                <span class="krsFontUp{{ sem }}" style="display: none;">
+                                    <i class="fa fa-chevron-circle-up"></i>
+                                </span>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div id="krs_semester_{{ sem }}" class="semester-table-container" style="margin-left: 7px; display: none; margin-top: 6px; margin-bottom: 15px;">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover" style="font-size:13px; margin-bottom:0;">
+                                <thead style="background:#ecf0f2; color:#000;">
+                                    <tr>
+                                        <th class="text-center" style="width: 50px;">Pilih</th>
+                                        <th style="width: 90px;">Kode</th>
+                                        <th>Nama Mata Kuliah</th>
+                                        <th class="text-center" style="width: 60px;">SKS</th>
+                                        <th>Jadwal Sesi Perkuliahan</th>
+                                        <th>Ruang Luring</th>
+                                        <th>Dosen Pengampu</th>
+                                        <th class="text-center" style="width: 90px;">Sisa Kuota</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if not sem_courses %}
+                                    <tr>
+                                        <td colspan="8" class="text-center text-muted" style="padding:15px;">
+                                            Tidak ada mata kuliah pada semester ini.
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                    {% for c in sem_courses %}
+                                    {% set is_selected = c.id in current_selected_ids %}
+                                    {% set is_full = (c.enrolled_count >= c.quota) and not is_selected %}
+                                    <tr class="{% if is_full %}danger text-muted{% endif %}">
+                                        <td class="text-center">
+                                            <input type="checkbox" name="course_ids" value="{{ c.id }}"
+                                                   data-sks="{{ c.sks }}"
+                                                   data-day="{{ c.schedule_day }}"
+                                                   data-time="{{ c.schedule_time }}"
+                                                   data-name="{{ c.name }}"
+                                                   data-sem="{{ sem }}"
+                                                   {% if is_selected %}checked{% endif %}
+                                                   {% if is_full %}disabled{% endif %}
+                                                   class="course-checkbox">
+                                        </td>
+                                        <td><strong>{{ c.code }}</strong></td>
+                                        <td>
+                                            <b>{{ c.name }}</b>
+                                            {% if is_full %}
+                                                 <span class="label label-danger pull-right">Kuota Penuh</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center col-sks"><b style="color:#000; font-size:13px;">{{ c.sks }}</b></td>
+                                        <td><i class="fa fa-calendar text-muted"></i> {{ c.schedule_day }}, {{ c.schedule_time }}</td>
+                                        <td><i class="fa fa-building-o text-muted"></i> {{ c.room }}</td>
+                                        <td>{{ c.lecturer_name }}</td>
+                                        <td class="text-center">
+                                            <b>{{ c.quota - c.enrolled_count }}</b> kursi
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <!-- SELECTION SUMMARY BAR -->
+                    <div class="well well-sm" style="display:flex; justify-content:space-between; align-items:center; background:#f8f9fa; border-color:#dee2e6; margin-top:20px;">
+                        <div>
+                            <span style="font-size:14px; font-weight:700; color:#212529;">
+                                Total SKS Terpilih: <span id="totalSksText">0</span> / {{ max_sks }} SKS
+                            </span>
+                            <span id="sksWarning" class="text-danger" style="display:none; font-weight:bold; margin-left:15px;">
+                                <i class="fa fa-exclamation-triangle"></i> Melebihi batas maksimal {{ max_sks }} SKS!
+                            </span>
+                            <div id="conflictAlert" class="text-danger" style="display:none; font-size:12px; margin-top:4px;">
+                                <i class="fa fa-times-circle"></i> Terdeteksi bentrok jadwal kuliah!
+                            </div>
+                        </div>
+
+                        <div>
+                            <button type="submit" id="btnSubmitKrs" class="btn btn-primary btn-lg" style="font-weight:700;">
+                                <i class="fa fa-send"></i> Ajukan Kartu Rencana Studi &rarr;
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                {% else %}
+                    <!-- VIEW-ONLY TABLE IF ALREADY SUBMITTED -->
+                    <h5 style="font-weight:700; color:#212529; margin-top:20px;">
+                        Susunan Mata Kuliah yang Diajukan (Total: {{ app.total_sks }} SKS)
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" style="font-size:13px;">
+                            <thead style="background:#ecf0f2; color:#000;">
+                                <tr>
+                                    <th class="text-center" style="width: 40px;">No</th>
+                                    <th>Kode MK</th>
+                                    <th>Nama Mata Kuliah</th>
+                                    <th class="text-center">SKS</th>
+                                    <th>Jadwal Sesi Perkuliahan</th>
+                                    <th>Ruang Luring</th>
+                                    <th>Dosen Pengampu</th>
+                                    <th class="text-center">Status MK</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in krs_items %}
+                                <tr>
+                                    <td class="text-center">{{ loop.index }}</td>
+                                    <td><b>{{ item.code }}</b></td>
+                                    <td>{{ item.name }}</td>
+                                    <td class="text-center col-sks"><b style="color:#000; font-size:13px;">{{ item.sks }}</b></td>
+                                    <td>{{ item.schedule_day }}, {{ item.schedule_time }}</td>
+                                    <td>{{ item.room }}</td>
+                                    <td>{{ item.lecturer_name }}</td>
+                                    <td class="text-center">
+                                        {% if item.status == 'Aktif' %}
+                                            <span class="label label-success">Terdaftar Aktif</span>
+                                        {% else %}
+                                            <span class="label label-danger">Dibatalkan</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function toggleKrsSemester(sem) {
+    if ($('#krs_semester_' + sem).is(':visible')) {
+        $('#krs_semester_' + sem).slideUp('fast');
+        $('.krsFontDown' + sem).show();
+        $('.krsFontUp' + sem).hide();
+    } else {
+        $('#krs_semester_' + sem).slideDown('fast');
+        $('.krsFontDown' + sem).hide();
+        $('.krsFontUp' + sem).show();
+    }
+}
+
+$(document).ready(function() {
+    // Automatically expand panels that contain checked courses, or default to Semester 3
+    var hasOpenPanel = false;
+    $('.course-checkbox:checked').each(function() {
+        var sem = $(this).data('sem');
+        if (sem && !$('#krs_semester_' + sem).is(':visible')) {
+            $('#krs_semester_' + sem).show();
+            $('.krsFontDown' + sem).hide();
+            $('.krsFontUp' + sem).show();
+            hasOpenPanel = true;
+        }
+    });
+    if (!hasOpenPanel) {
+        toggleKrsSemester(3);
+    }
+
+    function recalculateSks() {
+        var total = 0;
+        var maxSks = {{ max_sks }};
+        var slots = {};
+        var hasConflict = false;
+
+        $('.course-checkbox:checked').each(function() {
+            var sks = parseInt($(this).data('sks')) || 0;
+            var day = $(this).data('day');
+            var time = $(this).data('time');
+            var slotKey = day + '_' + time;
+
+            total += sks;
+
+            if (slots[slotKey]) {
+                hasConflict = true;
+                $('#conflictAlert').html('<i class="fa fa-times-circle"></i> Bentrok Jadwal: ' + $(this).data('name') + ' bentrok dengan ' + slots[slotKey] + ' (' + day + ', ' + time + ')').show();
+            } else {
+                slots[slotKey] = $(this).data('name');
+            }
+        });
+
+        $('#totalSksText').text(total);
+
+        if (total > maxSks) {
+            $('#sksWarning').show();
+            $('#btnSubmitKrs').prop('disabled', true);
+        } else if (hasConflict) {
+            $('#sksWarning').hide();
+            $('#btnSubmitKrs').prop('disabled', true);
+        } else if (total === 0) {
+            $('#sksWarning').hide();
+            $('#conflictAlert').hide();
+            $('#btnSubmitKrs').prop('disabled', true);
+        } else {
+            $('#sksWarning').hide();
+            if (!hasConflict) $('#conflictAlert').hide();
+            $('#btnSubmitKrs').prop('disabled', false);
+        }
+    }
+
+    $('.course-checkbox').on('change', recalculateSks);
+    recalculateSks();
+});
+</script>
+{% endblock %}

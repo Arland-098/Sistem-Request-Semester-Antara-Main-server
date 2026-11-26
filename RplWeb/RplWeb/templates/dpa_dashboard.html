@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% block title %}Dasbor Dosen Pembimbing Akademik - Verifikasi KRS{% endblock %}
+
+{% block breadcrumb %}
+<li><a href="#">Dosen PA</a></li>
+<li class="active">Verifikasi Rencana Studi Mahasiswa Bimbingan</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="col-padded">
+            <h4 class="page-header">
+                Dasbor Dosen Pembimbing Akademik (DPA)
+            </h4>
+
+            <div class="well well-sm" style="background:#f8f9fa; border-color:#e9ecef; margin-bottom:20px;">
+                <div class="row" style="font-size:12px;">
+                    <div class="col-md-6">
+                        <strong>Dosen Pembimbing Akademik:</strong> {{ current_user.name }}<br>
+                        <strong>NIP:</strong> {{ current_user.nim_nip }} | <strong>Program Studi:</strong> {{ current_user.prodi }}
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <span class="label label-info" style="font-size:12px;">Periode: {{ active_semester }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-info" role="alert" style="font-size:13px;">
+                <strong><i class="fa fa-info-circle"></i> Petunjuk Verifikasi Rencana Studi:</strong><br>
+                Periksa riwayat akademik (IPK, riwayat nilai/semester) dan beban SKS yang diajukan mahasiswa bimbingan. 
+                Apabila rencana studi disetujui, sistem secara otomatis menerbitkan tagihan Virtual Account. 
+                Apabila ditolak, berikan catatan perbaikan agar mahasiswa dapat merevisi pilihannya.
+            </div>
+
+            <div class="table-responsive" style="margin-top:20px;">
+                <table class="table table-bordered table-hover" style="font-size:13px; vertical-align:middle;">
+                    <thead style="background:#ecf0f2; color:#000;">
+                        <tr>
+                            <th class="text-center" style="width: 40px;">No</th>
+                            <th style="width: 110px;">NIM</th>
+                            <th>Nama Mahasiswa</th>
+                            <th class="text-center" style="width: 60px;">Sem</th>
+                            <th class="text-center" style="width: 70px;">IPK</th>
+                            <th class="text-center" style="width: 80px;">Total SKS</th>
+                            <th>Waktu Pengajuan</th>
+                            <th class="text-center" style="width: 130px;">Status KRS</th>
+                            <th class="text-center" style="width: 200px;">Aksi Verifikasi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if not applications %}
+                        <tr>
+                            <td colspan="9" class="text-center text-muted" style="padding:25px;">
+                                <i class="fa fa-folder-open-o fa-2x"></i><br>
+                                Belum ada pengajuan rencana studi dari mahasiswa bimbingan pada periode ini.
+                            </td>
+                        </tr>
+                        {% endif %}
+
+                        {% for app in applications %}
+                        <tr>
+                            <td class="text-center">{{ loop.index }}</td>
+                            <td><strong>{{ app.nim_nip }}</strong></td>
+                            <td>
+                                <b>{{ app.student_name }}</b><br>
+                                <small class="text-muted">{{ app.prodi }}</small>
+                            </td>
+                            <td class="text-center">{{ app.semester }}</td>
+                            <td class="text-center">
+                                <b style="color:#000; font-size:13px;">{{ app.ipk }}</b>
+                            </td>
+                            <td class="text-center">
+                                <b>{{ app.total_sks }}</b> / 9 SKS
+                            </td>
+                            <td><i class="fa fa-calendar text-muted"></i> {{ app.submitted_at }}</td>
+                            <td class="text-center">
+                                {% if app.status == 'Diajukan' %}
+                                    <span class="label label-warning" style="font-size:11px;">Menunggu Verifikasi</span>
+                                {% elif app.status == 'Disetujui DPA' %}
+                                    <span class="label label-success" style="font-size:11px;">Disetujui DPA</span>
+                                {% elif app.status == 'Ditolak DPA' %}
+                                    <span class="label label-danger" style="font-size:11px;">Ditolak DPA</span>
+                                {% elif app.status == 'Lunas' %}
+                                    <span class="label label-primary" style="font-size:11px;">Lunas & Sah</span>
+                                {% else %}
+                                    <span class="label label-default" style="font-size:11px;">{{ app.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if app.status == 'Diajukan' %}
+                                    <!-- APPROVE FORM -->
+                                    <form action="/dpa/approve/{{ app.id }}" method="POST" style="display:inline-block;">
+                                        <button type="submit" class="btn btn-xs btn-primary" title="Setujui Pengajuan KRS" onclick="return confirm('Apakah Anda yakin menyetujui pengajuan KRS ini?')">
+                                            <i class="fa fa-check"></i> Setujui
+                                        </button>
+                                    </form>
+
+                                    <!-- REJECT BUTTON (Triggers Modal) -->
+                                    <button type="button" class="btn btn-xs btn-danger" data-toggle="modal" data-target="#rejectModal{{ app.id }}" title="Tolak dan beri catatan perbaikan">
+                                        <i class="fa fa-times"></i> Tolak
+                                    </button>
+
+                                    <!-- REJECT MODAL -->
+                                    <div class="modal fade text-left" id="rejectModal{{ app.id }}" tabindex="-1" role="dialog">
+                                        <div class="modal-dialog" role="document">
+                                            <div class="modal-content">
+                                                <form action="/dpa/reject/{{ app.id }}" method="POST">
+                                                    <div class="modal-header" style="background:#2d3136; color:#fff;">
+                                                        <button type="button" class="close" data-dismiss="modal" style="color:#fff;">&times;</button>
+                                                        <h4 class="modal-title"><i class="fa fa-exclamation-triangle"></i> Tolak Pengajuan KRS Mahasiswa</h4>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <p>Mahasiswa: <b>{{ app.student_name }}</b> ({{ app.nim_nip }})</p>
+                                                        <div class="form-group">
+                                                            <label>Catatan Alasan Penolakan / Arahan Perbaikan (Wajib diisi):</label>
+                                                            <textarea name="notes" class="form-control" rows="4" required placeholder="Contoh: Beban SKS terlalu berat untuk perbaikan, atau disarankan menempuh MK alternatif..."></textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-default" data-dismiss="modal">Batal</button>
+                                                        <button type="submit" class="btn btn-danger"><i class="fa fa-send"></i> Kirim Penolakan & Catatan</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted" style="font-size:11px;">
+                                        <i class="fa fa-check-circle text-success"></i> Terverifikasi
+                                        {% if app.dpa_notes %}
+                                            <br><i>"{{ app.dpa_notes }}"</i>
+                                        {% endif %}
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

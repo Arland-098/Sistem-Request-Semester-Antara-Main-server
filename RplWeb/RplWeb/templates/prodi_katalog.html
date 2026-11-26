@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% block title %}Pengelolaan Katalog Mata Kuliah - Program Studi{% endblock %}
+
+{% block breadcrumb %}
+<li><a href="#">Program Studi</a></li>
+<li class="active">Pengelolaan Katalog MK & Kuota</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="col-padded">
+            <h4 class="page-header">
+                Pengelolaan Katalog Mata Kuliah & Kuota Kelas
+            </h4>
+
+            <div class="alert alert-info" role="alert" style="font-size:13px;">
+                <strong><i class="fa fa-info-circle"></i> Petunjuk Pengelolaan Katalog:</strong><br>
+                Program Studi dapat menambah mata kuliah baru yang ditawarkan pada Semester Antara, mengubah kapasitas kuota mahasiswa, menugaskan dosen pengampu, serta menghapus mata kuliah yang tidak jadi diselenggarakan.
+            </div>
+
+            <!-- ADD COURSE BUTTON -->
+            <div style="margin-bottom: 15px;">
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addCourseModal" style="font-weight:700;">
+                    <i class="fa fa-plus-circle"></i> Tambah Mata Kuliah Baru ke Katalog
+                </button>
+            </div>
+
+            <!-- CATALOG TABLE -->
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" style="font-size:13px; vertical-align:middle;">
+                    <thead style="background:#ecf0f2; color:#000;">
+                        <tr>
+                            <th class="text-center" style="width:40px;">No</th>
+                            <th style="width:90px;">Kode MK</th>
+                            <th>Nama Mata Kuliah</th>
+                            <th class="text-center" style="width:60px;">SKS</th>
+                            <th>Dosen Pengampu Ditugaskan</th>
+                            <th class="text-center" style="width:90px;">Kapasitas Kuota</th>
+                            <th class="text-center" style="width:110px;">Status Kelas</th>
+                            <th class="text-center" style="width:140px;">Aksi Kelola</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in courses %}
+                        <tr>
+                            <td class="text-center">{{ loop.index }}</td>
+                            <td><strong>{{ c.code }}</strong></td>
+                            <td><b>{{ c.name }}</b></td>
+                            <td class="text-center col-sks"><b style="color:#000; font-size:13px;">{{ c.sks }}</b></td>
+                            <td>
+                                <i class="fa fa-user-circle text-muted"></i> {{ c.lecturer_name or 'Belum Ditugaskan' }}
+                                {% if c.lecturer_agreed == 1 %}
+                                    <span class="label label-success" style="font-size:10px;"><i class="fa fa-check"></i> Bersedia</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <b>{{ c.quota }}</b> kursi
+                            </td>
+                            <td class="text-center">
+                                {% if c.status == 'Dibuka' %}
+                                    <span class="badge-status status-dibuka">Dibuka</span>
+                                {% elif c.status == 'Dispensasi Buka' %}
+                                    <span class="badge-status status-dispensasi">Dispensasi</span>
+                                {% elif c.status == 'Dibatalkan' %}
+                                    <span class="badge-status status-dibatalkan">Dibatalkan</span>
+                                {% else %}
+                                    <span class="badge-status status-menunggu">Menunggu</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <!-- EDIT BUTTON -->
+                                <button type="button" class="btn btn-xs btn-primary" data-toggle="modal" data-target="#editModal{{ c.id }}" title="Edit Mata Kuliah">
+                                    <i class="fa fa-pencil"></i> Edit
+                                </button>
+                                <!-- DELETE BUTTON -->
+                                <form action="/prodi/katalog/delete/{{ c.id }}" method="POST" style="display:inline-block;">
+                                    <button type="submit" class="btn btn-xs btn-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus mata kuliah ini dari katalog?')" title="Hapus Mata Kuliah">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </form>
+
+                                <!-- EDIT MODAL -->
+                                <div class="modal fade text-left" id="editModal{{ c.id }}" tabindex="-1" role="dialog">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <form action="/prodi/katalog/edit/{{ c.id }}" method="POST">
+                                                <div class="modal-header" style="background:#2d3136; color:#fff;">
+                                                    <button type="button" class="close" data-dismiss="modal" style="color:#fff;">&times;</button>
+                                                    <h4 class="modal-title"><i class="fa fa-pencil"></i> Edit Mata Kuliah: {{ c.code }}</h4>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="form-group">
+                                                        <label>Nama Mata Kuliah:</label>
+                                                        <input type="text" name="name" class="form-control" value="{{ c.name }}" required>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>Bobot SKS:</label>
+                                                                <input type="number" name="sks" class="form-control" value="{{ c.sks }}" min="1" max="6" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>Kapasitas Kuota Kelas:</label>
+                                                                <input type="number" name="quota" class="form-control" value="{{ c.quota }}" min="5" max="60" required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>Penugasan Dosen Pengampu:</label>
+                                                        <select name="lecturer_id" class="form-control" required>
+                                                            {% for d in lecturers %}
+                                                                <option value="{{ d.id }}" {% if d.id == c.lecturer_id %}selected{% endif %}>{{ d.name }} ({{ d.nim_nip }})</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                    <!-- Keep existing schedule & room in edit -->
+                                                    <input type="hidden" name="schedule_day" value="{{ c.schedule_day }}">
+                                                    <input type="hidden" name="schedule_time" value="{{ c.schedule_time }}">
+                                                    <input type="hidden" name="room" value="{{ c.room }}">
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-default" data-dismiss="modal">Batal</button>
+                                                    <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Simpan Perubahan</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ADD MODAL -->
+            <div class="modal fade" id="addCourseModal" tabindex="-1" role="dialog">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <form action="/prodi/katalog/add" method="POST">
+                            <div class="modal-header" style="background:#2d3136; color:#fff;">
+                                <button type="button" class="close" data-dismiss="modal" style="color:#fff;">&times;</button>
+                                <h4 class="modal-title"><i class="fa fa-plus-circle"></i> Tambah Mata Kuliah Baru ke Katalog</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>Kode MK:</label>
+                                            <input type="text" name="code" class="form-control" required placeholder="TIF-310" style="text-transform:uppercase;">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="form-group">
+                                            <label>Nama Mata Kuliah:</label>
+                                            <input type="text" name="name" class="form-control" required placeholder="Rekayasa Perangkat Lunak Lanjut">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Bobot SKS:</label>
+                                            <input type="number" name="sks" class="form-control" value="3" min="1" max="6" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Kapasitas Kuota Mahasiswa:</label>
+                                            <input type="number" name="quota" class="form-control" value="25" min="5" max="60" required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Hari Perkuliahan:</label>
+                                            <select name="schedule_day" class="form-control" required>
+                                                <option>Senin</option>
+                                                <option>Selasa</option>
+                                                <option>Rabu</option>
+                                                <option>Kamis</option>
+                                                <option>Jumat</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Waktu Perkuliahan Luring:</label>
+                                            <input type="text" name="schedule_time" class="form-control" value="08.00 - 10.30 WIB" required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Alokasi Ruang Luring / Laboratorium:</label>
+                                    <input type="text" name="room" class="form-control" value="Ruang Kuliah FST 401" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Penugasan Calon Dosen Pengampu:</label>
+                                    <select name="lecturer_id" class="form-control" required>
+                                        {% for d in lecturers %}
+                                            <option value="{{ d.id }}">{{ d.name }} ({{ d.nim_nip }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Tambahkan ke Katalog</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

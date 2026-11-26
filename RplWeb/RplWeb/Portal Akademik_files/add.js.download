@@ -1,0 +1,79 @@
+//Filter Input Keys : 0-9 .(dot)
+function gsAngka(e){
+	var noKey;
+	var charKey;
+	var cekNo;
+
+	if (window.event) 
+		noKey = e.keyCode;
+	else if (e.which) 
+		noKey = e.which;
+	
+	if (!e.shiftKey && ((noKey > 47 && noKey < 58 ) || (noKey > 95 && noKey < 106 ) || noKey == 8 || noKey == 9 || noKey == 37 || noKey == 39 || noKey == 46 || noKey == 13 || noKey == 190 || noKey == 110 || noKey == 78))
+		return true;
+	else
+		return false;
+}
+
+// ========================================================
+//	                  KONVERSI SPECIAL CHAR
+// --------------------------------------------------------
+var escapeChars = {
+	'¢' : 'cent',
+	'£' : 'pound',
+	'¥' : 'yen',
+	'€': 'euro',
+	'©' :'copy',
+	'®' : 'reg',
+	'<' : 'lt',
+	'>' : 'gt',
+	'"' : 'quot',
+	'&' : 'amp'
+};
+
+var htmlEntities = {
+	nbsp: ' ',
+	cent: '¢',
+	pound: '£',
+	yen: '¥',
+	euro: '€',
+	copy: '©',
+	reg: '®',
+	lt: '<',
+	gt: '>',
+	quot: '"',
+	amp: '&'
+};
+
+var regexString = '[';
+for(var key in escapeChars) {
+	regexString += key;
+}
+regexString += ']';
+
+var regex = new RegExp( regexString, 'g');
+
+function escapeHTML(str) {
+	return str.replace(regex, function(m) {
+		return '&' + escapeChars[m] + ';';
+	});
+};
+
+function unescapeHTML(str) {
+	return str.replace(/\&([^;]+);/g, function (entity, entityCode) {
+		var match;
+
+		if (entityCode in htmlEntities) {
+			return htmlEntities[entityCode];
+			/*eslint no-cond-assign: 0*/
+		} else if (match = entityCode.match(/^#x([\da-fA-F]+)$/)) {
+			return String.fromCharCode(parseInt(match[1], 16));
+			/*eslint no-cond-assign: 0*/
+		} else if (match = entityCode.match(/^#(\d+)$/)) {
+			return String.fromCharCode(~~match[1]);
+		} else {
+			return entity;
+		}
+	});
+};
+// ========================================================

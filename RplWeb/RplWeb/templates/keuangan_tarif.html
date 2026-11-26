@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block title %}Pengaturan Tarif Biaya per SKS - Bagian Keuangan{% endblock %}
+
+{% block breadcrumb %}
+<li><a href="#">Bagian Keuangan</a></li>
+<li class="active">Pengaturan Tarif Biaya per SKS</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="col-padded">
+            <h4 class="page-header">
+                Pengaturan Tarif Biaya Kuliah per SKS (SK Rektor 686/2025)
+            </h4>
+
+            <div class="alert alert-info" role="alert" style="font-size:13px;">
+                <strong><i class="fa fa-info-circle"></i> Dasar Hukum Penetapan Tarif (Keputusan Rektor No. 686 Tahun 2025):</strong><br>
+                Bagian Keuangan / Biro Perencanaan dan Keuangan berwenang mengatur parameter tarif biaya per SKS yang berlaku untuk jenjang Sarjana Reguler Non-Kesehatan di lingkungan UIN Syarif Hidayatullah Jakarta (standar: <b>Rp220.000,- / SKS</b>). Perubahan tarif ini akan secara otomatis memperbarui perhitungan tagihan Virtual Account.
+            </div>
+
+            <div class="row" style="margin-top:20px;">
+                <div class="col-md-6">
+                    <div class="panel panel-default" style="border-top:3px solid #343a40;">
+                        <div class="panel-heading" style="font-weight:700;">
+                            <i class="fa fa-money"></i> Form Penetapan Tarif per SKS
+                        </div>
+                        <div class="panel-body">
+                            <form action="/keuangan/tarif/update" method="POST">
+                                <div class="form-group">
+                                    <label>Tarif Biaya per SKS (Rupiah):</label>
+                                    <div class="input-group">
+                                        <span class="input-group-addon">Rp</span>
+                                        <input type="number" name="sks_rate" class="form-control input-lg" value="{{ sks_rate }}" required step="1000" min="50000" style="font-size:18px; font-weight:bold; color:#212529;">
+                                    </div>
+                                    <span class="help-block text-muted" style="font-size:12px;">Tarif berlaku: Rp220.000 / SKS (SK Rektor No. 686/2025).</span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Dasar Ketetapan:</label>
+                                    <input type="text" class="form-control" value="Keputusan Rektor Nomor 686 Tahun 2025" readonly>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Simulasi Perhitungan Tagihan Mahasiswa:</label>
+                                    <table class="table table-bordered" style="font-size:12px; background:#f9f9f9;">
+                                        <tr>
+                                            <td>Ambil 3 SKS:</td>
+                                            <td><strong>Rp{{ "{:,}".format(sks_rate * 3).replace(',', '.') }}</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Ambil 6 SKS:</td>
+                                            <td><strong>Rp{{ "{:,}".format(sks_rate * 6).replace(',', '.') }}</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Ambil 9 SKS (Maksimal):</td>
+                                            <td><strong style="color:#212529; font-size:14px;">Rp{{ "{:,}".format(sks_rate * 9).replace(',', '.') }}</strong></td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary btn-block" style="font-weight:700;">
+                                    <i class="fa fa-save"></i> Perbarui Tarif Biaya SKS
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="panel panel-default">
+                        <div class="panel-heading" style="font-weight:700; color:#212529;">
+                            <i class="fa fa-shield"></i> Ketentuan Keuangan & Integrasi Perbankan
+                        </div>
+                        <div class="panel-body" style="font-size:12px; line-height:1.6;">
+                            <p><b>Integrasi Nomor Virtual Account Otomatis:</b></p>
+                            <p>Ketika DPA menyetujui formulir KRS mahasiswa, sistem mengalikan total SKS dengan tarif di samping dan langsung menerbitkan 16 digit nomor rekening Virtual Account mitra.</p>
+                            
+                            <p style="margin-top:15px;"><b>Bank Mitra Resmi Kampus:</b></p>
+                            <ul>
+                                <li>Bank Mandiri (Kode Prefix: 8871)</li>
+                                <li>Bank Syariah Indonesia / BSI</li>
+                                <li>Bank Negara Indonesia (BNI)</li>
+                                <li>Bank Rakyat Indonesia (BRI)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

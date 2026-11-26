@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% block title %}Pengelolaan Jadwal & Ruang Kuliah - Program Studi{% endblock %}
+
+{% block breadcrumb %}
+<li><a href="#">Program Studi</a></li>
+<li class="active">Jadwal Kuliah Luring & Alokasi Ruang</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="col-padded">
+            <h4 class="page-header">
+                Pengelolaan Jadwal Kuliah Luring & Alokasi Ruang Kelas
+            </h4>
+
+            <div class="alert alert-info" role="alert" style="font-size:13px;">
+                <strong><i class="fa fa-info-circle"></i> Petunjuk Pengaturan Jadwal & Ruang:</strong><br>
+                Program Studi bertanggung jawab mengatur hari, jam sesi tatap muka luring intensif, serta alokasi gedung/laboratorium/ruang kelas di lingkungan Fakultas Sains dan Teknologi agar tidak terjadi bentrok ruangan dan fasilitas.
+            </div>
+
+            <!-- TABLE OF SCHEDULE & ROOMS -->
+            <div class="table-responsive" style="margin-top:20px;">
+                <table class="table table-bordered table-hover" style="font-size:13px; vertical-align:middle;">
+                    <thead style="background:#ecf0f2; color:#000;">
+                        <tr>
+                            <th class="text-center" style="width:40px;">No</th>
+                            <th style="width:90px;">Kode MK</th>
+                            <th>Nama Mata Kuliah</th>
+                            <th class="text-center" style="width:50px;">SKS</th>
+                            <th>Hari Sesi</th>
+                            <th>Jam Pelaksanaan</th>
+                            <th>Alokasi Ruang Kuliah Luring</th>
+                            <th>Dosen Pengampu</th>
+                            <th class="text-center" style="width:110px;">Aksi Edit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in courses %}
+                        <tr>
+                            <td class="text-center">{{ loop.index }}</td>
+                            <td><strong>{{ c.code }}</strong></td>
+                            <td><b>{{ c.name }}</b></td>
+                            <td class="text-center col-sks"><b style="color:#000; font-size:13px;">{{ c.sks }}</b></td>
+                            <td><i class="fa fa-calendar-o text-muted"></i> <b>{{ c.schedule_day }}</b></td>
+                            <td><i class="fa fa-clock-o text-muted"></i> {{ c.schedule_time }}</td>
+                            <td>
+                                <span class="label label-default" style="font-size:12px; background:#e9ecef; color:#212529; border:1px solid #ced4da;">
+                                    <i class="fa fa-map-marker text-danger"></i> {{ c.room }}
+                                </span>
+                            </td>
+                            <td>{{ c.lecturer_name }}</td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-xs btn-primary" data-toggle="modal" data-target="#scheduleModal{{ c.id }}">
+                                    <i class="fa fa-pencil"></i> Atur Jadwal & Ruang
+                                </button>
+
+                                <!-- MODAL ATUR JADWAL & RUANG -->
+                                <div class="modal fade text-left" id="scheduleModal{{ c.id }}" tabindex="-1" role="dialog">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <form action="/prodi/jadwal/update/{{ c.id }}" method="POST">
+                                                <div class="modal-header" style="background:#2d3136; color:#fff;">
+                                                    <button type="button" class="close" data-dismiss="modal" style="color:#fff;">&times;</button>
+                                                    <h4 class="modal-title"><i class="fa fa-building-o"></i> Atur Jadwal & Ruang: {{ c.name }}</h4>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="form-group">
+                                                        <label>Hari Perkuliahan:</label>
+                                                        <select name="schedule_day" class="form-control" required>
+                                                            <option {% if c.schedule_day == 'Senin' %}selected{% endif %}>Senin</option>
+                                                            <option {% if c.schedule_day == 'Selasa' %}selected{% endif %}>Selasa</option>
+                                                            <option {% if c.schedule_day == 'Rabu' %}selected{% endif %}>Rabu</option>
+                                                            <option {% if c.schedule_day == 'Kamis' %}selected{% endif %}>Kamis</option>
+                                                            <option {% if c.schedule_day == 'Jumat' %}selected{% endif %}>Jumat</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>Sesi Waktu Perkuliahan Luring:</label>
+                                                        <input type="text" name="schedule_time" class="form-control" value="{{ c.schedule_time }}" required placeholder="Contoh: 08.00 - 10.30 WIB">
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>Alokasi Ruang Kelas / Laboratorium:</label>
+                                                        <input type="text" name="room" class="form-control" value="{{ c.room }}" required placeholder="Contoh: Lab RPL FST Lt. 3 / Ruang Teater FST">
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-default" data-dismiss="modal">Batal</button>
+                                                    <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Perbarui Jadwal & Ruang</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

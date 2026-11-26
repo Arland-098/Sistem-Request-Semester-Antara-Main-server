@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block title %}Monitoring Kuota & Status Kelas - Program Studi{% endblock %}
+
+{% block breadcrumb %}
+<li><a href="#">Program Studi</a></li>
+<li class="active">Monitoring Kuota & Status Kelas</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="col-padded">
+            <h4 class="page-header">
+                Pemantauan Kuota Pendaftar & Penetapan Status Kelas
+            </h4>
+
+            <div class="alert alert-info" role="alert" style="font-size:13px;">
+                <strong><i class="fa fa-info-circle"></i> Kebijakan Penetapan Status Kelas:</strong><br>
+                Sesuai Keputusan Rektor No. 686 Tahun 2025:
+                <ul style="margin:5px 0 0 20px; padding:0;">
+                    <li><b>Syarat Kuota Minimal:</b> Kelas reguler dibuka apabila memiliki minimal <b>10 mahasiswa pendaftar</b>.</li>
+                    <li><b>Kelas Dispensasi:</b> Jika pendaftar &lt; 10 peserta, Program Studi dapat menetapkan status <b>Dispensasi Buka</b> setelah dosen pengampu menyepakati konfirmasi kesediaan dispensasi.</li>
+                    <li><b>Pembatalan Kelas:</b> Jika dibatalkan, sistem secara otomatis menghapus mata kuliah dari KRS mahasiswa dan menyesuaikan tagihan VA.</li>
+                </ul>
+            </div>
+
+            <!-- CLASS MONITORING TABLE -->
+            <div class="table-responsive" style="margin-top:20px;">
+                <table class="table table-bordered table-hover" style="font-size:13px; vertical-align:middle;">
+                    <thead style="background:#ecf0f2; color:#000;">
+                        <tr>
+                            <th class="text-center" style="width:40px;">No</th>
+                            <th style="width:90px;">Kode MK</th>
+                            <th>Nama Mata Kuliah</th>
+                            <th class="text-center" style="width:50px;">SKS</th>
+                            <th>Dosen Pengampu</th>
+                            <th class="text-center" style="width:130px;">Jumlah Pendaftar</th>
+                            <th class="text-center" style="width:130px;">Status Kelas Saat Ini</th>
+                            <th class="text-center" style="width:230px;">Penetapan Status Kelas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in courses %}
+                        {% set is_under_quota = (c.enrolled_count < 10) %}
+                        <tr>
+                            <td class="text-center">{{ loop.index }}</td>
+                            <td><strong>{{ c.code }}</strong></td>
+                            <td><b>{{ c.name }}</b></td>
+                            <td class="text-center col-sks"><b style="color:#000; font-size:13px;">{{ c.sks }}</b></td>
+                            <td>
+                                {{ c.lecturer_name }}<br>
+                                {% if c.lecturer_dispensation_agreed == 1 %}
+                                    <small class="text-success"><i class="fa fa-check-circle"></i> Dosen Setuju Dispensasi</small>
+                                {% elif c.lecturer_dispensation_agreed == -1 %}
+                                    <small class="text-danger"><i class="fa fa-times-circle"></i> Dosen Tolak Dispensasi</small>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <span style="font-size:15px; font-weight:bold;">{{ c.enrolled_count }}</span> / {{ c.quota }}
+                                {% if is_under_quota %}
+                                    <br><span class="label label-warning" style="font-size:10px;">&lt; 10 Mahasiswa</span>
+                                {% else %}
+                                    <br><span class="label label-success" style="font-size:10px;">Memenuhi Kuota</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if c.status == 'Dibuka' %}
+                                    <span class="badge-status status-dibuka"><i class="fa fa-check"></i> Dibuka</span>
+                                {% elif c.status == 'Dispensasi Buka' %}
+                                    <span class="badge-status status-dispensasi"><i class="fa fa-handshake-o"></i> Dispensasi Buka</span>
+                                {% elif c.status == 'Dibatalkan' %}
+                                    <span class="badge-status status-dibatalkan"><i class="fa fa-times"></i> Dibatalkan</span>
+                                {% else %}
+                                    <span class="badge-status status-menunggu"><i class="fa fa-clock-o"></i> Menunggu Evaluasi</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <!-- ACTION BUTTONS FOR PRODI -->
+                                <div class="btn-group btn-group-xs">
+                                    <!-- SET DIBUKA -->
+                                    <form action="/prodi/status/{{ c.id }}" method="POST" style="display:inline-block;">
+                                        <input type="hidden" name="status" value="Dibuka">
+                                        <button type="submit" class="btn btn-primary" {% if is_under_quota and c.lecturer_dispensation_agreed != 1 %}title="Pendaftar kurang dari 10, disarankan Dispensasi"{% endif %}>
+                                            <i class="fa fa-check"></i> Buka Resmi
+                                        </button>
+                                    </form>
+
+                                    <!-- SET DISPENSASI BUKA -->
+                                    <form action="/prodi/status/{{ c.id }}" method="POST" style="display:inline-block; margin:0 4px;">
+                                        <input type="hidden" name="status" value="Dispensasi Buka">
+                                        <button type="submit" class="btn btn-default" title="Tetapkan sebagai Kelas Dispensasi Khusus">
+                                            <i class="fa fa-handshake-o"></i> Dispensasi
+                                        </button>
+                                    </form>
+
+                                    <!-- SET DIBATALKAN -->
+                                    <form action="/prodi/status/{{ c.id }}" method="POST" style="display:inline-block;">
+                                        <input type="hidden" name="status" value="Dibatalkan">
+                                        <button type="submit" class="btn btn-danger" onclick="return confirm('Apakah Anda yakin membatalkan kelas ini? Seluruh mata kuliah terkait pada KRS mahasiswa akan otomatis dibatalkan.')">
+                                            <i class="fa fa-times"></i> Batalkan
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="margin-top:20px; text-align:right;">
+                <a href="/prodi/rekap" class="btn btn-primary" style="font-weight:700;">
+                    <i class="fa fa-arrow-right"></i> Lanjut ke Penutupan Pendaftaran & Ekspor Peserta
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
