@@ -61,7 +61,12 @@
                     {% if app.status == 'Diajukan' %}
                         <div class="alert alert-warning">
                             <i class="fa fa-clock-o"></i> <strong>Status Pengajuan: DIAJUKAN</strong><br>
-                            KRS Anda telah berhasil dikirim pada {{ app.submitted_at }} dan sedang dalam antrean verifikasi oleh Dosen Pembimbing Akademik (DPA).
+                            KRS Anda telah berhasil dikirim pada {{ app.submitted_at }} dan sedang dalam proses verifikasi akademik oleh Dosen Pengampu & Kaprodi / Koordinator.
+                            {% if app.lecturer_notes %}
+                                <div style="margin-top:6px; font-size:12px;">
+                                    <b>Catatan Dosen Pengampu ({{ app.lecturer_approval }}):</b> "{{ app.lecturer_notes }}"
+                                </div>
+                            {% endif %}
                         </div>
                     {% elif app.status == 'Disetujui DPA' %}
                         <div class="alert alert-success">

@@ -116,7 +116,12 @@ def submit_student_krs(student_id: int, course_ids: list[int]) -> tuple[bool, st
             conn.execute("DELETE FROM krs_items WHERE application_id = ?", (app_id,))
             conn.execute('''
             UPDATE krs_applications
-            SET total_sks = ?, status = 'Diajukan', dpa_notes = NULL, submitted_at = CURRENT_TIMESTAMP
+            SET total_sks = ?,
+                status = 'Diajukan',
+                dpa_notes = NULL,
+                lecturer_approval = 'Menunggu',
+                lecturer_notes = NULL,
+                submitted_at = CURRENT_TIMESTAMP
             WHERE id = ?
             ''', (total_sks, app_id))
         else:
@@ -138,7 +143,7 @@ def submit_student_krs(student_id: int, course_ids: list[int]) -> tuple[bool, st
         in_tx = False
         return True, (
             "Kartu Rencana Studi (KRS) berhasil diajukan dan sedang menunggu "
-            "verifikasi Dosen Pembimbing Akademik."
+            "verifikasi akademik."
         )
     except Exception as exc:
         if in_tx:
@@ -184,10 +189,20 @@ def get_student_application(student_id: int):
         conn.close()
 
 
-def get_dpa_applications(dpa_id: int):
+def get_dpa_applications(dpa_id: int | None = None):
+    """Return KRS applications for verification (all applications when dpa_id is None)."""
     active_semester = get_config('active_semester', 'Semester Antara 2026/2027')
     conn = get_db()
     try:
+        if dpa_id is None:
+            return conn.execute('''
+            SELECT ka.*, u.name AS student_name, u.nim_nip, u.prodi, u.ipk, u.semester
+            FROM krs_applications ka
+            JOIN users u ON ka.student_id = u.id
+            WHERE ka.semester_period = ?
+            ORDER BY ka.submitted_at DESC, ka.id DESC
+            ''', (active_semester,)).fetchall()
+
         return conn.execute('''
         SELECT ka.*, u.name AS student_name, u.nim_nip, u.prodi, u.ipk, u.semester
         FROM krs_applications ka
@@ -195,6 +210,108 @@ def get_dpa_applications(dpa_id: int):
         WHERE u.dpa_id = ? AND ka.semester_period = ?
         ORDER BY ka.submitted_at DESC, ka.id DESC
         ''', (dpa_id, active_semester)).fetchall()
+    finally:
+        conn.close()
+
+
+def get_lecturer_related_applications(lecturer_id: int | None = None):
+    """Return KRS applications containing courses taught by lecturer_id (or all if lecturer_id is None)."""
+    active_semester = get_config('active_semester', 'Semester Antara 2026/2027')
+    conn = get_db()
+    try:
+        if lecturer_id is None:
+            rows = conn.execute('''
+            SELECT ka.*, u.name AS student_name, u.nim_nip, u.prodi, u.ipk, u.semester
+            FROM krs_applications ka
+            JOIN users u ON ka.student_id = u.id
+            WHERE ka.semester_period = ?
+            ORDER BY ka.submitted_at DESC, ka.id DESC
+            ''', (active_semester,)).fetchall()
+        else:
+            rows = conn.execute('''
+            SELECT DISTINCT ka.*, u.name AS student_name, u.nim_nip, u.prodi, u.ipk, u.semester
+            FROM krs_applications ka
+            JOIN users u ON ka.student_id = u.id
+            JOIN krs_items ki ON ki.application_id = ka.id
+            JOIN courses c ON ki.course_id = c.id
+            WHERE c.lecturer_id = ? AND ki.status = 'Aktif' AND ka.semester_period = ?
+            ORDER BY ka.submitted_at DESC, ka.id DESC
+            ''', (lecturer_id, active_semester)).fetchall()
+
+        result = []
+        for row in rows:
+            app_dict = dict(row)
+            if lecturer_id is None:
+                items = conn.execute('''
+                SELECT c.code, c.name, c.sks
+                FROM krs_items ki
+                JOIN courses c ON ki.course_id = c.id
+                WHERE ki.application_id = ? AND ki.status = 'Aktif'
+                ORDER BY c.code ASC
+                ''', (row['id'],)).fetchall()
+            else:
+                items = conn.execute('''
+                SELECT c.code, c.name, c.sks
+                FROM krs_items ki
+                JOIN courses c ON ki.course_id = c.id
+                WHERE ki.application_id = ? AND ki.status = 'Aktif' AND c.lecturer_id = ?
+                ORDER BY c.code ASC
+                ''', (row['id'], lecturer_id)).fetchall()
+            app_dict['related_courses'] = [dict(i) for i in items]
+            result.append(app_dict)
+        return result
+    finally:
+        conn.close()
+
+
+def lecturer_review_application(
+    application_id: int,
+    lecturer_id: int | None,
+    decision: str,
+    notes: str,
+    allow_any: bool = False,
+) -> tuple[bool, str]:
+    conn = get_db()
+    try:
+        app_row = conn.execute(
+            "SELECT * FROM krs_applications WHERE id = ?",
+            (application_id,),
+        ).fetchone()
+        if not app_row:
+            return False, f"Pengajuan KRS #{application_id} tidak ditemukan."
+
+        if not allow_any:
+            related = conn.execute('''
+            SELECT 1 FROM krs_items ki
+            JOIN courses c ON ki.course_id = c.id
+            WHERE ki.application_id = ? AND ki.status = 'Aktif' AND c.lecturer_id = ?
+            LIMIT 1
+            ''', (application_id, lecturer_id)).fetchone()
+            if not related:
+                return False, "Anda tidak memiliki akses ke pengajuan mata kuliah tersebut."
+
+        clean_notes = (notes or '').strip()
+        if decision == 'approve':
+            conn.execute('''
+            UPDATE krs_applications
+            SET lecturer_approval = 'Disetujui', lecturer_notes = ?
+            WHERE id = ?
+            ''', (clean_notes or 'Disetujui oleh Dosen Pengampu.', application_id))
+            conn.commit()
+            return True, f"Persetujuan akademik & catatan untuk pengajuan #{application_id} berhasil disimpan."
+
+        reject_note = clean_notes or 'Ditolak oleh Dosen Pengampu.'
+        conn.execute('''
+        UPDATE krs_applications
+        SET lecturer_approval = 'Ditolak',
+            lecturer_notes = ?,
+            status = 'Ditolak DPA',
+            dpa_notes = ?,
+            verified_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+        ''', (reject_note, f"[Dosen Pengampu] {reject_note}", application_id))
+        conn.commit()
+        return True, f"Pengajuan #{application_id} ditolak dengan catatan akademik: '{reject_note}'."
     finally:
         conn.close()
 

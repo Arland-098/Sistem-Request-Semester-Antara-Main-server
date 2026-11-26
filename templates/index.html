@@ -17,26 +17,27 @@
             </h4>
 
             <div class="alert alert-info" role="alert" style="line-height: 1.6;">
-                <strong><i class="fa fa-info-circle"></i> Selamat Datang di Portal Akademik Terintegrasi Semester Antara!</strong><br>
-                Sistem ini dibangun berdasarkan <b>Keputusan Rektor Universitas Islam Negeri Syarif Hidayatullah Jakarta Nomor 686 Tahun 2025</b> dan terhubung langsung dengan sistem akademik e-Semesta. Anda dapat mengklik <b>Profil Akun di sudut kanan atas</b> untuk membuka menu layanan peran aktif serta opsi ganti akun.
+                <strong><i class="fa fa-info-circle"></i> Selamat Datang, {{ current_user.name }}!</strong><br>
+                Anda login sebagai <b>{{ current_role_label }}</b>. Menu dan layanan di bawah ini disesuaikan secara otomatis dengan hak akses peran Anda berdasarkan <b>Keputusan Rektor UIN Syarif Hidayatullah Jakarta Nomor 686 Tahun 2025</b>.
             </div>
 
-            <!-- MODULES & SERVICES TABLE -->
+            <!-- MODULES & SERVICES TABLE FILTERED BY ROLE -->
             <h4 style="margin-top:30px; font-weight:700; color:#212529;">
-                Daftar Modul & Layanan Semester Antara
+                Daftar Modul & Layanan Tersedia ({{ current_role_label }})
             </h4>
             <div class="table-responsive">
                 <table class="table table-bordered table-hover" style="font-size:12px;">
                     <thead style="background:#ecf0f2; color:#000;">
                         <tr>
-                            <th style="width: 180px;">Modul Layanan</th>
-                            <th style="width: 140px;">Aktor</th>
+                            <th style="width: 190px;">Modul Layanan</th>
+                            <th style="width: 150px;">Peran</th>
                             <th>Deskripsi Fungsional</th>
-                            <th style="width: 120px;" class="text-center">Status</th>
-                            <th style="width: 140px;" class="text-center">Akses Langsung</th>
+                            <th style="width: 110px;" class="text-center">Status</th>
+                            <th style="width: 150px;" class="text-center">Akses Langsung</th>
                         </tr>
                     </thead>
                     <tbody>
+                        {% if current_role in ['mahasiswa', 'superadmin'] %}
                         <tr>
                             <td><b>Katalog Mata Kuliah</b></td>
                             <td>Mahasiswa</td>
@@ -47,108 +48,121 @@
                         <tr>
                             <td><b>Pengisian KRS Online</b></td>
                             <td>Mahasiswa</td>
-                            <td>Pengisian Kartu Rencana Studi (KRS) dengan validasi otomatis syarat akademik (Maks 9 SKS, anti-bentrok)</td>
+                            <td>Pengajuan request Semester Antara dengan validasi otomatis (Maks {{ max_sks }} SKS, anti-bentrok)</td>
                             <td class="text-center"><span class="label label-success">Aktif</span></td>
                             <td class="text-center"><a href="/krs" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Isi KRS</a></td>
                         </tr>
                         <tr>
-                            <td><b>Tagihan Virtual Account</b></td>
+                            <td><b>Status & Tagihan VA</b></td>
                             <td>Mahasiswa</td>
-                            <td>Rincian tagihan Virtual Account bank mitra, status pembayaran lunas, dan cetak Kartu Rencana Studi sah</td>
+                            <td>Pemantauan status pengajuan, rincian Virtual Account, dan cetak Kartu Rencana Studi sah</td>
                             <td class="text-center"><span class="label label-success">Aktif</span></td>
                             <td class="text-center"><a href="/tagihan" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Tagihan & VA</a></td>
                         </tr>
+                        {% endif %}
+
+                        {% if current_role in ['dosen', 'superadmin'] %}
                         <tr>
-                            <td><b>Dasbor Bimbingan DPA</b></td>
-                            <td>Dosen PA</td>
-                            <td>Daftar pengajuan rencana studi mahasiswa bimbingan beserta riwayat akademik (IPK, SKS)</td>
-                            <td class="text-center"><span class="label label-success">Aktif</span></td>
-                            <td class="text-center"><a href="/dpa" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Dasbor DPA</a></td>
-                        </tr>
-                        <tr>
-                            <td><b>Verifikasi KRS</b></td>
-                            <td>Dosen PA</td>
-                            <td>Opsi persetujuan (Setuju atau Tolak dengan catatan) verifikasi rencana studi bimbingan</td>
-                            <td class="text-center"><span class="label label-success">Aktif</span></td>
-                            <td class="text-center"><a href="/dpa" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Verifikasi DPA</a></td>
-                        </tr>
-                        <tr>
-                            <td><b>Kesediaan Mengajar</b></td>
+                            <td><b>Kesediaan Mengajar & Dispensasi</b></td>
                             <td>Dosen Pengampu</td>
-                            <td>Fitur konfirmasi kesediaan mengajar bagi calon dosen pengampu mata kuliah Semester Antara</td>
+                            <td>Konfirmasi kesediaan mengajar mata kuliah diampu & kelas dispensasi (&lt; 10 peserta)</td>
                             <td class="text-center"><span class="label label-success">Aktif</span></td>
-                            <td class="text-center"><a href="/dosen" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Konfirmasi Dosen</a></td>
+                            <td class="text-center"><a href="/dosen" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Dasbor Dosen</a></td>
                         </tr>
                         <tr>
-                            <td><b>Kelas Dispensasi</b></td>
+                            <td><b>Persetujuan & Catatan Akademik</b></td>
                             <td>Dosen Pengampu</td>
-                            <td>Fitur konfirmasi kesediaan mengajar kelas dispensasi di bawah 10 peserta</td>
+                            <td>Melihat pengajuan mahasiswa pada mata kuliah terkait dan memberi persetujuan/catatan akademik</td>
                             <td class="text-center"><span class="label label-success">Aktif</span></td>
-                            <td class="text-center"><a href="/dosen" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Kelas Dispensasi</a></td>
+                            <td class="text-center"><a href="/dosen" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Review Pengajuan</a></td>
+                        </tr>
+                        {% endif %}
+
+                        {% if current_role in ['kaprodi', 'superadmin'] %}
+                        <tr>
+                            <td><b>Verifikasi Seluruh Pengajuan</b></td>
+                            <td>Kaprodi / Koordinator</td>
+                            <td>Memverifikasi seluruh pengajuan KRS mahasiswa dan menerbitkan tagihan Virtual Account</td>
+                            <td class="text-center"><span class="label label-success">Aktif</span></td>
+                            <td class="text-center"><a href="/dpa" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Verifikasi KRS</a></td>
                         </tr>
                         <tr>
                             <td><b>Pengaturan Periode</b></td>
-                            <td>Program Studi</td>
-                            <td>Menu pengaturan periode pendaftaran dan status keaktifan Semester Antara</td>
+                            <td>Kaprodi / Koordinator</td>
+                            <td>Pengaturan periode pendaftaran, tanggal aktif, batas SKS, dan status Buka/Tutup</td>
                             <td class="text-center"><span class="label label-success">Aktif</span></td>
                             <td class="text-center"><a href="/prodi/periode" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Atur Periode</a></td>
                         </tr>
                         <tr>
-                            <td><b>Katalog & Kuota</b></td>
-                            <td>Program Studi</td>
-                            <td>Pengelolaan katalog mata kuliah yang dibuka, kapasitas kuota kelas, serta penugasan dosen pengampu</td>
-                            <td class="text-center"><span class="label label-success">Aktif</span></td>
-                            <td class="text-center"><a href="/prodi/katalog" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Kelola Katalog</a></td>
-                        </tr>
-                        <tr>
                             <td><b>Jadwal & Ruang Kuliah</b></td>
-                            <td>Program Studi</td>
+                            <td>Kaprodi / Koordinator</td>
                             <td>Pengelolaan jadwal kuliah luring (hari & jam sesi) dan alokasi ruang kelas</td>
                             <td class="text-center"><span class="label label-success">Aktif</span></td>
                             <td class="text-center"><a href="/prodi/jadwal_ruang" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Jadwal & Ruang</a></td>
                         </tr>
                         <tr>
                             <td><b>Monitoring Status Kelas</b></td>
-                            <td>Program Studi</td>
-                            <td>Pemantauan kuota pendaftar dan fitur penetapan status kelas (Dibuka, Dispensasi Buka, Dibatalkan)</td>
+                            <td>Kaprodi / Koordinator</td>
+                            <td>Pemantauan kuota pendaftar dan penetapan status kelas (Dibuka, Dispensasi Buka, Dibatalkan)</td>
                             <td class="text-center"><span class="label label-success">Aktif</span></td>
                             <td class="text-center"><a href="/prodi/monitoring" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Monitoring</a></td>
                         </tr>
                         <tr>
                             <td><b>Rekap & Ekspor Peserta</b></td>
-                            <td>Program Studi</td>
-                            <td>Fungsi penutupan pendaftaran serta ekspor data rekapitulasi peserta resmi (CSV / Excel)</td>
+                            <td>Kaprodi / Admin TU</td>
+                            <td>Penutupan pendaftaran serta ekspor data rekapitulasi peserta resmi (CSV / Excel)</td>
                             <td class="text-center"><span class="label label-success">Aktif</span></td>
-                            <td class="text-center"><a href="/prodi/rekap" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Ekspor Peserta</a></td>
+                            <td class="text-center"><a href="/prodi/rekap" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Rekap Peserta</a></td>
+                        </tr>
+                        {% endif %}
+
+                        {% if current_role in ['admin_akademik', 'superadmin'] %}
+                        <tr>
+                            <td><b>Data Master Mahasiswa</b></td>
+                            <td>Admin Akademik / TU</td>
+                            <td>Mengelola data induk mahasiswa (NIM, email, program studi, IPK, semester)</td>
+                            <td class="text-center"><span class="label label-success">Aktif</span></td>
+                            <td class="text-center"><a href="/master/mahasiswa" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Master Mahasiswa</a></td>
+                        </tr>
+                        <tr>
+                            <td><b>Data Master Dosen</b></td>
+                            <td>Admin Akademik / TU</td>
+                            <td>Mengelola data induk dosen pengampu dan koordinator program studi</td>
+                            <td class="text-center"><span class="label label-success">Aktif</span></td>
+                            <td class="text-center"><a href="/master/dosen" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Master Dosen</a></td>
+                        </tr>
+                        <tr>
+                            <td><b>Data Master Mata Kuliah</b></td>
+                            <td>Admin Akademik / TU</td>
+                            <td>Mengelola katalog mata kuliah yang ditawarkan, kuota kelas, dan penugasan dosen</td>
+                            <td class="text-center"><span class="label label-success">Aktif</span></td>
+                            <td class="text-center"><a href="/prodi/katalog" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Master MK</a></td>
+                        </tr>
+                        <tr>
+                            <td><b>Administrasi Pengajuan & VA</b></td>
+                            <td>Admin Akademik / TU</td>
+                            <td>Memproses administrasi tagihan Virtual Account, rekonsiliasi pembayaran, & tarif SKS</td>
+                            <td class="text-center"><span class="label label-success">Aktif</span></td>
+                            <td class="text-center"><a href="/keuangan/pembayaran" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Proses VA</a></td>
                         </tr>
                         <tr>
                             <td><b>Tarif Biaya per SKS</b></td>
-                            <td>Bagian Keuangan</td>
-                            <td>Pengaturan tarif biaya per SKS sesuai Keputusan Rektor No. 686 Tahun 2025 (Rp220.000/SKS)</td>
+                            <td>Admin Akademik / TU</td>
+                            <td>Pengaturan tarif biaya per SKS sesuai Keputusan Rektor No. 686 Tahun 2025</td>
                             <td class="text-center"><span class="label label-success">Aktif</span></td>
                             <td class="text-center"><a href="/keuangan/tarif" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Tarif SKS</a></td>
                         </tr>
+                        {% endif %}
+
+                        {% if current_role == 'superadmin' %}
                         <tr>
-                            <td><b>Penerbitan VA Otomatis</b></td>
-                            <td>Bagian Keuangan</td>
-                            <td>Penerbitan nomor Virtual Account (VA) dan faktur tagihan otomatis untuk kelas yang resmi dibuka</td>
-                            <td class="text-center"><span class="label label-success">Aktif</span></td>
-                            <td class="text-center"><a href="/keuangan/pembayaran" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Penerbitan VA</a></td>
+                            <td><b>Manajemen Pengguna & RBAC</b></td>
+                            <td>Super Admin</td>
+                            <td>Mengelola seluruh akun pengguna, peran akses, status aktif, dan reset password</td>
+                            <td class="text-center"><span class="label label-primary">Super Admin</span></td>
+                            <td class="text-center"><a href="/admin/users" class="btn btn-xs btn-primary"><i class="fa fa-shield"></i> Kelola Pengguna</a></td>
                         </tr>
-                        <tr>
-                            <td><b>Rekonsiliasi Pembayaran</b></td>
-                            <td>Bagian Keuangan</td>
-                            <td>Pemantauan status pembayaran serta fungsi rekonsiliasi manual pembayaran mahasiswa</td>
-                            <td class="text-center"><span class="label label-success">Aktif</span></td>
-                            <td class="text-center"><a href="/keuangan/pembayaran" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Rekonsiliasi</a></td>
-                        </tr>
-                        <tr style="background:#f8f9fa;">
-                            <td><b>Keandalan Data & Kuota</b></td>
-                            <td>Sistem / Data</td>
-                            <td>Menjamin integritas & sinkronisasi data pendaftaran dan kuota kelas dengan transaksi locking atomik agar kuota kelas tidak terlampaui.</td>
-                            <td class="text-center"><span class="label label-default">Terlindungi</span></td>
-                            <td class="text-center"><span class="text-muted"><i class="fa fa-lock"></i> Atomic Lock</span></td>
-                        </tr>
+                        {% endif %}
                     </tbody>
                 </table>
             </div>

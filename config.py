@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 
 try:
     from dotenv import load_dotenv
@@ -36,9 +37,11 @@ def _resolve_db_url() -> str | None:
 
 def _resolve_db_path() -> str:
     raw_path = os.environ.get('DATABASE_PATH', '').strip()
+    if is_vercel_runtime():
+        if raw_path and raw_path.startswith('/tmp/'):
+            return raw_path
+        return '/tmp/academic.db'
     if not raw_path:
-        if is_vercel_runtime():
-            return '/tmp/academic.db'
         return os.path.join(BASE_DIR, 'instance', 'academic.db')
     if os.path.isabs(raw_path):
         return raw_path
@@ -52,3 +55,12 @@ class Config:
     HOST = os.environ.get('HOST', '127.0.0.1')
     PORT = int(os.environ.get('PORT', '5000'))
     DEBUG = os.environ.get('FLASK_DEBUG', '0').lower() in ('1', 'true', 'yes')
+
+    # Session hardening for Flask cookies (local & Vercel HTTPS)
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    SESSION_COOKIE_SECURE = (
+        is_vercel_runtime()
+        or os.environ.get('SESSION_COOKIE_SECURE', '0').lower() in ('1', 'true', 'yes')
+    )
+    PERMANENT_SESSION_LIFETIME = timedelta(hours=8)

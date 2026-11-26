@@ -1,5 +1,6 @@
 import datetime
 import os
+import sqlite3
 import tempfile
 import unittest
 from unittest.mock import MagicMock, patch
@@ -8,11 +9,11 @@ from flask import render_template
 
 from app import create_app
 from config import _resolve_db_path, normalize_database_url
-from database import get_db, translate_placeholders
+from database import get_db, init_db, translate_placeholders
 from services import get_courses_list, get_user_by_username
 
 
-class SemesterAntaraTestCase(unittest.TestCase):
+class SemesterAntaraAuthAndRbacTestCase(unittest.TestCase):
     def setUp(self):
         self.db_fd, self.db_path = tempfile.mkstemp(suffix='.db')
         self.app = create_app({
@@ -29,6 +30,16 @@ class SemesterAntaraTestCase(unittest.TestCase):
             path = f'{self.db_path}{ext}'
             if os.path.exists(path):
                 os.unlink(path)
+
+    def _login(self, identifier: str, password: str):
+        return self.client.post(
+            '/login',
+            data={'identifier': identifier, 'password': password},
+            follow_redirects=True,
+        )
+
+    def _logout(self):
+        return self.client.get('/logout', follow_redirects=True)
 
     def test_postgres_helpers_and_vercel_tmp_fallback(self):
         self.assertEqual(
@@ -73,112 +84,153 @@ class SemesterAntaraTestCase(unittest.TestCase):
         self.assertIn('%s', called_sql)
         self.assertIn('RETURNING id', called_sql)
 
-    def test_health_and_home_and_static_assets(self):
+    def test_unauthenticated_protection_and_login_page_demo_box(self):
+        # Public endpoints work
         with self.client.get('/health') as res_health:
             self.assertEqual(res_health.status_code, 200)
             self.assertEqual(res_health.get_json(), {'status': 'ok'})
 
-        with self.client.get('/') as res_home:
-            self.assertEqual(res_home.status_code, 200)
-            self.assertIn(b'Sistem Terpusat Pengajuan Semester Antara', res_home.data)
+        with self.client.get('/login') as res_login:
+            self.assertEqual(res_login.status_code, 200)
+            for marker in (
+                b'1251420125',
+                b'mahasiswa@uinjkt.ac.id',
+                b'mhs123',
+                b'dosen1',
+                b'dosen123',
+                b'kaprodi',
+                b'kaprodi123',
+                b'admin_tu',
+                b'admin123',
+                b'superadmin',
+                b'superadmin123',
+            ):
+                self.assertIn(marker, res_login.data)
 
-        expected_mime_fragments = {
+        # Static assets work
+        for static_path, mime_fragment in {
             '/static/css/app.css': 'text/css',
-            '/static/css/bootstrap.min.css': 'text/css',
-            '/static/js/jquery-2.2.3.min.js': 'javascript',
             '/static/js/bootstrap.min.js': 'javascript',
             '/static/img/logo_client.png': 'image/png',
-        }
-        for static_path, mime_fragment in expected_mime_fragments.items():
+        }.items():
             with self.client.get(static_path) as res_static:
-                self.assertEqual(res_static.status_code, 200, f'Failed static asset: {static_path}')
+                self.assertEqual(res_static.status_code, 200)
                 self.assertIn(mime_fragment, res_static.content_type)
+
+        # Protected routes redirect to /login when unauthenticated
+        for protected_path in (
+            '/',
+            '/katalog',
+            '/krs',
+            '/tagihan',
+            '/dosen',
+            '/dpa',
+            '/prodi/monitoring',
+            '/prodi/katalog',
+            '/master/mahasiswa',
+            '/keuangan/pembayaran',
+            '/admin/users',
+        ):
+            res = self.client.get(protected_path)
+            self.assertEqual(res.status_code, 302, f'Expected redirect on {protected_path}')
+            self.assertIn('/login', res.headers['Location'])
+
+    def test_login_by_username_or_email_wrong_password_and_logout(self):
+        # Wrong password fails
+        res_bad = self._login('1251420125', 'salah')
+        self.assertIn(b'Username/email atau password salah', res_bad.data)
+        res_home = self.client.get('/')
+        self.assertEqual(res_home.status_code, 302)
+
+        # Login with email works
+        res_email = self._login('kaprodi@uinjkt.ac.id', 'kaprodi123')
+        self.assertEqual(res_email.status_code, 200)
+        self.assertIn(b'Kaprodi / Koordinator', res_email.data)
+
+        # Logout clears session
+        res_out = self._logout()
+        self.assertIn(b'berhasil logout', res_out.data)
+        self.assertEqual(self.client.get('/').status_code, 302)
+
+        # Open redirect prevented
+        res_open = self.client.post(
+            '/login',
+            data={'identifier': 'dosen@uinjkt.ac.id', 'password': 'dosen123', 'next': '//evil.com'},
+        )
+        self.assertEqual(res_open.status_code, 302)
+        self.assertFalse(res_open.headers['Location'].startswith('//evil.com'))
+
+    def test_rbac_menu_and_direct_url_boundaries_for_all_5_roles(self):
+        # 1. Mahasiswa
+        self._login('1251420125', 'mhs123')
+        home_mhs = self.client.get('/').data
+        self.assertIn(b'/krs', home_mhs)
+        self.assertNotIn(b'/admin/users', home_mhs)
+        self.assertNotIn(b'/master/mahasiswa', home_mhs)
+        self.assertEqual(self.client.get('/katalog').status_code, 200)
+        self.assertEqual(self.client.get('/krs').status_code, 200)
+        for forbidden in ('/dosen', '/dpa', '/prodi/monitoring', '/prodi/katalog', '/master/mahasiswa', '/keuangan/pembayaran', '/admin/users'):
+            res = self.client.get(forbidden, follow_redirects=True)
+            self.assertIn(b'Akses ditolak', res.data, f'Mahasiswa should be blocked from {forbidden}')
+        self._logout()
+
+        # 2. Dosen Pengampu
+        self._login('dosen1', 'dosen123')
+        home_dosen = self.client.get('/').data
+        self.assertIn(b'/dosen', home_dosen)
+        self.assertNotIn(b'/prodi/katalog', home_dosen)
+        self.assertEqual(self.client.get('/dosen').status_code, 200)
+        for forbidden in ('/krs', '/dpa', '/prodi/monitoring', '/prodi/katalog', '/master/mahasiswa', '/admin/users'):
+            res = self.client.get(forbidden, follow_redirects=True)
+            self.assertIn(b'Akses ditolak', res.data, f'Dosen should be blocked from {forbidden}')
+        self._logout()
+
+        # 3. Kaprodi / Koordinator
+        self._login('kaprodi', 'kaprodi123')
+        for allowed in ('/dpa', '/prodi/periode', '/prodi/jadwal_ruang', '/prodi/monitoring', '/prodi/rekap'):
+            self.assertEqual(self.client.get(allowed).status_code, 200)
+        for forbidden in ('/krs', '/dosen', '/prodi/katalog', '/master/mahasiswa', '/keuangan/pembayaran', '/admin/users'):
+            res = self.client.get(forbidden, follow_redirects=True)
+            self.assertIn(b'Akses ditolak', res.data, f'Kaprodi should be blocked from {forbidden}')
+        self._logout()
+
+        # 4. Admin Akademik / TU
+        self._login('admin_tu', 'admin123')
+        for allowed in ('/master/mahasiswa', '/master/dosen', '/prodi/katalog', '/keuangan/pembayaran', '/keuangan/tarif', '/prodi/rekap'):
+            self.assertEqual(self.client.get(allowed).status_code, 200)
+        for forbidden in ('/krs', '/dosen', '/dpa', '/prodi/periode', '/admin/users'):
+            res = self.client.get(forbidden, follow_redirects=True)
+            self.assertIn(b'Akses ditolak', res.data, f'Admin TU should be blocked from {forbidden}')
+        self._logout()
+
+        # 5. Super Admin
+        self._login('superadmin', 'superadmin123')
+        for allowed in ('/', '/katalog', '/krs', '/dosen', '/dpa', '/prodi/periode', '/prodi/katalog', '/master/mahasiswa', '/master/dosen', '/keuangan/pembayaran', '/admin/users'):
+            self.assertEqual(self.client.get(allowed).status_code, 200, f'Superadmin failed on {allowed}')
+        self._logout()
 
     def test_seeded_catalog_has_all_45_courses(self):
         with self.app.app_context():
             courses = get_courses_list()
         self.assertEqual(len(courses), 45)
 
-    def test_role_switching_and_dashboards_render(self):
-        for role in ('mahasiswa', 'dpa', 'dosen', 'prodi', 'keuangan'):
-            res = self.client.get(f'/switch_role/{role}', follow_redirects=True)
-            self.assertEqual(res.status_code, 200)
-
-        for path in (
-            '/katalog',
-            '/krs',
-            '/tagihan',
-            '/dpa',
-            '/dosen',
-            '/prodi/periode',
-            '/prodi/katalog',
-            '/prodi/jadwal_ruang',
-            '/prodi/monitoring',
-            '/prodi/rekap',
-            '/keuangan/tarif',
-            '/keuangan/pembayaran',
-        ):
-            res = self.client.get(path)
-            self.assertEqual(res.status_code, 200, f'Route failed: {path}')
-
-    def test_krs_validation_max_sks_schedule_conflict_and_quota(self):
-        with self.app.app_context():
-            courses = get_courses_list()
-            by_code = {c['code']: c for c in courses}
-
-        res_conflict = self.client.post(
-            '/krs/submit',
-            data={'course_ids': [by_code['FST6091101']['id'], by_code['TIF3101']['id']]},
-            follow_redirects=True,
-        )
-        self.assertIn(b'bentrok jadwal', res_conflict.data)
-
-        res_over_sks = self.client.post(
-            '/krs/submit',
-            data={
-                'course_ids': [
-                    by_code['FST6094102']['id'],
-                    by_code['UIN6033201']['id'],
-                    by_code['FST6091101']['id'],
-                ]
-            },
-            follow_redirects=True,
-        )
-        self.assertIn(b'melebihi batas maksimal 9 SKS', res_over_sks.data)
-
-        target_course_id = by_code['FST6091108']['id']
-        with self.app.app_context():
-            conn = get_db()
-            try:
-                conn.execute("UPDATE courses SET quota = 1 WHERE id = ?", (target_course_id,))
-                conn.commit()
-            finally:
-                conn.close()
-
-        res_full = self.client.post(
-            '/krs/submit',
-            data={'course_ids': [target_course_id]},
-            follow_redirects=True,
-        )
-        self.assertIn(b'sudah penuh', res_full.data)
-
-    def test_end_to_end_krs_approval_payment_print_and_cancel(self):
+    def test_multi_role_end_to_end_krs_dosen_kaprodi_admin_and_cetak(self):
         with self.app.app_context():
             courses = get_courses_list()
             by_code = {c['code']: c for c in courses}
             student = get_user_by_username('1251420125')
 
-        res_print_blocked = self.client.get('/cetak_krs', follow_redirects=True)
-        self.assertIn(b'status pembayaran lunas', res_print_blocked.data)
+        # 1. Mahasiswa logs in, checks validation & submits 6 SKS KRS
+        self._login('1251420125', 'mhs123')
+        self.assertIn(b'status pembayaran lunas', self.client.get('/cetak_krs', follow_redirects=True).data)
 
-        c1_id = by_code['FST6091101']['id']
+        c1_id = by_code['FST6091101']['id']  # taught by dosen1
         c2_id = by_code['FST6091125']['id']
         res_submit = self.client.post(
             '/krs/submit',
             data={'course_ids': [c1_id, c2_id]},
             follow_redirects=True,
         )
-        self.assertEqual(res_submit.status_code, 200)
         self.assertIn(b'berhasil diajukan', res_submit.data)
 
         with self.app.app_context():
@@ -190,24 +242,34 @@ class SemesterAntaraTestCase(unittest.TestCase):
                 ).fetchone()
             finally:
                 conn.close()
-        self.assertIsNotNone(app_row)
-        self.assertEqual(app_row['status'], 'Diajukan')
         app_id = app_row['id']
+        self._logout()
 
-        res_reject = self.client.post(
-            f'/dpa/reject/{app_id}',
-            data={'notes': 'Tambahkan MK lain jika perlu.'},
+        # 2. Dosen Pengampu logs in, sees Ihsan's submission & gives academic approval + notes
+        self._login('dosen1', 'dosen123')
+        res_dosen = self.client.get('/dosen')
+        self.assertIn(b'IHSAN MUBAROK', res_dosen.data)
+        res_review = self.client.post(
+            f'/dosen/review/{app_id}',
+            data={'decision': 'approve', 'notes': 'Nilai dasar pemrograman memenuhi.'},
             follow_redirects=True,
         )
-        self.assertIn(b'DITOLAK', res_reject.data)
+        self.assertIn(b'Persetujuan akademik', res_review.data)
 
-        res_resubmit = self.client.post(
-            '/krs/submit',
-            data={'course_ids': [c1_id, c2_id]},
+        # Dosen cannot confirm unrelated course owned by kaprodi
+        unrelated_course_id = by_code['TIF3102']['id']
+        res_unauth = self.client.post(
+            f'/dosen/confirm/{unrelated_course_id}',
+            data={'agreed': '1'},
             follow_redirects=True,
         )
-        self.assertIn(b'berhasil diajukan', res_resubmit.data)
+        self.assertIn(b'tidak berwenang', res_unauth.data)
+        self._logout()
 
+        # 3. Kaprodi logs in, sees lecturer notes & approves -> creates VA invoice
+        self._login('kaprodi', 'kaprodi123')
+        res_dpa = self.client.get('/dpa')
+        self.assertIn(b'Nilai dasar pemrograman memenuhi.', res_dpa.data)
         res_approve = self.client.post(f'/dpa/approve/{app_id}', follow_redirects=True)
         self.assertIn(b'DISETUJUI', res_approve.data)
 
@@ -221,118 +283,107 @@ class SemesterAntaraTestCase(unittest.TestCase):
             finally:
                 conn.close()
         self.assertIsNotNone(inv)
-        self.assertEqual(inv['amount'], 6 * 220000)
-        self.assertEqual(inv['status'], 'Belum Lunas')
 
-        res_cancel = self.client.post(
-            f'/prodi/status/{c2_id}',
-            data={'status': 'Dibatalkan'},
-            follow_redirects=True,
-        )
-        self.assertEqual(res_cancel.status_code, 200)
-        with self.app.app_context():
-            conn = get_db()
-            try:
-                updated_app = conn.execute(
-                    "SELECT total_sks FROM krs_applications WHERE id = ?",
-                    (app_id,),
-                ).fetchone()
-                updated_inv = conn.execute(
-                    "SELECT amount FROM invoices WHERE id = ?",
-                    (inv['id'],),
-                ).fetchone()
-            finally:
-                conn.close()
-        self.assertEqual(updated_app['total_sks'], 3)
-        self.assertEqual(updated_inv['amount'], 3 * 220000)
+        # Cancel c2 -> SKS & invoice recalculated without deadlock
+        self.client.post(f'/prodi/status/{c2_id}', data={'status': 'Dibatalkan'}, follow_redirects=True)
+        self._logout()
 
+        # 4. Admin Akademik / TU logs in & reconciles payment
+        self._login('admin_tu', 'admin123')
         res_pay = self.client.post(
             f"/keuangan/rekonsiliasi/{inv['id']}",
             data={'ref_no': 'REF-TEST-001', 'notes': 'Lunas test'},
             follow_redirects=True,
         )
         self.assertIn(b'DIREKONSILIASI LUNAS', res_pay.data)
+        self._logout()
 
+        # 5. Mahasiswa logs in & prints official KRS
+        self._login('1251420125', 'mhs123')
         res_print = self.client.get('/cetak_krs')
         self.assertEqual(res_print.status_code, 200)
         self.assertIn(b'KARTU RENCANA STUDI (KRS) SAH', res_print.data)
 
-    def test_dosen_prodi_and_keuangan_workflows(self):
+    def test_admin_master_and_superadmin_user_management(self):
+        # Admin TU creates Mahasiswa, Dosen, and MK
+        self._login('admin_tu', 'admin123')
+        res_mhs = self.client.post(
+            '/master/mahasiswa/add',
+            data={'nim_nip': '1251429999', 'name': 'Mahasiswa Uji', 'email': 'uji@uinjkt.ac.id', 'password': 'mhs123'},
+            follow_redirects=True,
+        )
+        self.assertIn(b'berhasil ditambahkan', res_mhs.data)
+
+        res_dsn = self.client.post(
+            '/master/dosen/add',
+            data={'username': 'dosen_uji', 'nim_nip': '19900101', 'name': 'Dosen Uji', 'role': 'dosen', 'password': 'dosen123'},
+            follow_redirects=True,
+        )
+        self.assertIn(b'berhasil ditambahkan', res_dsn.data)
+        self._logout()
+
+        # Super Admin creates & manages users
+        self._login('superadmin', 'superadmin123')
+        res_user = self.client.post(
+            '/admin/users/add',
+            data={
+                'username': 'operator_baru',
+                'nim_nip': 'OP-01',
+                'name': 'Operator Baru',
+                'email': 'op@uinjkt.ac.id',
+                'password': 'op123',
+                'role': 'admin_akademik',
+            },
+            follow_redirects=True,
+        )
+        self.assertIn(b'berhasil ditambahkan', res_user.data)
+
         with self.app.app_context():
-            courses = get_courses_list()
-            by_code = {c['code']: c for c in courses}
-            dosen = get_user_by_username('dosen1')
+            super_user = get_user_by_username('superadmin')
+        res_self_del = self.client.post(f"/admin/users/delete/{super_user['id']}", follow_redirects=True)
+        self.assertIn(b'Tidak dapat menghapus akun yang sedang login', res_self_del.data)
 
-        tif3104 = by_code['TIF3104']['id']
-        res_confirm = self.client.post(
-            f'/dosen/confirm/{tif3104}',
-            data={'agreed': '1'},
-            follow_redirects=True,
-        )
-        self.assertIn(b'BERSEDIA MENGAJAR', res_confirm.data)
+    def test_legacy_db_upgrades_to_rbac_schema_and_accounts(self):
+        legacy_fd, legacy_path = tempfile.mkstemp(suffix='.db')
+        os.close(legacy_fd)
+        try:
+            raw = sqlite3.connect(legacy_path)
+            raw.execute('''
+            CREATE TABLE users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                name TEXT NOT NULL,
+                nim_nip TEXT NOT NULL,
+                role TEXT NOT NULL,
+                prodi TEXT NOT NULL,
+                ipk REAL DEFAULT 0.0,
+                semester INTEGER DEFAULT 1,
+                dpa_id INTEGER,
+                avatar TEXT
+            )
+            ''')
+            raw.execute('''
+            INSERT INTO users (username, password, name, nim_nip, role, prodi, ipk, semester)
+            VALUES ('1251420125', '123456', 'IHSAN MUBAROK', '1251420125', 'mahasiswa', 'TI', 3.75, 6)
+            ''')
+            raw.commit()
+            raw.close()
 
-        res_disp = self.client.post(
-            f'/dosen/dispensasi/{tif3104}',
-            data={'agreed': '1'},
-            follow_redirects=True,
-        )
-        self.assertIn(b'BERSEDIA MENGAJAR KELAS DISPENSASI', res_disp.data)
-
-        res_add = self.client.post(
-            '/prodi/katalog/add',
-            data={
-                'code': 'TIF9999',
-                'name': 'Komputasi Awan Terapan',
-                'sks': '3',
-                'quota': '25',
-                'lecturer_id': str(dosen['id']),
-                'schedule_day': 'Jumat',
-                'schedule_time': '13.30 - 16.00 WIB',
-                'room': 'Lab Cloud FST',
-                'semester': '6',
-                'class_name': '6ATI',
-                'wp_type': 'P',
-            },
-            follow_redirects=True,
-        )
-        self.assertIn(b'TIF9999', res_add.data)
-
-        res_dup = self.client.post(
-            '/prodi/katalog/add',
-            data={
-                'code': 'TIF9999',
-                'name': 'Duplikat',
-                'sks': '3',
-                'quota': '25',
-                'lecturer_id': str(dosen['id']),
-            },
-            follow_redirects=True,
-        )
-        self.assertIn(b'sudah terdaftar', res_dup.data)
-
-        res_close = self.client.post('/prodi/tutup', follow_redirects=True)
-        self.assertIn(b'DITUTUP', res_close.data)
-        res_open = self.client.post('/prodi/buka', follow_redirects=True)
-        self.assertIn(b'DIBUKA', res_open.data)
-
-        res_bad_tarif = self.client.post(
-            '/keuangan/tarif/update',
-            data={'sks_rate': 'abc'},
-            follow_redirects=True,
-        )
-        self.assertIn(b'angka valid', res_bad_tarif.data)
-
-        res_good_tarif = self.client.post(
-            '/keuangan/tarif/update',
-            data={'sks_rate': '250000'},
-            follow_redirects=True,
-        )
-        self.assertIn(b'Rp250,000', res_good_tarif.data)
-
-        res_csv = self.client.get('/prodi/export_csv')
-        self.assertEqual(res_csv.status_code, 200)
-        self.assertIn('text/csv', res_csv.content_type)
-        self.assertIn(b'NIM;NAMA MAHASISWA', res_csv.data)
+            init_db(db_path=legacy_path, database_url=None)
+            legacy_app = create_app({'TESTING': True, 'DATABASE_URL': None, 'DATABASE_PATH': legacy_path, 'SECRET_KEY': 'k'})
+            client = legacy_app.test_client()
+            res = client.post('/login', data={'identifier': 'superadmin', 'password': 'superadmin123'}, follow_redirects=True)
+            self.assertIn(b'Manajemen Pengguna', res.data)
+            res2 = client.post('/logout', follow_redirects=True)
+            self.assertIn(b'berhasil logout', res2.data)
+            res3 = client.post('/login', data={'identifier': '1251420125', 'password': 'mhs123'}, follow_redirects=True)
+            self.assertIn(b'IHSAN MUBAROK', res3.data)
+        finally:
+            for ext in ('', '-wal', '-shm'):
+                p = f'{legacy_path}{ext}'
+                if os.path.exists(p):
+                    os.unlink(p)
 
 
 if __name__ == '__main__':

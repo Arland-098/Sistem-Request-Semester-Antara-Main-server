@@ -1,10 +1,13 @@
-from flask import Flask, session
+from flask import Flask, flash, redirect, request, session, url_for
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from config import Config
 from database import init_db
 from routes import register_blueprints
-from services import get_config, get_user_by_id, get_user_by_username
+from routes.decorators import ROLE_LABELS, get_logged_in_user, normalize_role
+from services import get_config
+
+PUBLIC_ENDPOINTS = {'auth.login', 'auth.logout', 'main.health', 'static'}
 
 
 def create_app(config_overrides: dict | None = None) -> Flask:
@@ -27,15 +30,25 @@ def create_app(config_overrides: dict | None = None) -> Flask:
             database_url=flask_app.config.get('DATABASE_URL'),
         )
 
+    @flask_app.before_request
+    def enforce_authentication():
+        if request.endpoint in PUBLIC_ENDPOINTS or request.path.startswith('/static/'):
+            return None
+        if not get_logged_in_user():
+            session.pop('user_id', None)
+            flash("Silakan login terlebih dahulu untuk mengakses sistem.", "warning")
+            return redirect(url_for('auth.login', next=request.path))
+        return None
+
     @flask_app.context_processor
     def inject_global_vars():
-        user_id = session.get('user_id')
-        user = get_user_by_id(user_id) if user_id else None
-        if not user:
-            user = get_user_by_username('1251420125')
-
+        user = get_logged_in_user()
+        role = normalize_role(user['role']) if user else ''
         return {
             'current_user': user,
+            'current_role': role,
+            'current_role_label': ROLE_LABELS.get(role, role),
+            'role_labels': ROLE_LABELS,
             'active_semester': get_config('active_semester', 'Semester Antara 2026/2027'),
             'reg_status': get_config('registration_status', 'Buka'),
             'reg_start': get_config('registration_start', '2026-07-01'),

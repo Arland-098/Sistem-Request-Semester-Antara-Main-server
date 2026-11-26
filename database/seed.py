@@ -1,3 +1,5 @@
+from werkzeug.security import generate_password_hash
+
 DEFAULT_CONFIGS = [
     ('registration_status', 'Buka'),
     ('registration_start', '2026-07-01'),
@@ -8,21 +10,66 @@ DEFAULT_CONFIGS = [
     ('min_quota', '10'),
 ]
 
-# Each entry includes a temporary placeholder dpa_ref / lecturer_ref ('dpa1', 'dosen1')
-# that is dynamically resolved to the actual database user ID during seeding.
+# 5 Akun Demo Utama + Mahasiswa Pendukung untuk Data Simulasi
+# Format: (username, raw_password, name, nim_nip, role, prodi, ipk, semester, dpa_id, avatar, email, is_active)
 SEED_USERS = [
-    ('1251420125', '123456', 'IHSAN MUBAROK', '1251420125', 'mahasiswa', 'Teknik Informatika', 3.75, 6, 5, '25110120414.png'),
-    ('1251420128', '123456', 'DANUARDI SAPUTRO', '1251420128', 'mahasiswa', 'Teknik Informatika', 3.65, 6, 5, '25110120414.png'),
-    ('1251420081', '123456', 'MUHAMMAD BAGAS F', '1251420081', 'mahasiswa', 'Teknik Informatika', 3.42, 6, 5, '25110120414.png'),
-    ('1251420017', '123456', 'REVAND RADITIYA D', '1251420017', 'mahasiswa', 'Teknik Informatika', 3.58, 6, 5, '25110120414.png'),
-    ('dpa1', '123456', 'Dr. Dewi Khairani, M.Sc.', '197805122005012001', 'dpa', 'Teknik Informatika', 0.0, 0, None, None),
-    ('dosen1', '123456', 'Luh Kesuma Wardhani, S.T., M.T.', '198003152006042002', 'dosen', 'Teknik Informatika', 0.0, 0, None, None),
-    ('prodi', '123456', 'Program Studi Teknik Informatika', 'ADMIN-PRODI-TIF', 'prodi', 'Teknik Informatika', 0.0, 0, None, None),
-    ('keuangan', '123456', 'Biro Perencanaan dan Keuangan', 'BIRO-KEUANGAN-01', 'keuangan', 'Universitas', 0.0, 0, None, None),
+    # 5 Akun Demo Utama sesuai RBAC
+    ('1251420125', 'mhs123', 'IHSAN MUBAROK', '1251420125', 'mahasiswa', 'Teknik Informatika', 3.75, 6, None, '25110120414.png', 'mahasiswa@uinjkt.ac.id', 1),
+    ('dosen1', 'dosen123', 'Luh Kesuma Wardhani, S.T., M.T.', '198003152006042002', 'dosen', 'Teknik Informatika', 0.0, 0, None, None, 'dosen@uinjkt.ac.id', 1),
+    ('kaprodi', 'kaprodi123', 'Dr. Dewi Khairani, M.Sc.', '197805122005012001', 'kaprodi', 'Teknik Informatika', 0.0, 0, None, None, 'kaprodi@uinjkt.ac.id', 1),
+    ('admin_tu', 'admin123', 'Admin Akademik & TU FST', 'ADMIN-TU-FST-01', 'admin_akademik', 'Fakultas Sains dan Teknologi', 0.0, 0, None, None, 'admin.tu@uinjkt.ac.id', 1),
+    ('superadmin', 'superadmin123', 'Super Administrator Sistem', 'SUPERADMIN-01', 'superadmin', 'Universitas', 0.0, 0, None, None, 'superadmin@uinjkt.ac.id', 1),
+
+    # Mahasiswa tambahan untuk data simulasi pengajuan di dasbor Dosen/Kaprodi/Admin
+    ('1251420128', 'mhs123', 'DANUARDI SAPUTRO', '1251420128', 'mahasiswa', 'Teknik Informatika', 3.65, 6, None, '25110120414.png', 'danuardi@uinjkt.ac.id', 1),
+    ('1251420081', 'mhs123', 'MUHAMMAD BAGAS F', '1251420081', 'mahasiswa', 'Teknik Informatika', 3.42, 6, None, '25110120414.png', 'bagas@uinjkt.ac.id', 1),
+    ('1251420017', 'mhs123', 'REVAND RADITIYA D', '1251420017', 'mahasiswa', 'Teknik Informatika', 3.58, 6, None, '25110120414.png', 'revand@uinjkt.ac.id', 1),
+]
+
+DEMO_ACCOUNTS_INFO = [
+    {
+        'label': 'Mahasiswa',
+        'role': 'mahasiswa',
+        'username': '1251420125',
+        'email': 'mahasiswa@uinjkt.ac.id',
+        'password': 'mhs123',
+        'desc': 'Mengajukan KRS semester antara & memantau status pengajuan sendiri',
+    },
+    {
+        'label': 'Dosen Pengampu',
+        'role': 'dosen',
+        'username': 'dosen1',
+        'email': 'dosen@uinjkt.ac.id',
+        'password': 'dosen123',
+        'desc': 'Melihat mata kuliah & pengajuan terkait serta memberi persetujuan/catatan akademik',
+    },
+    {
+        'label': 'Kaprodi / Koordinator',
+        'role': 'kaprodi',
+        'username': 'kaprodi',
+        'email': 'kaprodi@uinjkt.ac.id',
+        'password': 'kaprodi123',
+        'desc': 'Memverifikasi seluruh pengajuan, mengelola jadwal/kelas, & melihat rekap',
+    },
+    {
+        'label': 'Admin Akademik / TU',
+        'role': 'admin_akademik',
+        'username': 'admin_tu',
+        'email': 'admin.tu@uinjkt.ac.id',
+        'password': 'admin123',
+        'desc': 'Mengelola data master (mahasiswa, dosen, MK) & memproses administrasi pengajuan',
+    },
+    {
+        'label': 'Super Admin',
+        'role': 'superadmin',
+        'username': 'superadmin',
+        'email': 'superadmin@uinjkt.ac.id',
+        'password': 'superadmin123',
+        'desc': 'Akses penuh ke seluruh menu sistem dan manajemen pengguna',
+    },
 ]
 
 # Full 45-course catalog for Paket Semester 1 s.d. 6 (Program Studi Teknik Informatika UIN Jakarta)
-# lecturer_ref is 'dpa1', 'dosen1', or None (resolved to actual DB user IDs on seed).
 SEED_COURSES = [
     # Semester 1
     ('FST6091101', 'Dasar-dasar Pemrograman', 3, 'Senin', '08.00 - 10.30 WIB', 'Lab Komputer 1 Lt. 3', 33, 'dosen1', 'Luh Kesuma Wardhani, S.T., M.T.', 'Dibuka', 1, 0, 1, '1ATI', 'W'),
@@ -33,11 +80,11 @@ SEED_COURSES = [
     ('UIN6032205', 'Praktikum Qira’ah dan Ibadah', 2, 'Senin', '13.00 - 14.40 WIB', 'Masjid FST Lt. 1', 33, None, 'Drs.M. Tabah Rosyadi, M.A.', 'Dibuka', 1, 0, 1, '1ATI', 'W'),
     ('UIN6033201', 'Studi Islam', 4, 'Selasa', '13.00 - 16.20 WIB', 'Ruang Teater FST Lt. 2', 33, None, 'Burhanuddin, M.A.', 'Dibuka', 1, 0, 1, '1BTI', 'W'),
     ('TIF3101', 'Rekayasa Perangkat Lunak', 3, 'Senin', '08.00 - 10.30 WIB', 'Lab RPL FST Lt. 3', 30, 'dosen1', 'Luh Kesuma Wardhani, S.T., M.T.', 'Dibuka', 1, 0, 1, '1ATI', 'W'),
-    ('TIF3102', 'Basis Data Lanjut', 3, 'Selasa', '10.30 - 13.00 WIB', 'Ruang Teater FST Lt. 2', 25, 'dpa1', 'Dr. Dewi Khairani, M.Sc.', 'Dibuka', 1, 0, 1, '1ATI', 'W'),
+    ('TIF3102', 'Basis Data Lanjut', 3, 'Selasa', '10.30 - 13.00 WIB', 'Ruang Teater FST Lt. 2', 25, 'kaprodi', 'Dr. Dewi Khairani, M.Sc.', 'Dibuka', 1, 0, 1, '1ATI', 'W'),
     ('TIF3103', 'Pemrograman Berorientasi Objek', 3, 'Rabu', '08.00 - 10.30 WIB', 'Lab Komputer 2 Lt. 3', 30, 'dosen1', 'Luh Kesuma Wardhani, S.T., M.T.', 'Dibuka', 1, 0, 1, '1ATI', 'W'),
     ('TIF3104', 'Jaringan Komputer', 3, 'Kamis', '13.00 - 15.30 WIB', 'Lab Jaringan Lt. 3', 25, 'dosen1', 'Luh Kesuma Wardhani, S.T., M.T.', 'Menunggu', 0, 0, 1, '1ATI', 'W'),
-    ('TIF3105', 'Sistem Informasi Enterprise', 3, 'Jumat', '08.00 - 10.30 WIB', 'Ruang Kelas 3.01 FST', 15, 'dpa1', 'Dr. Dewi Khairani, M.Sc.', 'Menunggu', 1, 0, 1, '1ATI', 'W'),
-    ('TIF3106', 'Pengolahan Citra Digital', 3, 'Senin', '13.00 - 15.30 WIB', 'Ruang Kelas 3.02 FST', 20, 'dpa1', 'Dr. Dewi Khairani, M.Sc.', 'Menunggu', 0, 0, 1, '1ATI', 'W'),
+    ('TIF3105', 'Sistem Informasi Enterprise', 3, 'Jumat', '08.00 - 10.30 WIB', 'Ruang Kelas 3.01 FST', 15, 'kaprodi', 'Dr. Dewi Khairani, M.Sc.', 'Menunggu', 1, 0, 1, '1ATI', 'W'),
+    ('TIF3106', 'Pengolahan Citra Digital', 3, 'Senin', '13.00 - 15.30 WIB', 'Ruang Kelas 3.02 FST', 20, 'kaprodi', 'Dr. Dewi Khairani, M.Sc.', 'Menunggu', 0, 0, 1, '1ATI', 'W'),
 
     # Semester 2
     ('UIN6033205', 'Praktikum Qira’ah dan Ibadah', 2, 'Rabu', '13.00 - 14.40 WIB', 'Masjid FST Lt. 1', 10, None, 'Drs.M. Tabah Rosyadi, M.A.', 'Dibuka', 1, 0, 2, '120TI', 'W'),
@@ -69,11 +116,11 @@ SEED_COURSES = [
     ('FST6091903', 'Rekayasa pra-syarat (Requirements Engineering)', 3, 'Selasa', '13.00 - 15.30 WIB', 'Ruang Kelas 3.02 FST', 33, None, 'Dr.Imam Marzuki Shofi, M.T.', 'Dibuka', 1, 0, 5, '5PTI', 'P'),
     ('FST6091905', 'Rekayasa Perangkat Lunak Lanjut', 3, 'Senin', '10.30 - 13.00 WIB', 'Lab RPL FST Lt. 3', 33, None, 'Rizal, M.Kom.', 'Dibuka', 1, 0, 5, '5PTI', 'P'),
     ('FST6091907', 'Infrastruktur Teknologi Informasi', 3, 'Rabu', '13.00 - 15.30 WIB', 'Lab Jaringan Lt. 3', 33, None, 'Muhamad Azhari, S.Kom.,M.Kom', 'Dibuka', 1, 0, 5, '5PTI', 'P'),
-    ('FST6091908', 'Arsitektur dan Integrasi Enterprise', 3, 'Jumat', '08.00 - 10.30 WIB', 'Ruang Kelas 3.01 FST', 33, 'dpa1', 'Andrew Fiade, M.Kom.', 'Dibuka', 1, 0, 5, '5PTI', 'P'),
-    ('FST6091912', 'Data Science', 3, 'Senin', '13.00 - 15.30 WIB', 'Lab Riset Informatika Lt. 3', 34, 'dpa1', 'Siti Ummi Masruroh, M.Sc.', 'Dibuka', 1, 0, 5, '5PTI', 'P'),
+    ('FST6091908', 'Arsitektur dan Integrasi Enterprise', 3, 'Jumat', '08.00 - 10.30 WIB', 'Ruang Kelas 3.01 FST', 33, 'kaprodi', 'Andrew Fiade, M.Kom.', 'Dibuka', 1, 0, 5, '5PTI', 'P'),
+    ('FST6091912', 'Data Science', 3, 'Senin', '13.00 - 15.30 WIB', 'Lab Riset Informatika Lt. 3', 34, 'kaprodi', 'Siti Ummi Masruroh, M.Sc.', 'Dibuka', 1, 0, 5, '5PTI', 'P'),
     ('FST6091917', 'Wireless Sensor Network', 3, 'Kamis', '13.00 - 15.30 WIB', 'Lab Jaringan Lt. 3', 33, None, 'Nurhayati, Ph.D.', 'Dibuka', 1, 0, 5, '5PTI', 'P'),
     ('FST6091918', 'Sistem Benam', 3, 'Rabu', '10.30 - 13.00 WIB', 'Lab Hardware Lt. 2', 33, None, 'Dr.Nenny Anggraini, S.Kom, MT', 'Dibuka', 1, 0, 5, '5PTI', 'P'),
-    ('FST6091926', 'Sistem Basis Data Lanjut', 3, 'Selasa', '10.30 - 13.00 WIB', 'Ruang Teater FST Lt. 2', 30, 'dpa1', 'Muhammad Sobri, S.Kom.,M.Kom.,Ph.D', 'Dibuka', 1, 0, 5, '5PTI', 'P'),
+    ('FST6091926', 'Sistem Basis Data Lanjut', 3, 'Selasa', '10.30 - 13.00 WIB', 'Ruang Teater FST Lt. 2', 30, 'kaprodi', 'Muhammad Sobri, S.Kom.,M.Kom.,Ph.D', 'Dibuka', 1, 0, 5, '5PTI', 'P'),
     ('FST6093261', 'Etika Profesi Teknologi Informasi', 2, 'Selasa', '08.00 - 09.40 WIB', 'Ruang Kelas 3.02 FST', 35, None, 'Fenty Eka Muzayyana Agustin, M.Kom.', 'Dibuka', 1, 0, 5, '5ATI', 'W'),
     ('UIN6000208', 'Metodologi Penelitian', 3, 'Selasa', '10.30 - 13.00 WIB', 'Ruang Kelas 3.01 FST', 35, None, 'Khodijah Hulliyah, M.Si., Ph.D', 'Dibuka', 1, 0, 5, '5CTI', 'W'),
 
@@ -114,8 +161,14 @@ def _seed_demo_applications(conn) -> None:
         total = c_pbp['sks'] + c_jar['sks']
         app_id = conn.insert_returning_id(
             '''
-            INSERT INTO krs_applications (student_id, semester_period, total_sks, status, verified_at)
-            VALUES (?, 'Semester Antara 2026/2027', ?, 'Lunas', CURRENT_TIMESTAMP)
+            INSERT INTO krs_applications (
+                student_id, semester_period, total_sks, status,
+                lecturer_approval, lecturer_notes, verified_at
+            )
+            VALUES (
+                ?, 'Semester Antara 2026/2027', ?, 'Lunas',
+                'Disetujui', 'Memenuhi syarat akademik mata kuliah.', CURRENT_TIMESTAMP
+            )
             ''',
             (revand['id'], total),
         )
@@ -143,6 +196,67 @@ def _seed_demo_applications(conn) -> None:
         )
 
 
+def _ensure_rbac_demo_accounts(conn) -> None:
+    """Ensure all 5 RBAC demo accounts and hashed passwords exist even on migrated DBs."""
+    for username, raw_pw, name, nim_nip, role, prodi, ipk, sem, dpa_id, avatar, email, is_active in SEED_USERS:
+        existing = conn.execute(
+            "SELECT id, password, email FROM users WHERE username = ?",
+            (username,),
+        ).fetchone()
+        if not existing:
+            conn.execute(
+                '''
+                INSERT INTO users (
+                    username, password, name, nim_nip, role, prodi, ipk, semester, dpa_id, avatar, email, is_active
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT (username) DO NOTHING
+                ''',
+                (
+                    username,
+                    generate_password_hash(raw_pw),
+                    name,
+                    nim_nip,
+                    role,
+                    prodi,
+                    ipk,
+                    sem,
+                    dpa_id,
+                    avatar,
+                    email,
+                    is_active,
+                ),
+            )
+        else:
+            updates = []
+            params = []
+            if not existing['email'] and email:
+                updates.append("email = ?")
+                params.append(email)
+            # Upgrade legacy plain default password '123456' to hashed demo password
+            if existing['password'] == '123456':
+                updates.append("password = ?")
+                params.append(generate_password_hash(raw_pw))
+            if updates:
+                params.append(existing['id'])
+                conn.execute(
+                    f"UPDATE users SET {', '.join(updates)} WHERE id = ?",
+                    tuple(params),
+                )
+
+    # Normalize legacy role names on older DBs if present
+    conn.execute("UPDATE users SET role = 'kaprodi' WHERE role = 'prodi'")
+    conn.execute("UPDATE users SET role = 'admin_akademik' WHERE role = 'keuangan'")
+    conn.execute("UPDATE users SET role = 'dosen' WHERE role = 'dpa'")
+
+    kaprodi_row = conn.execute("SELECT id FROM users WHERE username = 'kaprodi'").fetchone()
+    if kaprodi_row:
+        conn.execute(
+            "UPDATE users SET dpa_id = ? WHERE role = 'mahasiswa' AND dpa_id IS NULL",
+            (kaprodi_row['id'],),
+        )
+
+
 def seed_initial_data(conn) -> None:
     for key, value in DEFAULT_CONFIGS:
         conn.execute(
@@ -152,30 +266,14 @@ def seed_initial_data(conn) -> None:
 
     users_count = conn.execute("SELECT COUNT(*) AS cnt FROM users").fetchone()['cnt']
     is_fresh_users = users_count == 0
-    if is_fresh_users:
-        conn.executemany(
-            '''
-            INSERT INTO users (username, password, name, nim_nip, role, prodi, ipk, semester, dpa_id, avatar)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT (username) DO NOTHING
-            ''',
-            SEED_USERS,
-        )
-
-        # Ensure mahasiswa.dpa_id matches the real DB id of dpa1 across any DB backend
-        dpa_row = conn.execute("SELECT id FROM users WHERE username = 'dpa1'").fetchone()
-        if dpa_row:
-            conn.execute(
-                "UPDATE users SET dpa_id = ? WHERE role = 'mahasiswa'",
-                (dpa_row['id'],),
-            )
+    _ensure_rbac_demo_accounts(conn)
 
     courses_count = conn.execute("SELECT COUNT(*) AS cnt FROM courses").fetchone()['cnt']
     if courses_count == 0:
         user_id_by_username = {
             row['username']: row['id']
             for row in conn.execute(
-                "SELECT id, username FROM users WHERE username IN ('dpa1', 'dosen1')"
+                "SELECT id, username FROM users WHERE username IN ('kaprodi', 'dosen1')"
             ).fetchall()
         }
         resolved_courses = [

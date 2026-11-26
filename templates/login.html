@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>Login - Portal Akademik Semester Antara UIN Jakarta</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+    <style>
+        body {
+            background: #f0f2f5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .login-wrapper {
+            flex: 1;
+            padding: 35px 15px;
+        }
+        .login-card {
+            background: #ffffff;
+            border-radius: 8px;
+            border: 1px solid #dce1e7;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        .login-card-header {
+            background: #1a1a1a;
+            color: #ffffff;
+            padding: 20px 24px;
+            border-bottom: 3px solid #343a40;
+            display: flex;
+            align-items: center;
+        }
+        .login-card-header img {
+            width: 52px;
+            margin-right: 14px;
+        }
+        .demo-box {
+            background: #f8fafc;
+            border: 1px solid #d9e2ec;
+            border-left: 4px solid #24292e;
+            border-radius: 6px;
+            padding: 16px;
+        }
+        .demo-table th, .demo-table td {
+            font-size: 11.5px !important;
+            padding: 7px 8px !important;
+            vertical-align: middle !important;
+        }
+        .code-pill {
+            background: #edf2f7;
+            color: #1a202c;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 11px;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-wrapper">
+    <div class="container" style="max-width: 980px;">
+        <div class="row">
+            <div class="col-md-5" style="margin-bottom: 20px;">
+                <div class="login-card">
+                    <div class="login-card-header">
+                        <img src="{{ url_for('static', filename='img/logo_client.png') }}" alt="Logo UIN Jakarta">
+                        <div>
+                            <div style="font-size:15px; font-weight:700; letter-spacing:0.3px;">PORTAL AKADEMIK e-SEMESTA</div>
+                            <div style="font-size:11px; color:#cbd5e1; margin-top:2px;">Sistem Pengajuan Semester Antara &mdash; UIN Jakarta</div>
+                        </div>
+                    </div>
+
+                    <div style="padding: 24px;">
+                        <h4 style="margin-top:0; font-weight:700; color:#1a1a1a;">
+                            <i class="fa fa-lock"></i> Masuk ke Sistem
+                        </h4>
+                        <p class="text-muted" style="font-size:12px; margin-bottom:18px;">
+                            Silakan login menggunakan akun <b>Username / Email / NIM</b> dan password sesuai peran Anda.
+                        </p>
+
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible" role="alert" style="font-size:12px; padding:10px 12px;">
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+
+                        <form method="POST" action="{{ url_for('auth.login') }}">
+                            {% if next_url %}
+                                <input type="hidden" name="next" value="{{ next_url }}">
+                            {% endif %}
+
+                            <div class="form-group">
+                                <label for="identifier" style="font-size:12px;">Username / Email / NIM / NIP</label>
+                                <div class="input-group">
+                                    <span class="input-group-addon"><i class="fa fa-user"></i></span>
+                                    <input type="text" id="identifier" name="identifier" class="form-control"
+                                           value="{{ last_identifier }}" required autofocus
+                                           placeholder="Contoh: 1251420125 atau kaprodi@uinjkt.ac.id">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="password" style="font-size:12px;">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-addon"><i class="fa fa-key"></i></span>
+                                    <input type="password" id="password" name="password" class="form-control"
+                                           required placeholder="Masukkan password">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-block" style="font-weight:700; padding:10px; background:#24292e; border-color:#1a1a1a;">
+                                <i class="fa fa-sign-in"></i> Masuk Sekarang
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-7">
+                <div class="demo-box">
+                    <h5 style="margin-top:0; font-weight:700; color:#1a1a1a;">
+                        <i class="fa fa-id-card-o"></i> Daftar Akun Demo (Presentasi & Pengujian RBAC)
+                    </h5>
+                    <p style="font-size:12px; color:#4a5568; margin-bottom:12px;">
+                        Gunakan salah satu dari 5 akun berikut (login bisa memakai <b>Username</b> maupun <b>Email</b>). Klik tombol <b>Isi</b> untuk mengisi formulir login secara otomatis.
+                    </p>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover demo-table" style="margin-bottom:0; background:#fff;">
+                            <thead>
+                                <tr>
+                                    <th>Peran</th>
+                                    <th>Username / Email</th>
+                                    <th>Password</th>
+                                    <th class="text-center" style="width:55px;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for acc in demo_accounts %}
+                                <tr>
+                                    <td>
+                                        <b>{{ acc.label }}</b><br>
+                                        <small class="text-muted" style="font-size:10.5px;">{{ acc.desc }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="code-pill">{{ acc.username }}</span><br>
+                                        <small class="text-muted">{{ acc.email }}</small>
+                                    </td>
+                                    <td><span class="code-pill">{{ acc.password }}</span></td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-xs btn-default"
+                                                onclick="fillDemoLogin('{{ acc.username }}', '{{ acc.password }}')"
+                                                title="Isi form login dengan akun {{ acc.label }}">
+                                            <i class="fa fa-magic"></i> Isi
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="footer-uin text-center" style="margin-top:0;">
+    <div class="container">
+        <p style="margin:0; font-weight:600;">Sistem Pengajuan Semester Antara Terpusat &mdash; UIN Syarif Hidayatullah Jakarta</p>
+        <p style="margin:4px 0 0 0; font-size:11px; opacity:0.8;">
+            Berdasarkan SK Rektor Nomor 686 Tahun 2025 | Terintegrasi dengan Portal Akademik e-Semesta
+        </p>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/jquery-2.2.3.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+<script>
+function fillDemoLogin(username, password) {
+    document.getElementById('identifier').value = username;
+    document.getElementById('password').value = password;
+    document.getElementById('identifier').focus();
+}
+</script>
+</body>
+</html>

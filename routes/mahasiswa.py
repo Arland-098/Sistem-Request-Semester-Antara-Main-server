@@ -1,5 +1,6 @@
-from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 
+from routes.decorators import get_logged_in_user, normalize_role, roles_required
 from services import (
     get_courses_grouped_by_semester,
     get_courses_list,
@@ -13,16 +14,15 @@ mahasiswa_bp = Blueprint('mahasiswa', __name__)
 
 
 def _resolve_student_id() -> int:
-    user_id = session.get('user_id')
-    if user_id:
-        user = get_user_by_id(user_id)
-        if user and user['role'] == 'mahasiswa':
-            return user['id']
+    user = get_logged_in_user()
+    if user and normalize_role(user['role']) == 'mahasiswa':
+        return user['id']
     default_student = get_user_by_username('1251420125')
     return default_student['id'] if default_student else 1
 
 
 @mahasiswa_bp.route('/katalog')
+@roles_required('mahasiswa')
 def katalog():
     courses = get_courses_list()
     grouped_courses = get_courses_grouped_by_semester()
@@ -37,6 +37,7 @@ def katalog():
 
 
 @mahasiswa_bp.route('/krs')
+@roles_required('mahasiswa')
 def krs():
     student_id = _resolve_student_id()
     student = get_user_by_id(student_id)
@@ -59,6 +60,7 @@ def krs():
 
 
 @mahasiswa_bp.route('/krs/submit', methods=['POST'])
+@roles_required('mahasiswa')
 def krs_submit():
     student_id = _resolve_student_id()
     course_ids = request.form.getlist('course_ids', type=int)
@@ -69,6 +71,7 @@ def krs_submit():
 
 
 @mahasiswa_bp.route('/tagihan')
+@roles_required('mahasiswa')
 def tagihan():
     student_id = _resolve_student_id()
     student = get_user_by_id(student_id)
@@ -85,6 +88,7 @@ def tagihan():
 
 
 @mahasiswa_bp.route('/cetak_krs')
+@roles_required('mahasiswa')
 def cetak_krs():
     student_id = _resolve_student_id()
     student = get_user_by_id(student_id)

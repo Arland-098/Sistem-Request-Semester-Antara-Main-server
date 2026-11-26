@@ -2,6 +2,7 @@ import csv
 import io
 from flask import Blueprint, Response, flash, redirect, render_template, request, url_for
 
+from routes.decorators import roles_required
 from services import (
     add_course,
     delete_course,
@@ -24,12 +25,16 @@ def _safe_int(value, default: int | None = None) -> int | None:
         return default
 
 
+# --- KAPRODI / KOORDINATOR: PERIODE, JADWAL, MONITORING KELAS ---
+
 @prodi_bp.route('/periode')
+@roles_required('kaprodi')
 def periode():
     return render_template('prodi_periode.html', active_tab='prodi_periode')
 
 
 @prodi_bp.route('/periode/update', methods=['POST'])
+@roles_required('kaprodi')
 def periode_update():
     set_config('active_semester', request.form.get('active_semester', 'Semester Antara 2026/2027'))
     set_config('registration_status', request.form.get('registration_status', 'Buka'))
@@ -40,7 +45,45 @@ def periode_update():
     return redirect(url_for('prodi.periode'))
 
 
+@prodi_bp.route('/jadwal_ruang')
+@roles_required('kaprodi')
+def jadwal_ruang():
+    courses = get_courses_list()
+    return render_template('prodi_jadwal_ruang.html', courses=courses, active_tab='prodi_jadwal')
+
+
+@prodi_bp.route('/jadwal/update/<int:course_id>', methods=['POST'])
+@roles_required('kaprodi')
+def jadwal_update(course_id: int):
+    day = request.form.get('schedule_day', 'Senin')
+    time_str = request.form.get('schedule_time', '08.00 - 10.30 WIB')
+    room = request.form.get('room', 'Ruang Kelas FST')
+
+    update_course_schedule(course_id, day, time_str, room)
+    flash("Jadwal dan alokasi ruang kuliah luring berhasil diperbarui.", "success")
+    return redirect(url_for('prodi.jadwal_ruang'))
+
+
+@prodi_bp.route('/monitoring')
+@roles_required('kaprodi')
+def monitoring():
+    courses = get_courses_list()
+    return render_template('prodi_monitoring.html', courses=courses, active_tab='prodi_monitoring')
+
+
+@prodi_bp.route('/status/<int:course_id>', methods=['POST'])
+@roles_required('kaprodi')
+def set_class_status(course_id: int):
+    new_status = request.form.get('status', 'Menunggu')
+    update_course_status(course_id, new_status)
+    flash(f"Status kelas #{course_id} berhasil ditetapkan menjadi: {new_status}.", "success")
+    return redirect(url_for('prodi.monitoring'))
+
+
+# --- ADMIN AKADEMIK / TU: MASTER MATA KULIAH ---
+
 @prodi_bp.route('/katalog')
+@roles_required('admin_akademik')
 def katalog():
     courses = get_courses_list()
     lecturers = get_lecturers()
@@ -53,6 +96,7 @@ def katalog():
 
 
 @prodi_bp.route('/katalog/add', methods=['POST'])
+@roles_required('admin_akademik')
 def katalog_add():
     code = request.form.get('code', '')
     name = request.form.get('name', '')
@@ -84,6 +128,7 @@ def katalog_add():
 
 
 @prodi_bp.route('/katalog/edit/<int:course_id>', methods=['POST'])
+@roles_required('admin_akademik')
 def katalog_edit(course_id: int):
     name = request.form.get('name', '')
     sks = _safe_int(request.form.get('sks'), 3) or 3
@@ -114,50 +159,24 @@ def katalog_edit(course_id: int):
 
 
 @prodi_bp.route('/katalog/delete/<int:course_id>', methods=['POST'])
+@roles_required('admin_akademik')
 def katalog_delete(course_id: int):
     success, message = delete_course(course_id)
     flash(message, 'warning' if success else 'danger')
     return redirect(url_for('prodi.katalog'))
 
 
-@prodi_bp.route('/jadwal_ruang')
-def jadwal_ruang():
-    courses = get_courses_list()
-    return render_template('prodi_jadwal_ruang.html', courses=courses, active_tab='prodi_jadwal')
-
-
-@prodi_bp.route('/jadwal/update/<int:course_id>', methods=['POST'])
-def jadwal_update(course_id: int):
-    day = request.form.get('schedule_day', 'Senin')
-    time_str = request.form.get('schedule_time', '08.00 - 10.30 WIB')
-    room = request.form.get('room', 'Ruang Kelas FST')
-
-    update_course_schedule(course_id, day, time_str, room)
-    flash("Jadwal dan alokasi ruang kuliah luring berhasil diperbarui.", "success")
-    return redirect(url_for('prodi.jadwal_ruang'))
-
-
-@prodi_bp.route('/monitoring')
-def monitoring():
-    courses = get_courses_list()
-    return render_template('prodi_monitoring.html', courses=courses, active_tab='prodi_monitoring')
-
-
-@prodi_bp.route('/status/<int:course_id>', methods=['POST'])
-def set_class_status(course_id: int):
-    new_status = request.form.get('status', 'Menunggu')
-    update_course_status(course_id, new_status)
-    flash(f"Status kelas #{course_id} berhasil ditetapkan menjadi: {new_status}.", "success")
-    return redirect(url_for('prodi.monitoring'))
-
+# --- REKAPITULASI & EKSPOR PESERTA (KAPRODI & ADMIN AKADEMIK / TU) ---
 
 @prodi_bp.route('/rekap')
+@roles_required('kaprodi', 'admin_akademik')
 def rekap():
     participants = get_official_participants()
     return render_template('prodi_rekap.html', participants=participants, active_tab='prodi_rekap')
 
 
 @prodi_bp.route('/tutup', methods=['POST'])
+@roles_required('kaprodi', 'admin_akademik')
 def tutup():
     set_config('registration_status', 'Tutup')
     flash(
@@ -168,6 +187,7 @@ def tutup():
 
 
 @prodi_bp.route('/buka', methods=['POST'])
+@roles_required('kaprodi', 'admin_akademik')
 def buka():
     set_config('registration_status', 'Buka')
     flash("Pendaftaran Semester Antara telah DIBUKA kembali.", "success")
@@ -175,6 +195,7 @@ def buka():
 
 
 @prodi_bp.route('/export_csv')
+@roles_required('kaprodi', 'admin_akademik')
 def export_csv():
     participants = get_official_participants()
 

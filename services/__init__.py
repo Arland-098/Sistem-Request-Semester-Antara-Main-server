@@ -1,5 +1,16 @@
+from services.auth_service import authenticate_user, verify_password
 from services.config_service import get_config, set_config
-from services.user_service import get_user_by_id, get_user_by_username, get_users_by_role, get_lecturers
+from services.user_service import (
+    VALID_ROLES,
+    create_user,
+    delete_user,
+    get_all_users,
+    get_lecturers,
+    get_user_by_id,
+    get_user_by_username,
+    get_users_by_role,
+    update_user,
+)
 from services.course_service import (
     get_courses_list,
     get_courses_grouped_by_semester,
@@ -16,6 +27,8 @@ from services.krs_service import (
     submit_student_krs,
     get_student_application,
     get_dpa_applications,
+    get_lecturer_related_applications,
+    lecturer_review_application,
     approve_student_krs,
     reject_student_krs,
 )
@@ -26,12 +39,19 @@ from services.billing_service import (
 )
 
 __all__ = [
+    'authenticate_user',
+    'verify_password',
+    'VALID_ROLES',
     'get_config',
     'set_config',
     'get_user_by_id',
     'get_user_by_username',
     'get_users_by_role',
+    'get_all_users',
     'get_lecturers',
+    'create_user',
+    'update_user',
+    'delete_user',
     'get_courses_list',
     'get_courses_grouped_by_semester',
     'get_course_by_id',
@@ -45,6 +65,8 @@ __all__ = [
     'submit_student_krs',
     'get_student_application',
     'get_dpa_applications',
+    'get_lecturer_related_applications',
+    'lecturer_review_application',
     'approve_student_krs',
     'reject_student_krs',
     'get_all_invoices',

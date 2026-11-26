@@ -152,30 +152,42 @@ def get_db(
     return CompatConnection(raw_sqlite, backend='sqlite')
 
 
-def _ensure_sqlite_courses_columns(conn: CompatConnection) -> None:
+def _ensure_sqlite_table_columns(conn: CompatConnection, table: str, cols: dict[str, str]) -> None:
     existing_cols = {
         row['name']
-        for row in conn.execute("PRAGMA table_info(courses)").fetchall()
+        for row in conn.execute(f"PRAGMA table_info({table})").fetchall()
     }
-    optional_cols = {
-        'semester': "INTEGER DEFAULT 1",
-        'class_name': "TEXT DEFAULT '1ATI'",
-        'wp_type': "TEXT DEFAULT 'W'",
-    }
-    for col_name, col_def in optional_cols.items():
+    for col_name, col_def in cols.items():
         if col_name not in existing_cols:
-            conn.execute(f"ALTER TABLE courses ADD COLUMN {col_name} {col_def}")
+            conn.execute(f"ALTER TABLE {table} ADD COLUMN {col_name} {col_def}")
 
 
 def _init_postgres_schema(conn: CompatConnection) -> None:
     def _is_ready() -> bool:
         tbl_row = conn.execute("SELECT to_regclass('public.invoices') AS tbl").fetchone()
-        if tbl_row and tbl_row['tbl']:
-            cfg_cnt = conn.execute("SELECT COUNT(*) AS cnt FROM system_config").fetchone()['cnt']
-            usr_cnt = conn.execute("SELECT COUNT(*) AS cnt FROM users").fetchone()['cnt']
-            if cfg_cnt >= 7 and usr_cnt > 0:
-                return True
-        return False
+        if not (tbl_row and tbl_row['tbl']):
+            return False
+
+        col_email = conn.execute(
+            """
+            SELECT 1 FROM information_schema.columns
+            WHERE table_schema = 'public' AND table_name = 'users' AND column_name = 'email'
+            """
+        ).fetchone()
+        col_lec = conn.execute(
+            """
+            SELECT 1 FROM information_schema.columns
+            WHERE table_schema = 'public' AND table_name = 'krs_applications' AND column_name = 'lecturer_approval'
+            """
+        ).fetchone()
+        if not (col_email and col_lec):
+            return False
+
+        cfg_cnt = conn.execute("SELECT COUNT(*) AS cnt FROM system_config").fetchone()['cnt']
+        has_superadmin = conn.execute(
+            "SELECT 1 FROM users WHERE username = 'superadmin'"
+        ).fetchone()
+        return bool(cfg_cnt >= 7 and has_superadmin)
 
     if _is_ready():
         conn.commit()
@@ -205,9 +217,13 @@ def _init_postgres_schema(conn: CompatConnection) -> None:
         ipk DOUBLE PRECISION DEFAULT 0.0,
         semester INTEGER DEFAULT 1,
         dpa_id INTEGER,
-        avatar TEXT
+        avatar TEXT,
+        email TEXT,
+        is_active INTEGER DEFAULT 1
     )
     ''')
+    conn.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS email TEXT")
+    conn.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active INTEGER DEFAULT 1")
 
     conn.execute('''
     CREATE TABLE IF NOT EXISTS courses (
@@ -238,10 +254,16 @@ def _init_postgres_schema(conn: CompatConnection) -> None:
         total_sks INTEGER NOT NULL DEFAULT 0,
         status TEXT NOT NULL DEFAULT 'Draft',
         dpa_notes TEXT,
+        lecturer_approval TEXT DEFAULT 'Menunggu',
+        lecturer_notes TEXT,
         submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         verified_at TIMESTAMP
     )
     ''')
+    conn.execute(
+        "ALTER TABLE krs_applications ADD COLUMN IF NOT EXISTS lecturer_approval TEXT DEFAULT 'Menunggu'"
+    )
+    conn.execute("ALTER TABLE krs_applications ADD COLUMN IF NOT EXISTS lecturer_notes TEXT")
 
     conn.execute('''
     CREATE TABLE IF NOT EXISTS krs_items (
@@ -296,9 +318,19 @@ def _init_sqlite_schema(conn: CompatConnection) -> None:
         ipk REAL DEFAULT 0.0,
         semester INTEGER DEFAULT 1,
         dpa_id INTEGER,
-        avatar TEXT
+        avatar TEXT,
+        email TEXT,
+        is_active INTEGER DEFAULT 1
     )
     ''')
+    _ensure_sqlite_table_columns(
+        conn,
+        'users',
+        {
+            'email': 'TEXT',
+            'is_active': 'INTEGER DEFAULT 1',
+        },
+    )
 
     conn.execute('''
     CREATE TABLE IF NOT EXISTS courses (
@@ -321,7 +353,15 @@ def _init_sqlite_schema(conn: CompatConnection) -> None:
         FOREIGN KEY (lecturer_id) REFERENCES users(id)
     )
     ''')
-    _ensure_sqlite_courses_columns(conn)
+    _ensure_sqlite_table_columns(
+        conn,
+        'courses',
+        {
+            'semester': 'INTEGER DEFAULT 1',
+            'class_name': "TEXT DEFAULT '1ATI'",
+            'wp_type': "TEXT DEFAULT 'W'",
+        },
+    )
 
     conn.execute('''
     CREATE TABLE IF NOT EXISTS krs_applications (
@@ -331,11 +371,21 @@ def _init_sqlite_schema(conn: CompatConnection) -> None:
         total_sks INTEGER NOT NULL DEFAULT 0,
         status TEXT NOT NULL DEFAULT 'Draft',
         dpa_notes TEXT,
+        lecturer_approval TEXT DEFAULT 'Menunggu',
+        lecturer_notes TEXT,
         submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         verified_at TIMESTAMP,
         FOREIGN KEY (student_id) REFERENCES users(id)
     )
     ''')
+    _ensure_sqlite_table_columns(
+        conn,
+        'krs_applications',
+        {
+            'lecturer_approval': "TEXT DEFAULT 'Menunggu'",
+            'lecturer_notes': 'TEXT',
+        },
+    )
 
     conn.execute('''
     CREATE TABLE IF NOT EXISTS krs_items (

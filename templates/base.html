@@ -31,15 +31,16 @@
                     <div style="margin-left: 12px;">
                         <h1 style="margin:0; font-size:18px; color:#fff; font-weight:700;">UNIVERSITAS ISLAM NEGERI SYARIF HIDAYATULLAH</h1>
                         <div class="univ-sub">
-                            Portal Akademik e-Semesta &mdash; 
+                            Portal Akademik e-Semesta &mdash;
                             <span style="color:#fff;">Semester Aktif: {{ active_semester }}</span>
                         </div>
                     </div>
                 </a>
             </div>
             <div class="col-md-5 col-sm-6 text-right">
+                {% if current_user %}
                 <div class="dropdown" style="display:inline-block;">
-                    <div class="header-user-badge dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" title="Klik untuk membuka menu layanan dan ganti akun">
+                    <div class="header-user-badge dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" title="Menu akun dan keluar">
                         <img src="{{ url_for('static', filename='img/' ~ (current_user.avatar or '25110120414.png')) }}" alt="User Avatar">
                         <div style="text-align:left; line-height:1.2;">
                             <div style="font-weight:700; font-size:12px;">
@@ -47,7 +48,7 @@
                             </div>
                             <div style="font-size:11px; opacity:0.9;">
                                 {{ current_user.nim_nip }}
-                                <span class="role-pill">{{ current_user.role }}</span>
+                                <span class="role-pill">{{ current_role_label }}</span>
                             </div>
                         </div>
                     </div>
@@ -64,49 +65,58 @@
                             </div>
                         </li>
 
-                        <!-- DYNAMIC SERVICES ACCORDING TO CURRENT ROLE -->
+                        <!-- ROLE-RESTRICTED SERVICES -->
                         <li class="dropdown-header" style="font-weight:700; font-size:11px; color:#212529; background:#f8f9fa; padding:8px 16px; border-bottom:1px solid #eee; text-transform:uppercase;">
-                            <i class="fa fa-th-large text-primary"></i> Layanan {{ current_user.role }}
+                            <i class="fa fa-th-large text-primary"></i> Layanan {{ current_role_label }}
                         </li>
 
-                        {% if current_user.role.lower() == 'mahasiswa' %}
-                            <li><a href="/krs" style="padding:10px 16px; font-weight:700; color:#212529;"><i class="fa fa-pencil-square-o text-primary" style="width:20px;"></i> Buka KRS Mahasiswa</a></li>
+                        {% if current_role in ['mahasiswa', 'superadmin'] %}
+                            <li><a href="/krs" style="padding:9px 16px; font-weight:600; color:#212529;"><i class="fa fa-pencil-square-o text-primary" style="width:20px;"></i> Pengisian KRS Semester Antara</a></li>
                             <li><a href="/katalog" style="padding:9px 16px; color:#333;"><i class="fa fa-book text-muted" style="width:20px;"></i> Katalog Mata Kuliah Dibuka</a></li>
-                            <li><a href="/tagihan" style="padding:9px 16px; color:#333;"><i class="fa fa-credit-card text-muted" style="width:20px;"></i> Tagihan Virtual Account (VA)</a></li>
+                            <li><a href="/tagihan" style="padding:9px 16px; color:#333;"><i class="fa fa-credit-card text-muted" style="width:20px;"></i> Tagihan & Status Pengajuan</a></li>
                             <li><a href="/cetak_krs" target="_blank" style="padding:9px 16px; color:#333;"><i class="fa fa-print text-muted" style="width:20px;"></i> Cetak Kartu Rencana Studi Sah</a></li>
-                        {% elif current_user.role.lower() == 'dpa' %}
-                            <li><a href="/dpa" style="padding:10px 16px; font-weight:700; color:#212529;"><i class="fa fa-check-square-o text-primary" style="width:20px;"></i> Verifikasi Pengajuan KRS</a></li>
-                        {% elif current_user.role.lower() == 'dosen' %}
-                            <li><a href="/dosen" style="padding:10px 16px; font-weight:700; color:#212529;"><i class="fa fa-calendar-check-o text-primary" style="width:20px;"></i> Kesediaan Mengajar & Dispensasi</a></li>
-                        {% elif current_user.role.lower() == 'prodi' %}
-                            <li><a href="/prodi/monitoring" style="padding:10px 16px; font-weight:700; color:#212529;"><i class="fa fa-bar-chart text-primary" style="width:20px;"></i> Monitoring Kelas & Kuota</a></li>
-                            <li><a href="/prodi/katalog" style="padding:9px 16px; color:#333;"><i class="fa fa-list-alt text-muted" style="width:20px;"></i> Pengelolaan Katalog MK & Kuota</a></li>
-                            <li><a href="/prodi/jadwal_ruang" style="padding:9px 16px; color:#333;"><i class="fa fa-building-o text-muted" style="width:20px;"></i> Jadwal & Alokasi Ruang Luring</a></li>
-                            <li><a href="/prodi/periode" style="padding:9px 16px; color:#333;"><i class="fa fa-clock-o text-muted" style="width:20px;"></i> Pengaturan Periode & Status</a></li>
-                            <li><a href="/prodi/rekap" style="padding:9px 16px; color:#333;"><i class="fa fa-file-excel-o text-muted" style="width:20px;"></i> Penutupan & Ekspor Rekap Peserta</a></li>
-                        {% elif current_user.role.lower() == 'keuangan' %}
-                            <li><a href="/keuangan/pembayaran" style="padding:10px 16px; font-weight:700; color:#212529;"><i class="fa fa-exchange text-primary" style="width:20px;"></i> Rekonsiliasi VA & Pembayaran</a></li>
+                        {% endif %}
+
+                        {% if current_role in ['dosen', 'superadmin'] %}
+                            <li><a href="/dosen" style="padding:9px 16px; font-weight:600; color:#212529;"><i class="fa fa-calendar-check-o text-primary" style="width:20px;"></i> Mata Kuliah & Persetujuan Akademik</a></li>
+                        {% endif %}
+
+                        {% if current_role in ['kaprodi', 'superadmin'] %}
+                            <li><a href="/dpa" style="padding:9px 16px; font-weight:600; color:#212529;"><i class="fa fa-check-square-o text-primary" style="width:20px;"></i> Verifikasi Seluruh Pengajuan</a></li>
+                            <li><a href="/prodi/monitoring" style="padding:9px 16px; color:#333;"><i class="fa fa-bar-chart text-muted" style="width:20px;"></i> Monitoring Kelas & Kuota</a></li>
+                            <li><a href="/prodi/jadwal_ruang" style="padding:9px 16px; color:#333;"><i class="fa fa-building-o text-muted" style="width:20px;"></i> Jadwal & Ruang Kuliah</a></li>
+                            <li><a href="/prodi/periode" style="padding:9px 16px; color:#333;"><i class="fa fa-clock-o text-muted" style="width:20px;"></i> Pengaturan Periode</a></li>
+                            <li><a href="/prodi/rekap" style="padding:9px 16px; color:#333;"><i class="fa fa-file-excel-o text-muted" style="width:20px;"></i> Rekap & Ekspor Peserta</a></li>
+                        {% endif %}
+
+                        {% if current_role in ['admin_akademik', 'superadmin'] %}
+                            <li><a href="/master/mahasiswa" style="padding:9px 16px; font-weight:600; color:#212529;"><i class="fa fa-users text-primary" style="width:20px;"></i> Data Master Mahasiswa</a></li>
+                            <li><a href="/master/dosen" style="padding:9px 16px; color:#333;"><i class="fa fa-id-badge text-muted" style="width:20px;"></i> Data Master Dosen</a></li>
+                            <li><a href="/prodi/katalog" style="padding:9px 16px; color:#333;"><i class="fa fa-list-alt text-muted" style="width:20px;"></i> Data Master Mata Kuliah</a></li>
+                            <li><a href="/keuangan/pembayaran" style="padding:9px 16px; color:#333;"><i class="fa fa-exchange text-muted" style="width:20px;"></i> Administrasi Pengajuan & VA</a></li>
                             <li><a href="/keuangan/tarif" style="padding:9px 16px; color:#333;"><i class="fa fa-calculator text-muted" style="width:20px;"></i> Tarif Biaya per SKS</a></li>
                         {% endif %}
 
-                        <!-- SWITCH ACCOUNT / ROLE -->
+                        {% if current_role == 'superadmin' %}
+                            <li><a href="/admin/users" style="padding:9px 16px; font-weight:600; color:#212529;"><i class="fa fa-shield text-primary" style="width:20px;"></i> Manajemen Pengguna</a></li>
+                        {% endif %}
+
+                        <!-- LOGOUT -->
                         <li class="divider" style="margin:4px 0;"></li>
-                        <li class="dropdown-header" style="font-weight:700; font-size:11px; color:#555; background:#f8f9fa; padding:8px 16px; border-top:1px solid #eee; border-bottom:1px solid #eee; text-transform:uppercase;">
-                            <i class="fa fa-refresh"></i> Ganti Akun / Peran Akses:
+                        <li>
+                            <a href="{{ url_for('auth.logout') }}" style="padding:10px 16px; color:#c53030; font-weight:700;">
+                                <i class="fa fa-sign-out" style="width:20px;"></i> Keluar (Logout)
+                            </a>
                         </li>
-                        <li><a href="/switch_role/mahasiswa" style="padding:8px 16px; font-size:12px;"><i class="fa fa-user" style="width:18px;"></i> <b>Mahasiswa</b> (Ihsan Mubarok)</a></li>
-                        <li><a href="/switch_role/dpa" style="padding:8px 16px; font-size:12px;"><i class="fa fa-check-circle" style="width:18px;"></i> <b>Dosen PA</b> (Dr. Dewi Khairani)</a></li>
-                        <li><a href="/switch_role/dosen" style="padding:8px 16px; font-size:12px;"><i class="fa fa-briefcase" style="width:18px;"></i> <b>Dosen Pengampu</b> (Luh Kesuma)</a></li>
-                        <li><a href="/switch_role/prodi" style="padding:8px 16px; font-size:12px;"><i class="fa fa-institution" style="width:18px;"></i> <b>Program Studi</b> (Admin TIF)</a></li>
-                        <li><a href="/switch_role/keuangan" style="padding:8px 16px; font-size:12px;"><i class="fa fa-bank" style="width:18px;"></i> <b>Bagian Keuangan</b> (Biro Keuangan)</a></li>
                     </ul>
                 </div>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
 
-<!-- MAIN NAVIGATION -->
+<!-- MAIN NAVIGATION (ROLE-BASED ACCESS CONTROL) -->
 <div class="nav-main-bar">
     <div class="container">
         <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -116,52 +126,63 @@
                 </li>
 
                 <!-- MAHASISWA -->
+                {% if current_role in ['mahasiswa', 'superadmin'] %}
                 <li class="{% if active_tab in ['katalog', 'krs', 'tagihan', 'cetak_krs'] %}active{% endif %}">
                     <a href="#"><i class="fa fa-graduation-cap"></i> Mahasiswa <i class="fa fa-angle-down"></i></a>
                     <ul class="submenu">
                         <li><a href="/katalog"><i class="fa fa-book"></i> Katalog Mata Kuliah Dibuka</a></li>
                         <li><a href="/krs"><i class="fa fa-pencil-square-o"></i> Pengisian KRS Semester Antara</a></li>
-                        <li><a href="/tagihan"><i class="fa fa-credit-card"></i> Tagihan Virtual Account (VA)</a></li>
+                        <li><a href="/tagihan"><i class="fa fa-credit-card"></i> Tagihan & Status Pengajuan</a></li>
                         <li><a href="/cetak_krs"><i class="fa fa-print"></i> Cetak Kartu Rencana Studi Sah</a></li>
                     </ul>
                 </li>
-
-                <!-- DOSEN PEMBIMBING AKADEMIK (DPA) -->
-                <li class="{% if active_tab in ['dpa'] %}active{% endif %}">
-                    <a href="#"><i class="fa fa-check-square-o"></i> Dosen PA <i class="fa fa-angle-down"></i></a>
-                    <ul class="submenu">
-                        <li><a href="/dpa"><i class="fa fa-users"></i> Verifikasi KRS Bimbingan</a></li>
-                    </ul>
-                </li>
+                {% endif %}
 
                 <!-- DOSEN PENGAMPU -->
+                {% if current_role in ['dosen', 'superadmin'] %}
                 <li class="{% if active_tab in ['dosen'] %}active{% endif %}">
-                    <a href="#"><i class="fa fa-user-tie"></i> Dosen Pengampu <i class="fa fa-angle-down"></i></a>
-                    <ul class="submenu">
-                        <li><a href="/dosen"><i class="fa fa-calendar-check-o"></i> Kesediaan Mengajar</a></li>
-                        <li><a href="/dosen"><i class="fa fa-handshake-o"></i> Konfirmasi Kelas Dispensasi</a></li>
-                    </ul>
+                    <a href="/dosen"><i class="fa fa-user-md"></i> Dosen Pengampu</a>
                 </li>
+                {% endif %}
 
-                <!-- PROGRAM STUDI -->
-                <li class="{% if active_tab in ['prodi_periode', 'prodi_katalog', 'prodi_jadwal', 'prodi_monitoring', 'prodi_rekap'] %}active{% endif %}">
-                    <a href="#"><i class="fa fa-sitemap"></i> Program Studi <i class="fa fa-angle-down"></i></a>
+                <!-- KAPRODI / KOORDINATOR -->
+                {% if current_role in ['kaprodi', 'superadmin'] %}
+                <li class="{% if active_tab in ['dpa', 'prodi_periode', 'prodi_jadwal', 'prodi_monitoring', 'prodi_rekap'] %}active{% endif %}">
+                    <a href="#"><i class="fa fa-sitemap"></i> Kaprodi / Koordinator <i class="fa fa-angle-down"></i></a>
                     <ul class="submenu">
+                        <li><a href="/dpa"><i class="fa fa-check-square-o"></i> Verifikasi Seluruh Pengajuan</a></li>
                         <li><a href="/prodi/periode"><i class="fa fa-clock-o"></i> Pengaturan Periode & Status</a></li>
-                        <li><a href="/prodi/katalog"><i class="fa fa-list-alt"></i> Pengelolaan Katalog MK & Kuota</a></li>
                         <li><a href="/prodi/jadwal_ruang"><i class="fa fa-building-o"></i> Jadwal & Alokasi Ruang Luring</a></li>
                         <li><a href="/prodi/monitoring"><i class="fa fa-bar-chart"></i> Monitoring Kuota & Status Kelas</a></li>
-                        <li><a href="/prodi/rekap"><i class="fa fa-file-excel-o"></i> Penutupan & Ekspor Rekap Peserta</a></li>
+                        <li><a href="/prodi/rekap"><i class="fa fa-file-excel-o"></i> Penutupan & Rekap Peserta</a></li>
                     </ul>
                 </li>
+                {% endif %}
 
-                <!-- BAGIAN KEUANGAN -->
-                <li class="{% if active_tab in ['keuangan_tarif', 'keuangan_pembayaran'] %}active{% endif %}">
-                    <a href="#"><i class="fa fa-money"></i> Bagian Keuangan <i class="fa fa-angle-down"></i></a>
+                <!-- ADMIN AKADEMIK / TU -->
+                {% if current_role in ['admin_akademik', 'superadmin'] %}
+                <li class="{% if active_tab in ['master_mahasiswa', 'master_dosen', 'prodi_katalog', 'keuangan_tarif', 'keuangan_pembayaran', 'prodi_rekap'] %}active{% endif %}">
+                    <a href="#"><i class="fa fa-cogs"></i> Admin Akademik / TU <i class="fa fa-angle-down"></i></a>
                     <ul class="submenu">
+                        <li><a href="/master/mahasiswa"><i class="fa fa-users"></i> Data Master Mahasiswa</a></li>
+                        <li><a href="/master/dosen"><i class="fa fa-id-badge"></i> Data Master Dosen</a></li>
+                        <li><a href="/prodi/katalog"><i class="fa fa-list-alt"></i> Data Master Mata Kuliah</a></li>
+                        <li><a href="/keuangan/pembayaran"><i class="fa fa-exchange"></i> Administrasi Pengajuan & VA</a></li>
                         <li><a href="/keuangan/tarif"><i class="fa fa-calculator"></i> Tarif Biaya per SKS</a></li>
-                        <li><a href="/keuangan/pembayaran"><i class="fa fa-exchange"></i> Pemantauan VA & Rekonsiliasi</a></li>
+                        <li><a href="/prodi/rekap"><i class="fa fa-file-excel-o"></i> Rekap & Ekspor Peserta</a></li>
                     </ul>
+                </li>
+                {% endif %}
+
+                <!-- SUPER ADMIN: MANAJEMEN PENGGUNA -->
+                {% if current_role == 'superadmin' %}
+                <li class="{% if active_tab in ['admin_users'] %}active{% endif %}">
+                    <a href="/admin/users"><i class="fa fa-shield"></i> Manajemen Pengguna</a>
+                </li>
+                {% endif %}
+
+                <li style="margin-left:auto;">
+                    <a href="{{ url_for('auth.logout') }}" style="color:#feb2b2;"><i class="fa fa-sign-out"></i> Logout</a>
                 </li>
             </ul>
         </div>
