@@ -209,7 +209,7 @@
                 NIP. 197805122005012001
             </td>
             <td style="width:34%;">
-                Ciputat, {{ app.submitted_at[:10] if app.submitted_at else '03 November 2026' }}<br>
+                Ciputat, {{ (app.submitted_at ~ '')[:10] if app.submitted_at else '-' }}<br>
                 Mahasiswa Yang Bersangkutan<br>
                 <div style="height:65px; margin-top:10px;">
                     <img src="https://api.qrserver.com/v1/create-qr-code/?size=65x65&data=VALID-KRS-{{ student.nim_nip }}-{{ app.id }}" alt="QR Code" width="65" height="65">

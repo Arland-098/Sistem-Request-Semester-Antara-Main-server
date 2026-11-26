@@ -1,5 +1,4 @@
-import sqlite3
-from database import get_db
+from database import DB_INTEGRITY_ERRORS, get_db
 
 
 def get_courses_list():
@@ -91,7 +90,7 @@ def add_course(
         ))
         conn.commit()
         return True, f"Mata kuliah {normalized_code} - {normalized_name} berhasil ditambahkan ke katalog resmi."
-    except sqlite3.IntegrityError:
+    except DB_INTEGRITY_ERRORS:
         conn.rollback()
         return False, f"Kode mata kuliah '{normalized_code}' sudah terdaftar di katalog."
     finally:
@@ -176,7 +175,7 @@ def delete_course(course_id: int) -> tuple[bool, str]:
         conn.execute("DELETE FROM courses WHERE id = ?", (course_id,))
         conn.commit()
         return True, f"Mata kuliah #{course_id} telah dihapus dari katalog."
-    except sqlite3.IntegrityError:
+    except DB_INTEGRITY_ERRORS:
         conn.rollback()
         return False, (
             f"Mata kuliah #{course_id} tidak dapat dihapus karena sudah terhubung dengan pengajuan KRS mahasiswa. "
@@ -225,7 +224,7 @@ def confirm_lecturer_dispensation(course_id: int, agreed: bool) -> None:
         conn.close()
 
 
-def _recalculate_application_sks_in_tx(conn: sqlite3.Connection, app_id: int) -> None:
+def _recalculate_application_sks_in_tx(conn, app_id: int) -> None:
     row = conn.execute('''
     SELECT COALESCE(SUM(c.sks), 0) AS total
     FROM krs_items ki

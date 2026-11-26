@@ -10,7 +10,7 @@ from services import get_config, get_user_by_id, get_user_by_username
 def create_app(config_overrides: dict | None = None) -> Flask:
     flask_app = Flask(
         __name__,
-        static_folder='static',
+        static_folder='public/static',
         static_url_path='/static',
         template_folder='templates',
     )
@@ -18,11 +18,14 @@ def create_app(config_overrides: dict | None = None) -> Flask:
     if config_overrides:
         flask_app.config.update(config_overrides)
 
-    # Support reverse proxies on PaaS hosting (Render, Railway, Nginx, etc.)
+    # Support reverse proxies on PaaS hosting (Vercel, Render, Railway, Nginx, etc.)
     flask_app.wsgi_app = ProxyFix(flask_app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
     with flask_app.app_context():
-        init_db(flask_app.config['DATABASE_PATH'])
+        init_db(
+            db_path=flask_app.config.get('DATABASE_PATH'),
+            database_url=flask_app.config.get('DATABASE_URL'),
+        )
 
     @flask_app.context_processor
     def inject_global_vars():

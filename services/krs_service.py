@@ -9,12 +9,8 @@ def submit_student_krs(student_id: int, course_ids: list[int]) -> tuple[bool, st
     - Periode pendaftaran harus terbuka (FR-14)
     - Batas maksimal beban SKS sesuai SK Rektor 686/2025 (default 9 SKS)
     - Anti-bentrok jadwal kuliah luring
-    - Pemeriksaan kuota real-time di dalam transaksi EXCLUSIVE
+    - Pemeriksaan kuota real-time dengan penguncian transaksi (BEGIN EXCLUSIVE / FOR UPDATE)
     """
-    reg_status = get_config('registration_status', 'Buka')
-    if reg_status != 'Buka':
-        return False, "Periode pendaftaran Semester Antara sedang ditutup."
-
     unique_course_ids = list(dict.fromkeys(course_ids))
     if not unique_course_ids:
         return False, "Pilih minimal 1 mata kuliah."
@@ -22,13 +18,22 @@ def submit_student_krs(student_id: int, course_ids: list[int]) -> tuple[bool, st
     conn = get_db(isolation_level=None)
     in_tx = False
     try:
-        conn.execute("BEGIN EXCLUSIVE")
+        conn.begin_exclusive()
         in_tx = True
 
         cfg_rows = conn.execute(
-            "SELECT key, value FROM system_config WHERE key IN ('active_semester', 'max_sks')"
+            """
+            SELECT key, value FROM system_config
+            WHERE key IN ('registration_status', 'active_semester', 'max_sks')
+            """
         ).fetchall()
         cfg = {row['key']: row['value'] for row in cfg_rows}
+
+        if cfg.get('registration_status', 'Buka') != 'Buka':
+            conn.execute("ROLLBACK")
+            in_tx = False
+            return False, "Periode pendaftaran Semester Antara sedang ditutup."
+
         active_semester = cfg.get('active_semester', 'Semester Antara 2026/2027')
         max_sks = int(cfg.get('max_sks', '9'))
 
@@ -46,8 +51,9 @@ def submit_student_krs(student_id: int, course_ids: list[int]) -> tuple[bool, st
             )
 
         placeholders = ','.join('?' for _ in unique_course_ids)
+        lock_clause = " FOR UPDATE" if conn.is_postgres else ""
         selected_courses = conn.execute(
-            f"SELECT * FROM courses WHERE id IN ({placeholders})",
+            f"SELECT * FROM courses WHERE id IN ({placeholders}){lock_clause}",
             unique_course_ids,
         ).fetchall()
 
@@ -114,11 +120,13 @@ def submit_student_krs(student_id: int, course_ids: list[int]) -> tuple[bool, st
             WHERE id = ?
             ''', (total_sks, app_id))
         else:
-            cur = conn.execute('''
-            INSERT INTO krs_applications (student_id, semester_period, total_sks, status)
-            VALUES (?, ?, ?, 'Diajukan')
-            ''', (student_id, active_semester, total_sks))
-            app_id = cur.lastrowid
+            app_id = conn.insert_returning_id(
+                '''
+                INSERT INTO krs_applications (student_id, semester_period, total_sks, status)
+                VALUES (?, ?, ?, 'Diajukan')
+                ''',
+                (student_id, active_semester, total_sks),
+            )
 
         for cid in unique_course_ids:
             conn.execute('''
@@ -134,7 +142,10 @@ def submit_student_krs(student_id: int, course_ids: list[int]) -> tuple[bool, st
         )
     except Exception as exc:
         if in_tx:
-            conn.execute("ROLLBACK")
+            try:
+                conn.execute("ROLLBACK")
+            except Exception:
+                pass
         return False, f"Terjadi kesalahan saat menyimpan KRS: {str(exc)}"
     finally:
         conn.close()

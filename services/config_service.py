@@ -17,7 +17,10 @@ def set_config(key: str, value: object) -> None:
     conn = get_db()
     try:
         conn.execute(
-            "INSERT OR REPLACE INTO system_config (key, value) VALUES (?, ?)",
+            """
+            INSERT INTO system_config (key, value) VALUES (?, ?)
+            ON CONFLICT (key) DO UPDATE SET value = excluded.value
+            """,
             (key, str(value)),
         )
         conn.commit()

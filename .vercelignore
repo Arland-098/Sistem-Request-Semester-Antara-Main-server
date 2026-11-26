@@ -1,0 +1,14 @@
+.git
+.venv
+venv
+__pycache__
+*.pyc
+instance
+*.db
+.env
+docs
+tests
+Dockerfile
+.dockerignore
+Procfile
+run.bat

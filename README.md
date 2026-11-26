@@ -12,16 +12,18 @@ Struktur proyek telah dirapikan secara modular agar mudah di-deploy ke hosting m
 ```text
 .
 ├── app.py                  # Entry point utama & Flask application factory (create_app)
-├── config.py               # Konfigurasi terpusat berbasis environment variable (.env)
+├── config.py               # Konfigurasi terpusat (.env, DATABASE_URL PostgreSQL, & fallback SQLite)
 ├── wsgi.py                 # Entry point WSGI untuk server produksi (Gunicorn / PythonAnywhere)
+├── vercel.json             # Konfigurasi Vercel Serverless Functions
+├── .vercelignore           # Pengecualian file non-runtime saat deploy ke Vercel
 ├── Procfile                # Konfigurasi start command untuk PaaS (Render, Railway, Heroku)
 ├── Dockerfile              # Konfigurasi container untuk Docker / Fly.io / VPS
-├── requirements.txt        # Daftar dependensi Python (Flask, gunicorn, python-dotenv)
+├── requirements.txt        # Daftar dependensi Python (Flask, gunicorn, psycopg[binary], python-dotenv)
 ├── .env.example            # Template variabel environment
 ├── run.bat                 # Launcher cepat untuk Windows lokal
 │
 ├── database/
-│   ├── connection.py       # Koneksi SQLite (WAL mode, timeout) & init_db()
+│   ├── connection.py       # Dual-backend adapter (PostgreSQL cloud via DATABASE_URL & SQLite lokal)
 │   └── seed.py             # Data awal lengkap (konfigurasi, akun demo, & 45 mata kuliah)
 │
 ├── services/               # Layer logika bisnis & query database per domain
@@ -39,10 +41,11 @@ Struktur proyek telah dirapikan secara modular agar mudah di-deploy ke hosting m
 │   ├── prodi.py            # /prodi/periode, /prodi/katalog, /prodi/jadwal_ruang, /prodi/monitoring, /prodi/rekap
 │   └── keuangan.py         # /keuangan/tarif, /keuangan/pembayaran, /keuangan/rekonsiliasi
 │
-├── static/                 # Aset statis bersih (tanpa spasi & tanpa ekstensi .download)
-│   ├── css/                # Stylesheet Bootstrap, e-Semesta, & app.css
-│   ├── js/                 # jQuery & Bootstrap JS
-│   └── img/                # Logo universitas & avatar default
+├── public/
+│   └── static/             # Aset statis (dilayani CDN di Vercel & /static di Flask lokal)
+│       ├── css/            # Stylesheet Bootstrap, e-Semesta, & app.css
+│       ├── js/             # jQuery & Bootstrap JS
+│       └── img/            # Logo universitas & avatar default
 │
 ├── templates/              # Template HTML Jinja2
 ├── tests/                  # Automated test suite (unittest)
@@ -82,23 +85,33 @@ pip install -r requirements.txt
 
 Buka peramban web ke: [http://127.0.0.1:5000](http://127.0.0.1:5000)
 
-Database SQLite (`instance/academic.db`) akan dibuat dan diisi otomatis (`45` mata kuliah, `8` akun demo, serta pengaturan awal) saat aplikasi dijalankan pertama kali.
+Jika `DATABASE_URL` belum diisi, database SQLite lokal (`instance/academic.db`) akan dibuat dan diisi otomatis (`45` mata kuliah, `8` akun demo, serta pengaturan awal) saat aplikasi dijalankan pertama kali.
 
 ---
 
 ## 🌐 Panduan Push & Deploy ke Hosting
 
-### Opsi 1: Render / Railway (Paling Mudah)
+### Opsi 1: Vercel + Cloud PostgreSQL (Direkomendasikan untuk Serverless)
+1. Siapkan database PostgreSQL cloud gratis (misalnya **Neon**, **Supabase**, atau **Vercel Postgres** di tab Storage Vercel) dan salin connection string-nya (`postgresql://...`).
+2. Import repository GitHub ini di dashboard **Vercel**.
+3. Di menu **Settings → Environment Variables** di Vercel, tambahkan:
+   - `SECRET_KEY` = string acak panjang yang aman
+   - `DATABASE_URL` = connection string PostgreSQL Anda *(jika menggunakan integrasi Vercel Postgres / Neon yang otomatis mengisi `POSTGRES_URL`, aplikasi juga langsung mengenalinya)*
+4. Klik **Deploy**. Vercel akan membaca `app.py`, `requirements.txt`, `vercel.json`, dan melayani aset `public/static/` melalui CDN. Tabel serta 45 mata kuliah awal akan otomatis dibuat pada request pertama.
+
+*(Catatan: apabila `DATABASE_URL` belum diisi di Vercel, aplikasi otomatis menggunakan fallback sementara `/tmp/academic.db` agar tidak terkena error read-only filesystem `/var/task`, namun data hanya bersifat sementara per-instance sampai `DATABASE_URL` PostgreSQL diset.)*
+
+### Opsi 2: Render / Railway
 1. Hubungkan repository GitHub ini ke layanan **Render** (Web Service) atau **Railway**.
-2. Gunakan konfigurasi berikut (atau biarkan terdeteksi otomatis dari `Procfile` & `requirements.txt`):
+2. Gunakan konfigurasi dari `Procfile` & `requirements.txt`:
    - **Build Command:** `pip install -r requirements.txt`
    - **Start Command:** `gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120`
 3. Tambahkan **Environment Variables**:
    - `SECRET_KEY` = string acak yang aman
-   - `DATABASE_PATH` = `/var/data/academic.db` *(opsional jika memasang Persistent Disk di `/var/data` agar data tidak ter-reset saat redeploy)*
+   - `DATABASE_URL` = connection string PostgreSQL **atau** `DATABASE_PATH=/var/data/academic.db` jika memakai Persistent Disk SQLite.
 4. Endpoint health check tersedia di `/health`.
 
-### Opsi 2: PythonAnywhere
+### Opsi 3: PythonAnywhere
 1. Clone repository ini di PythonAnywhere dan buat virtualenv dengan `pip install -r requirements.txt`.
 2. Pada file konfigurasi **WSGI**, arahkan ke `wsgi.py`:
    ```python
@@ -106,9 +119,9 @@ Database SQLite (`instance/academic.db`) akan dibuat dan diisi otomatis (`45` ma
    sys.path.insert(0, '/home/<username>/Sistem-Request-Semester-Antara-Main-server')
    from wsgi import application
    ```
-3. Atur static mapping URL `/static/` ke folder `<project_dir>/static`.
+3. Atur static mapping URL `/static/` ke folder `<project_dir>/public/static`.
 
-### Opsi 3: Docker / VPS
+### Opsi 4: Docker / VPS
 ```bash
 docker build -t semester-antara .
 docker run -d -p 5000:5000 -e SECRET_KEY="ganti-rahasia" -v semesta_data:/app/instance semester-antara
