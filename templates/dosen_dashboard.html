@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
-{% block title %}Dasbor Dosen Pengampu - Konfirmasi & Persetujuan Akademik{% endblock %}
+{% block title %}Dasbor Dosen Pengampu - Kesediaan Mengajar, Dispensasi &amp; Peserta Lunas{% endblock %}
 
 {% block breadcrumb %}
 <li><a href="#">Dosen Pengampu</a></li>
-<li class="active">Mata Kuliah & Persetujuan Akademik</li>
+<li class="active">Penugasan, Konfirmasi Dispensasi &amp; Peserta Resmi</li>
 {% endblock %}
 
 {% block content %}
@@ -16,66 +16,71 @@
 
             <div class="well well-sm" style="background:#f8f9fa; border-color:#e9ecef; margin-bottom:20px;">
                 <div class="row" style="font-size:12px;">
-                    <div class="col-md-6">
-                        <strong>Nama Dosen:</strong> {{ current_user.name }}<br>
+                    <div class="col-md-7">
+                        <strong>Nama Dosen Pengampu:</strong> {{ current_user.name }}<br>
                         <strong>NIP:</strong> {{ current_user.nim_nip }} | <strong>Program Studi:</strong> {{ current_user.prodi }}
                     </div>
-                    <div class="col-md-6 text-right">
+                    <div class="col-md-5 text-right">
                         <span class="label label-info" style="font-size:12px;">{{ active_semester }}</span>
                     </div>
                 </div>
             </div>
 
             <div class="alert alert-info" role="alert" style="font-size:13px;">
-                <strong><i class="fa fa-info-circle"></i> Tugas Dosen Pengampu:</strong>
+                <strong><i class="fa fa-info-circle"></i> Tugas &amp; Wewenang Dosen Pengampu (FR-10, FR-11, FR-12 &amp; SD-03):</strong>
                 <ul style="margin-top:5px; margin-bottom:0; padding-left:20px;">
-                    <li>Mengonfirmasi kesediaan mengampu kelas dan kelas dispensasi (&lt; 10 peserta) untuk mata kuliah yang ditugaskan.</li>
-                    <li>Melihat daftar pengajuan Semester Antara mahasiswa yang mengambil mata kuliah Anda serta memberikan <b>persetujuan / catatan akademik</b>.</li>
+                    <li><b>FR-10:</b> Mengonfirmasi kesediaan mengajar pada kelas mata kuliah yang ditugaskan oleh Program Studi.</li>
+                    <li><b>FR-11 / SD-03:</b> Mengonfirmasi kesediaan mengajar <b>kelas dispensasi (&lt; 10 peserta)</b> apabila diajukan oleh Program Studi.</li>
+                    <li><b>FR-12:</b> Melihat jadwal mengajar definitif dan daftar mahasiswa peserta resmi yang <b>telah melunasi tagihan VA</b>.</li>
                 </ul>
             </div>
 
-            <!-- COURSES ASSIGNED TABLE -->
+            <!-- 1. FR-10 & FR-11: DAFTAR MATA KULIAH PENUGASAN & KONFIRMASI -->
             <h5 style="font-weight:700; color:#212529; margin-top:25px;">
-                1. Daftar Mata Kuliah Penugasan & Status Konfirmasi Mengajar
+                1. Penugasan Mengajar &amp; Konfirmasi Kelas Dispensasi (FR-10 &amp; FR-11)
             </h5>
 
             <div class="table-responsive">
-                <table class="table table-bordered table-hover" style="font-size:13px; vertical-align:middle;">
+                <table class="table table-bordered table-hover" style="font-size:12.5px; vertical-align:middle;">
                     <thead style="background:#ecf0f2; color:#000;">
                         <tr>
-                            <th class="text-center" style="width: 40px;">No</th>
+                            <th class="text-center" style="width: 35px;">No</th>
                             <th style="width: 90px;">Kode MK</th>
                             <th>Nama Mata Kuliah</th>
-                            <th class="text-center" style="width: 50px;">SKS</th>
-                            <th>Jadwal Sesi Perkuliahan</th>
-                            <th>Ruang Luring</th>
-                            <th class="text-center" style="width: 100px;">Pendaftar / Kuota</th>
-                            <th class="text-center" style="width: 130px;">Status Kelas</th>
-                            <th class="text-center" style="width: 220px;">Aksi Konfirmasi Mengajar</th>
+                            <th class="text-center" style="width: 45px;">SKS</th>
+                            <th>Jadwal &amp; Ruang Luring</th>
+                            <th class="text-center" style="width: 115px;">Disetujui DPA / Kuota</th>
+                            <th class="text-center" style="width: 135px;">Status Kelas Prodi</th>
+                            <th class="text-center" style="width: 240px;">Konfirmasi Dosen (FR-10 / FR-11)</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% if not courses %}
                         <tr>
-                            <td colspan="9" class="text-center text-muted" style="padding:25px;">
+                            <td colspan="8" class="text-center text-muted" style="padding:25px;">
                                 <i class="fa fa-info-circle"></i> Belum ada mata kuliah yang ditugaskan kepada Anda pada Semester Antara ini.
                             </td>
                         </tr>
                         {% endif %}
 
                         {% for c in courses %}
-                        {% set is_dispensation_needed = (c.enrolled_count < 10) %}
+                        {% set is_dispensation_requested = (c.dispensation_requested == 1 or c.status == 'Menunggu Kebijakan Prodi') %}
                         <tr>
                             <td class="text-center">{{ loop.index }}</td>
                             <td><strong>{{ c.code }}</strong></td>
-                            <td><b>{{ c.name }}</b></td>
-                            <td class="text-center col-sks"><b style="color:#000; font-size:13px;">{{ c.sks }}</b></td>
-                            <td>{{ c.schedule_day }}, {{ c.schedule_time }}</td>
-                            <td>{{ c.room }}</td>
+                            <td>
+                                <b>{{ c.name }}</b><br>
+                                <small class="text-muted">{{ c.prodi_name }}</small>
+                            </td>
+                            <td class="text-center col-sks"><b>{{ c.sks }}</b></td>
+                            <td>
+                                {{ c.schedule_day }}, {{ c.schedule_time }}<br>
+                                <small class="text-muted"><i class="fa fa-building-o"></i> {{ c.room }}</small>
+                            </td>
                             <td class="text-center">
-                                <b>{{ c.enrolled_count }}</b> / {{ c.quota }}
-                                {% if is_dispensation_needed %}
-                                    <br><span class="label label-warning" style="font-size:10px;">Di Bawah 10 Peserta</span>
+                                <b>{{ c.approved_count }}</b> disetujui <small class="text-muted">(Kursi: {{ c.enrolled_count }}/{{ c.quota }})</small>
+                                {% if c.approved_count < 10 %}
+                                    <br><span class="label label-warning" style="font-size:10px;">&lt; 10 Peserta</span>
                                 {% endif %}
                             </td>
                             <td class="text-center">
@@ -85,17 +90,21 @@
                                     <span class="badge-status status-dispensasi"><i class="fa fa-handshake-o"></i> Dispensasi Buka</span>
                                 {% elif c.status == 'Dibatalkan' %}
                                     <span class="badge-status status-dibatalkan"><i class="fa fa-times"></i> Dibatalkan</span>
+                                {% elif c.status == 'Menunggu Kebijakan Prodi' %}
+                                    <span class="badge-status status-menunggu"><i class="fa fa-hourglass-half"></i> Kebijakan Prodi</span>
+                                {% elif c.status == 'Ditawarkan' %}
+                                    <span class="label label-info">Ditawarkan</span>
                                 {% else %}
-                                    <span class="badge-status status-menunggu"><i class="fa fa-clock-o"></i> Menunggu Konfirmasi</span>
+                                    <span class="badge-status status-menunggu"><i class="fa fa-clock-o"></i> Menunggu</span>
                                 {% endif %}
                             </td>
                             <td class="text-center">
                                 <div style="margin-bottom:6px;">
-                                    <span style="font-size:11px; font-weight:bold; color:#444;">Kesediaan Mengajar:</span><br>
+                                    <span style="font-size:11px; font-weight:bold; color:#444;">Kesediaan Mengajar (FR-10):</span><br>
                                     {% if c.lecturer_agreed == 1 %}
                                         <span class="label label-success"><i class="fa fa-check"></i> Bersedia Mengajar</span>
                                     {% elif c.lecturer_agreed == -1 %}
-                                        <span class="label label-danger"><i class="fa fa-times"></i> Menolak Mengajar</span>
+                                        <span class="label label-danger"><i class="fa fa-times"></i> Tidak Bersedia</span>
                                     {% else %}
                                         <form action="/dosen/confirm/{{ c.id }}" method="POST" style="display:inline-block;">
                                             <input type="hidden" name="agreed" value="1">
@@ -108,24 +117,24 @@
                                     {% endif %}
                                 </div>
 
-                                {% if is_dispensation_needed %}
-                                <div style="border-top:1px dashed #ccc; padding-top:5px; margin-top:5px;">
-                                    <span style="font-size:11px; font-weight:bold; color:#b78103;">Kelas Dispensasi (&lt;10):</span><br>
+                                {% if is_dispensation_requested %}
+                                <div style="border-top:1px dashed #ccc; padding-top:6px; margin-top:6px;">
+                                    <span style="font-size:11px; font-weight:bold; color:#b78103;">Permohonan Dispensasi Prodi (&lt;10):</span><br>
                                     {% if c.lecturer_dispensation_agreed == 1 %}
                                         <span class="label label-info"><i class="fa fa-check"></i> Bersedia Dispensasi</span>
                                     {% elif c.lecturer_dispensation_agreed == -1 %}
                                         <span class="label label-danger"><i class="fa fa-times"></i> Tolak Dispensasi</span>
                                     {% else %}
-                                        <form action="/dosen/dispensasi/{{ c.id }}" method="POST" style="display:inline-block;">
+                                        <form action="/dosen/dispensasi/{{ c.id }}" method="POST" style="display:inline-block; margin-top:3px;">
                                             <input type="hidden" name="agreed" value="1">
                                             <button type="submit" class="btn btn-xs btn-warning">
-                                                <i class="fa fa-handshake-o"></i> Setuju Dispensasi
+                                                <i class="fa fa-handshake-o"></i> Konfirmasi Bersedia
                                             </button>
                                         </form>
-                                        <form action="/dosen/dispensasi/{{ c.id }}" method="POST" style="display:inline-block;">
+                                        <form action="/dosen/dispensasi/{{ c.id }}" method="POST" style="display:inline-block; margin-top:3px;">
                                             <input type="hidden" name="agreed" value="0">
                                             <button type="submit" class="btn btn-xs btn-default">
-                                                <i class="fa fa-ban"></i> Tolak
+                                                <i class="fa fa-ban"></i> Tidak Bersedia
                                             </button>
                                         </form>
                                     {% endif %}
@@ -138,110 +147,61 @@
                 </table>
             </div>
 
-            <!-- RELATED STUDENT SUBMISSIONS TABLE -->
-            <h5 style="font-weight:700; color:#212529; margin-top:30px;">
-                2. Daftar Pengajuan KRS Mahasiswa Terkait Mata Kuliah Anda
+            <!-- 2. FR-12: JADWAL DEFINITIF & DAFTAR MAHASISWA RESMI LUNAS -->
+            <h5 id="roster" style="font-weight:700; color:#212529; margin-top:30px;">
+                2. Jadwal Mengajar Definitif &amp; Daftar Peserta Resmi Lunas (FR-12)
             </h5>
+            <p class="text-muted" style="font-size:12px; margin-bottom:12px;">
+                Hanya menampilkan mahasiswa pada kelas yang sudah resmi <b>Dibuka / Dispensasi Buka</b> dan telah melunasi tagihan Virtual Account (<b>Terdaftar Resmi</b>).
+            </p>
             <div class="table-responsive">
                 <table class="table table-bordered table-hover" style="font-size:12.5px; vertical-align:middle;">
                     <thead style="background:#ecf0f2; color:#000;">
                         <tr>
-                            <th class="text-center" style="width: 40px;">No</th>
+                            <th class="text-center" style="width: 35px;">No</th>
+                            <th style="width: 95px;">Kode MK</th>
+                            <th>Mata Kuliah &amp; Jadwal Definitif</th>
                             <th style="width: 105px;">NIM</th>
-                            <th>Nama Mahasiswa</th>
-                            <th>Mata Kuliah Diampu yang Diambil</th>
-                            <th class="text-center" style="width: 65px;">IPK</th>
-                            <th class="text-center" style="width: 120px;">Status Pengajuan</th>
-                            <th class="text-center" style="width: 140px;">Review Dosen</th>
-                            <th class="text-center" style="width: 200px;">Persetujuan & Catatan</th>
+                            <th>Nama Mahasiswa Peserta Resmi</th>
+                            <th>Prodi</th>
+                            <th class="text-center">Status Bayar VA</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% if not related_apps %}
+                        {% if not official_roster %}
                         <tr>
-                            <td colspan="8" class="text-center text-muted" style="padding:20px;">
-                                Belum ada pengajuan KRS mahasiswa pada mata kuliah yang Anda ampu.
+                            <td colspan="7" class="text-center text-muted" style="padding:20px;">
+                                Belum ada mahasiswa peserta resmi yang melunasi tagihan pada kelas definitif Anda.
                             </td>
                         </tr>
                         {% endif %}
 
-                        {% for ra in related_apps %}
+                        {% for r in official_roster %}
                         <tr>
                             <td class="text-center">{{ loop.index }}</td>
-                            <td><strong>{{ ra.nim_nip }}</strong></td>
                             <td>
-                                <b>{{ ra.student_name }}</b><br>
-                                <small class="text-muted">{{ ra.prodi }} (Sem. {{ ra.semester }})</small>
+                                <strong>{{ r.course_code }}</strong><br>
+                                <span class="label label-info" style="font-size:10px;">{{ r.class_status }}</span>
                             </td>
                             <td>
-                                {% for rc in ra.related_courses %}
-                                    <div><span class="label label-default">{{ rc.code }}</span> {{ rc.name }} ({{ rc.sks }} SKS)</div>
-                                {% endfor %}
+                                <b>{{ r.course_name }}</b> ({{ r.sks }} SKS)<br>
+                                <small class="text-muted"><i class="fa fa-clock-o"></i> {{ r.schedule_day }}, {{ r.schedule_time }} | <i class="fa fa-building-o"></i> {{ r.room }}</small>
                             </td>
-                            <td class="text-center"><b>{{ ra.ipk }}</b></td>
-                            <td class="text-center">
-                                <span class="label {% if ra.status == 'Lunas' %}label-primary{% elif ra.status == 'Disetujui DPA' %}label-success{% elif ra.status == 'Ditolak DPA' %}label-danger{% else %}label-warning{% endif %}">
-                                    {{ ra.status }}
-                                </span>
+                            <td><code>{{ r.nim_nip }}</code></td>
+                            <td>
+                                <b>{{ r.student_name }}</b><br>
+                                <small class="text-muted">Sem. {{ r.semester }} ({{ r.jenis_pengambilan }})</small>
                             </td>
+                            <td>{{ r.prodi }}</td>
                             <td class="text-center">
-                                {% if ra.lecturer_approval == 'Disetujui' %}
-                                    <span class="label label-success"><i class="fa fa-check"></i> Disetujui</span>
-                                {% elif ra.lecturer_approval == 'Ditolak' %}
-                                    <span class="label label-danger"><i class="fa fa-times"></i> Ditolak</span>
-                                {% else %}
-                                    <span class="label label-default">Menunggu Review</span>
-                                {% endif %}
-                                {% if ra.lecturer_notes %}
-                                    <div class="text-muted" style="font-size:11px; margin-top:4px;"><i>"{{ ra.lecturer_notes }}"</i></div>
-                                {% endif %}
-                            </td>
-                            <td class="text-center">
-                                {% if ra.status in ['Diajukan', 'Disetujui DPA'] %}
-                                    <button type="button" class="btn btn-xs btn-primary" data-toggle="modal" data-target="#dosenReviewModal{{ ra.id }}">
-                                        <i class="fa fa-commenting-o"></i> Beri Review / Catatan
-                                    </button>
-
-                                    <div class="modal fade text-left" id="dosenReviewModal{{ ra.id }}" tabindex="-1" role="dialog">
-                                        <div class="modal-dialog" role="document">
-                                            <div class="modal-content">
-                                                <form action="/dosen/review/{{ ra.id }}" method="POST">
-                                                    <div class="modal-header" style="background:#2d3136; color:#fff;">
-                                                        <button type="button" class="close" data-dismiss="modal" style="color:#fff;">&times;</button>
-                                                        <h4 class="modal-title"><i class="fa fa-check-square-o"></i> Persetujuan & Catatan Akademik</h4>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <p>Mahasiswa: <b>{{ ra.student_name }}</b> ({{ ra.nim_nip }}) | IPK: <b>{{ ra.ipk }}</b></p>
-                                                        <div class="form-group">
-                                                            <label>Keputusan Akademik:</label>
-                                                            <select name="decision" class="form-control">
-                                                                <option value="approve" {% if ra.lecturer_approval == 'Disetujui' %}selected{% endif %}>Setujui Mengikuti Mata Kuliah</option>
-                                                                <option value="reject" {% if ra.lecturer_approval == 'Ditolak' %}selected{% endif %}>Tolak / Minta Perbaikan Mahasiswa</option>
-                                                            </select>
-                                                        </div>
-                                                        <div class="form-group">
-                                                            <label>Catatan Akademik Dosen Pengampu:</label>
-                                                            <textarea name="notes" class="form-control" rows="3" placeholder="Contoh: Layak mengikuti kelas, prasyarat terpenuhi / harap perbaiki mata kuliah...">{{ ra.lecturer_notes or '' }}</textarea>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-default" data-dismiss="modal">Batal</button>
-                                                        <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Simpan Persetujuan & Catatan</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                {% else %}
-                                    <span class="text-muted" style="font-size:11px;">Selesai ({{ ra.status }})</span>
-                                {% endif %}
+                                <span class="label label-success"><i class="fa fa-check"></i> Lunas (Resmi)</span><br>
+                                <small class="text-muted">{{ r.bank_name }}</small>
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-
         </div>
     </div>
 </div>

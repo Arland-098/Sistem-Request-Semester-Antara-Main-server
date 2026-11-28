@@ -1,0 +1,262 @@
+{% extends 'base.html' %}
+{% block title %}Rekap Usulan MK &amp; Ekuivalensi Lintas Prodi - Program Studi{% endblock %}
+
+{% block breadcrumb %}
+<li><a href="#">Program Studi</a></li>
+<li class="active">Usulan Mata Kuliah &amp; Ekuivalensi Lintas Prodi</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="col-padded">
+            <h4 class="page-header">
+                Rekapitulasi Usulan Mata Kuliah &amp; Ekuivalensi Lintas Prodi (FR-15, FR-16, AD-01)
+            </h4>
+
+            <div class="alert alert-info" role="alert" style="font-size:13px;">
+                <strong><i class="fa fa-info-circle"></i> Koordinasi &amp; Pembukaan Kelas Usulan:</strong><br>
+                Program Studi dapat meninjau usulan mata kuliah baru dari mahasiswa (beserta jumlah peminat/pengusul) maupun usulan <b>Lintas Program Studi</b>. Menyetujui usulan dengan opsi penerbitan otomatis akan langsung memasukkan mata kuliah ke <b>Katalog Resmi</b> serta mencatat aturan ekuivalensi.
+            </div>
+
+            <h5 style="font-weight:700; margin-top:20px;">1. Daftar Usulan Mata Kuliah dari Mahasiswa (USULAN_MK_SA)</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" style="font-size:12px; vertical-align:middle;">
+                    <thead style="background:#ecf0f2; color:#000;">
+                        <tr>
+                            <th>Kode Usulan</th>
+                            <th>Pengusul</th>
+                            <th>Mata Kuliah Usulan &amp; Prodi Tujuan</th>
+                            <th class="text-center">Peminat</th>
+                            <th>Alasan &amp; Silabus / Ekuivalensi</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center" style="width:160px;">Aksi Prodi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if not proposals %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted" style="padding:20px;">Belum ada usulan mata kuliah baru dari mahasiswa.</td>
+                        </tr>
+                        {% endif %}
+
+                        {% for prop in proposals %}
+                        <tr>
+                            <td><code>{{ prop.proposal_code }}</code></td>
+                            <td>
+                                <b>{{ prop.student_name }}</b><br>
+                                <small class="text-muted">{{ prop.nim_nip }} ({{ prop.student_prodi }})</small>
+                            </td>
+                            <td>
+                                <b>{{ prop.course_code }} &mdash; {{ prop.course_name }}</b> ({{ prop.sks }} SKS)<br>
+                                <small class="text-muted">Prodi Penyelenggara: {{ prop.target_prodi_name or prop.target_prodi_code }} (Sem. {{ prop.semester_target }})</small><br>
+                                {% if prop.is_cross_prodi == 1 %}
+                                    <span class="label label-info">Lintas Prodi</span>
+                                    <small class="text-info">Asal: {{ prop.origin_course_code }} ({{ prop.origin_course_name }})</small>
+                                {% else %}
+                                    <span class="label label-default">Prodi Asal</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <span class="badge" style="background:#24292e; font-size:12px;">{{ prop.supporter_count }} mhs</span>
+                            </td>
+                            <td>
+                                <div>{{ prop.reason }}</div>
+                                {% if prop.syllabus_summary %}
+                                    <div class="text-muted" style="font-size:11px; margin-top:3px;"><i>Silabus: {{ prop.syllabus_summary }}</i></div>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if prop.status == 'Setuju' %}
+                                    <span class="label label-success"><i class="fa fa-check"></i> Disetujui</span>
+                                {% elif prop.status == 'Tolak' %}
+                                    <span class="label label-danger"><i class="fa fa-times"></i> Ditolak</span>
+                                {% else %}
+                                    <span class="label label-warning"><i class="fa fa-clock-o"></i> Menunggu</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if prop.status == 'Menunggu Persetujuan' %}
+                                <button type="button" class="btn btn-xs btn-primary" data-toggle="modal" data-target="#reviewPropModal{{ prop.id }}">
+                                    <i class="fa fa-gavel"></i> Tinjau &amp; Putuskan
+                                </button>
+
+                                <div class="modal fade text-left" id="reviewPropModal{{ prop.id }}" tabindex="-1" role="dialog">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <form action="/prodi/usulan/review/{{ prop.id }}" method="POST">
+                                                <div class="modal-header" style="background:#2d3136; color:#fff;">
+                                                    <button type="button" class="close" data-dismiss="modal" style="color:#fff;">&times;</button>
+                                                    <h4 class="modal-title">Keputusan Usulan {{ prop.proposal_code }}</h4>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p><b>{{ prop.course_code }}</b> &mdash; {{ prop.course_name }} ({{ prop.sks }} SKS)</p>
+                                                    <div class="form-group">
+                                                        <label>Keputusan Program Studi:</label>
+                                                        <select name="decision" class="form-control">
+                                                            <option value="approve">Setujui Usulan &amp; Koordinasikan Kelas</option>
+                                                            <option value="reject">Tolak Usulan</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="checkbox">
+                                                        <label>
+                                                            <input type="checkbox" name="publish_to_catalog" value="1" checked>
+                                                            <b>Terbitkan langsung ke Katalog Resmi Mata Kuliah (FR-17)</b>
+                                                        </label>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>Tugaskan Dosen Pengampu:</label>
+                                                        <select name="lecturer_id" class="form-control">
+                                                            {% for lec in lecturers %}
+                                                                <option value="{{ lec.id }}">{{ lec.name }} ({{ role_labels.get(lec.role, lec.role) }})</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-4">
+                                                            <div class="form-group">
+                                                                <label>Hari:</label>
+                                                                <select name="schedule_day" class="form-control">
+                                                                    <option>Senin</option><option>Selasa</option><option>Rabu</option><option>Kamis</option><option>Jumat</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <div class="form-group">
+                                                                <label>Sesi Jam:</label>
+                                                                <input type="text" name="schedule_time" class="form-control" value="13.00 - 15.30 WIB">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <div class="form-group">
+                                                                <label>Ruang &amp; Kuota:</label>
+                                                                <input type="text" name="room" class="form-control" value="Ruang Kelas 3.05 FST">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>Catatan / Keterangan Resmi:</label>
+                                                        <textarea name="admin_notes" class="form-control" rows="2" placeholder="Catatan koordinasi Prodi / alasan persetujuan atau penolakan..."></textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-default" data-dismiss="modal">Batal</button>
+                                                    <button type="submit" class="btn btn-primary"><i class="fa fa-check"></i> Simpan Keputusan</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% else %}
+                                    <small class="text-muted">{{ prop.admin_notes or 'Selesai ditinjau' }}</small>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 2. EKUIVALENSI KURIKULUM LINTAS PRODI -->
+            <div class="row" style="margin-top:25px;">
+                <div class="col-md-5">
+                    <div class="panel panel-default" style="border-top:3px solid #24292e;">
+                        <div class="panel-heading" style="font-weight:700;">
+                            <i class="fa fa-exchange"></i> Tambah Aturan Ekuivalensi MK (EKUIVALENSI_MK)
+                        </div>
+                        <div class="panel-body">
+                            <form action="/prodi/ekuivalensi/add" method="POST">
+                                <div class="row">
+                                    <div class="col-md-5">
+                                        <div class="form-group">
+                                            <label style="font-size:12px;">Kode MK Asal:</label>
+                                            <input type="text" name="kode_mk_asal" class="form-control input-sm" required placeholder="FST6091103">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-7">
+                                        <div class="form-group">
+                                            <label style="font-size:12px;">Nama MK Asal:</label>
+                                            <input type="text" name="nama_mk_asal" class="form-control input-sm" required placeholder="Sistem Basis Data">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label style="font-size:12px;">Prodi Asal:</label>
+                                    <select name="prodi_asal_code" class="form-control input-sm">
+                                        {% for p in programs %}
+                                            <option value="{{ p.code }}">{{ p.code }} - {{ p.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-5">
+                                        <div class="form-group">
+                                            <label style="font-size:12px;">Kode MK Tujuan:</label>
+                                            <input type="text" name="kode_mk_tujuan" class="form-control input-sm" required placeholder="SIS6091103">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-7">
+                                        <div class="form-group">
+                                            <label style="font-size:12px;">Nama MK Tujuan:</label>
+                                            <input type="text" name="nama_mk_tujuan" class="form-control input-sm" required placeholder="Basis Data Enterprise">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="form-group">
+                                            <label style="font-size:12px;">Prodi Tujuan:</label>
+                                            <select name="prodi_tujuan_code" class="form-control input-sm">
+                                                {% for p in programs %}
+                                                    <option value="{{ p.code }}" {% if p.code == '55' %}selected{% endif %}>{{ p.code }} - {{ p.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label style="font-size:12px;">SKS:</label>
+                                            <input type="number" name="sks" class="form-control input-sm" value="3" min="1" max="6">
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm btn-block" style="font-weight:700;">
+                                    <i class="fa fa-save"></i> Simpan Aturan Ekuivalensi
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-7">
+                    <h5 style="font-weight:700; margin-top:0;">2. Daftar Ekuivalensi Kurikulum Lintas Prodi</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" style="font-size:12px;">
+                            <thead style="background:#ecf0f2; color:#000;">
+                                <tr>
+                                    <th>Kode</th>
+                                    <th>MK Prodi Asal</th>
+                                    <th>MK Ekuivalen Prodi Tujuan</th>
+                                    <th class="text-center">SKS</th>
+                                    <th class="text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for eq in equivalences %}
+                                <tr>
+                                    <td><code>{{ eq.equivalence_code }}</code></td>
+                                    <td><b>{{ eq.kode_mk_asal }}</b><br>{{ eq.nama_mk_asal }} <small class="text-muted">({{ eq.prodi_asal_name or eq.prodi_asal_code }})</small></td>
+                                    <td><b>{{ eq.kode_mk_tujuan }}</b><br>{{ eq.nama_mk_tujuan }} <small class="text-muted">({{ eq.prodi_tujuan_name or eq.prodi_tujuan_code }})</small></td>
+                                    <td class="text-center">{{ eq.sks }}</td>
+                                    <td class="text-center"><span class="label label-success">{{ eq.status_ekuivalen }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

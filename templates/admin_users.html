@@ -3,7 +3,7 @@
 
 {% block breadcrumb %}
 <li><a href="#">Super Admin</a></li>
-<li class="active">Manajemen Pengguna & Peran</li>
+<li class="active">Manajemen Pengguna &amp; Peran</li>
 {% endblock %}
 
 {% block content %}
@@ -11,12 +11,12 @@
     <div class="col-lg-12">
         <div class="col-padded">
             <h4 class="page-header">
-                Manajemen Pengguna & Hak Akses (Super Admin)
+                Manajemen Pengguna &amp; Hak Akses (Super Admin)
             </h4>
 
             <div class="alert alert-info" role="alert" style="font-size:13px;">
-                <strong><i class="fa fa-shield"></i> Kontrol Akses Sistem:</strong><br>
-                Super Admin memiliki akses penuh untuk membuat akun baru, mengubah peran RBAC, mengaktifkan/menonaktifkan akun, serta mereset password pengguna.
+                <strong><i class="fa fa-shield"></i> Kontrol Akses Sistem (6 Peran):</strong><br>
+                Super Admin mengelola akun pengguna untuk peran <b>Mahasiswa</b>, <b>Dosen PA (DPA)</b>, <b>Dosen Pengampu</b>, <b>Program Studi</b>, <b>Bagian Keuangan</b>, dan <b>Super Admin</b>.
             </div>
 
             <div style="margin-bottom: 15px;">
@@ -29,13 +29,13 @@
                 <table class="table table-bordered table-hover" style="font-size:12.5px; vertical-align:middle;">
                     <thead>
                         <tr>
-                            <th class="text-center" style="width:40px;">No</th>
-                            <th>Username & Email</th>
+                            <th class="text-center" style="width:35px;">No</th>
+                            <th>Username &amp; Email</th>
                             <th>Nama Lengkap</th>
                             <th>NIM / NIP</th>
                             <th>Program Studi / Unit</th>
-                            <th class="text-center" style="width:150px;">Peran (Role)</th>
-                            <th class="text-center" style="width:90px;">Status</th>
+                            <th class="text-center" style="width:170px;">Peran (Role)</th>
+                            <th class="text-center" style="width:85px;">Status</th>
                             <th class="text-center" style="width:130px;">Aksi</th>
                         </tr>
                     </thead>
@@ -51,7 +51,7 @@
                             <td>{{ u.nim_nip }}</td>
                             <td>{{ u.prodi }}</td>
                             <td class="text-center">
-                                <span class="label {% if u.role == 'superadmin' %}label-primary{% elif u.role == 'kaprodi' %}label-info{% elif u.role == 'admin_akademik' %}label-warning{% else %}label-default{% endif %}">
+                                <span class="label {% if u.role == 'superadmin' %}label-primary{% elif u.role == 'prodi' %}label-info{% elif u.role == 'dpa' %}label-success{% elif u.role == 'keuangan' %}label-warning{% else %}label-default{% endif %}">
                                     {{ role_labels.get(u.role, u.role) }}
                                 </span>
                             </td>
@@ -191,7 +191,11 @@
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label>Program Studi / Unit:</label>
-                                            <input type="text" name="prodi" class="form-control" value="Teknik Informatika" required>
+                                            <select name="prodi_code" class="form-control">
+                                                {% for p in programs %}
+                                                    <option value="{{ p.code }}">{{ p.code }} - {{ p.name }}</option>
+                                                {% endfor %}
+                                            </select>
                                         </div>
                                     </div>
                                     <div class="col-md-6">

@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
-{% block title %}Data Master Mahasiswa - Admin Akademik / TU{% endblock %}
+{% block title %}Data Master Mahasiswa &amp; Riwayat Nilai - Super Admin{% endblock %}
 
 {% block breadcrumb %}
-<li><a href="#">Admin Akademik / TU</a></li>
-<li class="active">Data Master Mahasiswa</li>
+<li><a href="#">Super Admin</a></li>
+<li class="active">Master Mahasiswa &amp; Riwayat Nilai</li>
 {% endblock %}
 
 {% block content %}
@@ -11,12 +11,12 @@
     <div class="col-lg-12">
         <div class="col-padded">
             <h4 class="page-header">
-                Pengelolaan Data Master Mahasiswa
+                Pengelolaan Data Master Mahasiswa, Dosen PA, &amp; Riwayat Nilai
             </h4>
 
             <div class="alert alert-info" role="alert" style="font-size:13px;">
-                <strong><i class="fa fa-info-circle"></i> Petunjuk Pengelolaan:</strong><br>
-                Admin Akademik / TU dapat menambah, memperbarui, maupun menghapus data induk mahasiswa (NIM, email, prodi, IPK, dan semester).
+                <strong><i class="fa fa-info-circle"></i> Kelengkapan Validasi SK Rektor 686/2025:</strong><br>
+                Kelola profil akademik mahasiswa (NIM, Prodi/Rumpun Ilmu, Semester &ge; 4, IPK, Status Sanksi Akademik, Dosen PA pembimbing, dan riwayat nilai historis mata kuliah).
             </div>
 
             <div style="margin-bottom: 15px;">
@@ -26,32 +26,51 @@
             </div>
 
             <div class="table-responsive">
-                <table class="table table-bordered table-hover" style="font-size:13px; vertical-align:middle;">
+                <table class="table table-bordered table-hover" style="font-size:12.5px; vertical-align:middle;">
                     <thead>
                         <tr>
-                            <th class="text-center" style="width:40px;">No</th>
-                            <th style="width:110px;">NIM / Username</th>
-                            <th>Nama Mahasiswa</th>
-                            <th>Email</th>
+                            <th class="text-center" style="width:35px;">No</th>
+                            <th style="width:105px;">NIM</th>
+                            <th>Nama Mahasiswa &amp; Email</th>
                             <th>Program Studi</th>
-                            <th class="text-center" style="width:65px;">Sem</th>
-                            <th class="text-center" style="width:65px;">IPK</th>
-                            <th class="text-center" style="width:130px;">Aksi</th>
+                            <th class="text-center" style="width:45px;">Sem</th>
+                            <th class="text-center" style="width:55px;">IPK</th>
+                            <th>Status Sanksi &amp; DPA</th>
+                            <th class="text-center" style="width:170px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for s in students %}
+                        {% set s_grades = grades_by_student.get(s.id, []) %}
                         <tr>
                             <td class="text-center">{{ loop.index }}</td>
                             <td><strong>{{ s.nim_nip }}</strong></td>
-                            <td><b>{{ s.name }}</b></td>
-                            <td>{{ s.email or '-' }}</td>
-                            <td>{{ s.prodi }}</td>
+                            <td>
+                                <b>{{ s.name }}</b><br>
+                                <small class="text-muted">{{ s.email or '-' }}</small>
+                            </td>
+                            <td>
+                                {{ s.prodi }}<br>
+                                <small class="text-muted">{{ s.rumpun_ilmu or 'Sarjana Reguler' }}</small>
+                            </td>
                             <td class="text-center">{{ s.semester }}</td>
-                            <td class="text-center"><b>{{ s.ipk }}</b></td>
+                            <td class="text-center"><b>{{ "%.2f"|format(s.ipk or 0) }}</b></td>
+                            <td>
+                                {% if (s.status_sanksi or 'Aktif Bebas Sanksi') == 'Aktif Bebas Sanksi' %}
+                                    <span class="label label-success" style="font-size:10px;">Bebas Sanksi</span>
+                                {% else %}
+                                    <span class="label label-danger" style="font-size:10px;">{{ s.status_sanksi }}</span>
+                                {% endif %}
+                                <div style="font-size:11px; color:#555; margin-top:2px;">
+                                    DPA: {{ s.dpa_name or 'Belum Ditentukan' }}
+                                </div>
+                            </td>
                             <td class="text-center">
                                 <button type="button" class="btn btn-xs btn-primary" data-toggle="modal" data-target="#editStudentModal{{ s.id }}">
                                     <i class="fa fa-pencil"></i> Edit
+                                </button>
+                                <button type="button" class="btn btn-xs btn-info" data-toggle="modal" data-target="#gradesModal{{ s.id }}" title="Kelola Riwayat Nilai">
+                                    <i class="fa fa-graduation-cap"></i> Nilai ({{ s_grades|length }})
                                 </button>
                                 <form action="/master/mahasiswa/delete/{{ s.id }}" method="POST" style="display:inline-block;">
                                     <button type="submit" class="btn btn-xs btn-danger" onclick="return confirm('Hapus data mahasiswa {{ s.name }}?')">
@@ -59,6 +78,7 @@
                                     </button>
                                 </form>
 
+                                <!-- EDIT MODAL -->
                                 <div class="modal fade text-left" id="editStudentModal{{ s.id }}" tabindex="-1" role="dialog">
                                     <div class="modal-dialog" role="document">
                                         <div class="modal-content">
@@ -80,32 +100,115 @@
                                                         <label>Email:</label>
                                                         <input type="email" name="email" class="form-control" value="{{ s.email or '' }}">
                                                     </div>
-                                                    <div class="form-group">
-                                                        <label>Program Studi:</label>
-                                                        <input type="text" name="prodi" class="form-control" value="{{ s.prodi }}" required>
-                                                    </div>
                                                     <div class="row">
                                                         <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>Program Studi:</label>
+                                                                <select name="prodi_code" class="form-control">
+                                                                    {% for p in programs %}
+                                                                        <option value="{{ p.code }}" {% if s.prodi_code == p.code %}selected{% endif %}>{{ p.code }} - {{ p.name }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>Dosen PA (DPA):</label>
+                                                                <select name="dpa_id" class="form-control">
+                                                                    {% for d in dpas %}
+                                                                        <option value="{{ d.id }}" {% if s.dpa_id == d.id %}selected{% endif %}>{{ d.name }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-4">
                                                             <div class="form-group">
                                                                 <label>Semester:</label>
                                                                 <input type="number" name="semester" class="form-control" value="{{ s.semester }}" min="1" max="14">
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-6">
+                                                        <div class="col-md-4">
                                                             <div class="form-group">
                                                                 <label>IPK:</label>
                                                                 <input type="number" step="0.01" name="ipk" class="form-control" value="{{ s.ipk }}" min="0" max="4">
                                                             </div>
                                                         </div>
+                                                        <div class="col-md-4">
+                                                            <div class="form-group">
+                                                                <label>Status Sanksi:</label>
+                                                                <select name="status_sanksi" class="form-control">
+                                                                    <option value="Aktif Bebas Sanksi" {% if (s.status_sanksi or 'Aktif Bebas Sanksi') == 'Aktif Bebas Sanksi' %}selected{% endif %}>Aktif Bebas Sanksi</option>
+                                                                    <option value="Sedang Sanksi" {% if s.status_sanksi == 'Sedang Sanksi' %}selected{% endif %}>Sedang Sanksi</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                     <div class="form-group">
-                                                        <label>Password Baru (opsional, kosongkan jika tidak diubah):</label>
+                                                        <label>Password Baru (opsional):</label>
                                                         <input type="password" name="new_password" class="form-control" placeholder="Isi untuk mereset password">
                                                     </div>
                                                 </div>
                                                 <div class="modal-footer">
                                                     <button type="button" class="btn btn-default" data-dismiss="modal">Batal</button>
                                                     <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Simpan</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- GRADES MODAL -->
+                                <div class="modal fade text-left" id="gradesModal{{ s.id }}" tabindex="-1" role="dialog">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <form action="/master/mahasiswa/grade/{{ s.id }}" method="POST">
+                                                <div class="modal-header" style="background:#2d3136; color:#fff;">
+                                                    <button type="button" class="close" data-dismiss="modal" style="color:#fff;">&times;</button>
+                                                    <h4 class="modal-title"><i class="fa fa-graduation-cap"></i> Riwayat Nilai: {{ s.name }}</h4>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div style="margin-bottom:12px;">
+                                                        {% if not s_grades %}
+                                                            <small class="text-muted">Belum ada catatan nilai historis.</small>
+                                                        {% endif %}
+                                                        {% for g in s_grades %}
+                                                            <span class="label label-default" style="margin:2px; display:inline-block;">{{ g.course_code }}: <b>{{ g.grade }}</b></span>
+                                                        {% endfor %}
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-5">
+                                                            <div class="form-group">
+                                                                <label>Mata Kuliah:</label>
+                                                                <select name="course_code" class="form-control input-sm">
+                                                                    {% for c in courses %}
+                                                                        <option value="{{ c.code }}">{{ c.code }} - {{ c.name }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <div class="form-group">
+                                                                <label>Nilai Huruf:</label>
+                                                                <select name="grade" class="form-control input-sm">
+                                                                    {% for gr in valid_grades %}
+                                                                        <option value="{{ gr }}" {% if gr == 'C' %}selected{% endif %}>{{ gr }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <div class="form-group">
+                                                                <label>Sem. Ambil:</label>
+                                                                <input type="number" name="semester_taken" class="form-control input-sm" value="3" min="1" max="12">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+                                                    <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Simpan / Update Nilai</button>
                                                 </div>
                                             </form>
                                         </div>
@@ -118,6 +221,7 @@
                 </table>
             </div>
 
+            <!-- ADD STUDENT MODAL -->
             <div class="modal fade" id="addStudentModal" tabindex="-1" role="dialog">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
@@ -154,26 +258,53 @@
                                     <label>Email:</label>
                                     <input type="email" name="email" class="form-control" placeholder="nama@uinjkt.ac.id">
                                 </div>
-                                <div class="form-group">
-                                    <label>Program Studi:</label>
-                                    <input type="text" name="prodi" class="form-control" value="Teknik Informatika" required>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Program Studi:</label>
+                                            <select name="prodi_code" class="form-control">
+                                                {% for p in programs %}
+                                                    <option value="{{ p.code }}" {% if p.code == '60' %}selected{% endif %}>{{ p.code }} - {{ p.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Dosen PA (DPA):</label>
+                                            <select name="dpa_id" class="form-control">
+                                                {% for d in dpas %}
+                                                    <option value="{{ d.id }}">{{ d.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <div class="form-group">
                                             <label>Semester:</label>
                                             <input type="number" name="semester" class="form-control" value="4" min="1" max="14">
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <div class="form-group">
                                             <label>IPK:</label>
                                             <input type="number" step="0.01" name="ipk" class="form-control" value="3.50" min="0" max="4">
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <div class="form-group">
-                                            <label>Password Awal:</label>
+                                            <label>Sanksi:</label>
+                                            <select name="status_sanksi" class="form-control">
+                                                <option value="Aktif Bebas Sanksi">Bebas Sanksi</option>
+                                                <option value="Sedang Sanksi">Sedang Sanksi</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label>Password:</label>
                                             <input type="text" name="password" class="form-control" value="mhs123" required>
                                         </div>
                                     </div>

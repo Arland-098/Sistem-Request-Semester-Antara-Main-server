@@ -3,7 +3,7 @@
 
 {% block breadcrumb %}
 <li><a href="#">Mahasiswa</a></li>
-<li class="active">Tagihan Virtual Account & Pembayaran</li>
+<li class="active">Tagihan Virtual Account &amp; Pembayaran</li>
 {% endblock %}
 
 {% block content %}
@@ -11,24 +11,32 @@
     <div class="col-lg-12">
         <div class="col-padded">
             <h4 class="page-header">
-                Tagihan Virtual Account & Status Pembayaran
+                Tagihan Virtual Account &amp; Status Pembayaran
             </h4>
 
             {% if not invoice %}
                 <div class="alert alert-info text-center" style="padding: 30px;">
                     <i class="fa fa-info-circle fa-3x" style="color:#6c757d;"></i>
                     <h4 style="font-weight:700; margin-top:15px;">Belum Ada Tagihan Virtual Account yang Diterbitkan</h4>
-                    <p style="color:#555; max-width:600px; margin: 0 auto;">
-                        Tagihan Virtual Account (VA) akan diterbitkan secara otomatis setelah pengajuan Kartu Rencana Studi (KRS) disetujui oleh Dosen Pembimbing Akademik (DPA) dan kelas resmi dinyatakan dibuka.
+                    <p style="color:#555; max-width:650px; margin: 0 auto; line-height:1.6;">
+                        Sesuai <b>Aturan Bisnis BR-08</b>, tagihan Virtual Account (VA) hanya diterbitkan setelah:
+                        (1) KRS Anda <b>disetujui oleh DPA</b>, (2) <b>periode pendaftaran ditutup</b>, dan (3) kelas mata kuliah yang diambil telah resmi dinyatakan <b>Dibuka</b> atau <b>Dispensasi Buka</b> oleh Program Studi.
                     </p>
+                    {% if app %}
+                    <div style="margin-top:14px;">
+                        <span class="label label-warning" style="font-size:12px;">
+                            Status KRS Anda Saat Ini: {{ app.status }} ({{ app.status_final }})
+                        </span>
+                    </div>
+                    {% endif %}
                     <div style="margin-top:20px;">
                         <a href="/krs" class="btn btn-primary"><i class="fa fa-edit"></i> Periksa Status Pengajuan KRS</a>
                     </div>
                 </div>
             {% else %}
-                <div class="alert alert-info" role="alert">
-                    <strong><i class="fa fa-info-circle"></i> Petunjuk Pembayaran Resmi:</strong><br>
-                    Pembayaran biaya Semester Antara dilakukan melalui nomor Virtual Account (VA) Bank Mitra resmi UIN Syarif Hidayatullah Jakarta. Tarif per SKS ditetapkan sebesar <b>Rp{{ "{:,}".format(sks_rate).replace(',', '.') }}</b> berdasarkan SK Rektor No. 686 Tahun 2025.
+                <div class="alert alert-info" role="alert" style="font-size:13px;">
+                    <strong><i class="fa fa-info-circle"></i> Petunjuk Pembayaran Resmi (BR-01 &amp; BR-09):</strong><br>
+                    Pembayaran dilakukan melalui nomor Virtual Account (VA) bank mitra resmi (Mandiri, BNI, BRI, BTN, BSI). Tarif SKS untuk rumpun ilmu <b>{{ student_rumpun }}</b> ditetapkan sebesar <b>Rp{{ "{:,}".format(student_rate).replace(',', '.') }} / SKS</b> berdasarkan SK Rektor No. 686 Tahun 2025.
                 </div>
 
                 <div class="row" style="margin-top:20px;">
@@ -37,14 +45,14 @@
                         <div class="panel panel-default" style="border: 2px solid #343a40; border-radius: 8px; box-shadow:0 4px 12px rgba(0,0,0,0.06);">
                             <div class="panel-heading" style="background:#2d3136; color:#fff; font-weight:700; font-size:14px;">
                                 <i class="fa fa-university"></i> Rekening Virtual Account Mahasiswa
-                                <span class="pull-right badge-status {% if invoice.status == 'Lunas' %}status-lunas{% else %}status-belum-lunas{% endif %}">
+                                <span class="pull-right badge-status {% if invoice.status == 'Lunas' %}status-lunas{% elif invoice.status == 'Expired' %}status-dibatalkan{% else %}status-belum-lunas{% endif %}">
                                     {{ invoice.status }}
                                 </span>
                             </div>
                             <div class="panel-body" style="padding:20px;">
                                 <table class="table table-borderless" style="font-size:13px; margin-bottom:0;">
                                     <tr>
-                                        <td style="width:140px; color:#666;">Bank Mitra:</td>
+                                        <td style="width:150px; color:#666;">Bank Mitra:</td>
                                         <td><strong>{{ invoice.bank_name }}</strong></td>
                                     </tr>
                                     <tr>
@@ -60,12 +68,16 @@
                                         <td><b>{{ student.name }}</b> ({{ student.nim_nip }})</td>
                                     </tr>
                                     <tr>
-                                        <td style="color:#666;">Total SKS:</td>
+                                        <td style="color:#666;">Rumpun / Tarif SKS:</td>
+                                        <td>{{ student_rumpun }} &mdash; Rp{{ "{:,}".format(student_rate).replace(',', '.') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="color:#666;">Total SKS Aktif:</td>
                                         <td><b>{{ app.total_sks }} SKS</b></td>
                                     </tr>
                                     <tr>
-                                        <td style="color:#666;">Tarif per SKS:</td>
-                                        <td>Rp{{ "{:,}".format(sks_rate).replace(',', '.') }}</td>
+                                        <td style="color:#666;">Batas Waktu Bayar:</td>
+                                        <td><span class="text-danger"><b>{{ invoice.expires_at or (payment_end ~ ' 23:59:59') }}</b></span></td>
                                     </tr>
                                     <tr style="border-top:1px solid #eee;">
                                         <td style="color:#212529; font-size:15px; font-weight:bold; padding-top:12px;">Total Tagihan:</td>
@@ -85,19 +97,24 @@
                                     {% if invoice.status == 'Lunas' %}
                                         <div class="alert alert-success" style="margin-bottom:10px;">
                                             <i class="fa fa-check-circle fa-2x"></i><br>
-                                            <strong>PEMBAYARAN TELAH LUNAS</strong>
+                                            <strong>PEMBAYARAN TELAH LUNAS (TERDAFTAR RESMI)</strong>
                                         </div>
                                         <a href="/cetak_krs" target="_blank" class="btn btn-primary btn-block" style="font-weight:700;">
                                             <i class="fa fa-print"></i> Cetak Kartu Rencana Studi (KRS) Sah Resmi
                                         </a>
+                                    {% elif invoice.status == 'Expired' %}
+                                        <div class="alert alert-danger" style="margin-bottom:0;">
+                                            <i class="fa fa-hourglass-end"></i> <strong>TAGIHAN KEDALUWARSA (EXPIRED - BR-10)</strong><br>
+                                            Melewati batas waktu pembayaran sehingga hak kepesertaan kelas Anda dinyatakan gugur.
+                                        </div>
                                     {% else %}
                                         <div class="alert alert-warning" style="margin-bottom:15px; font-size:12px;">
-                                            <i class="fa fa-clock-o"></i> Menunggu pembayaran melalui ATM, Mobile Banking, atau Teller Bank Mitra. Setelah transfer, pembayaran akan diverifikasi oleh <b>Admin Akademik / TU</b>.
+                                            <i class="fa fa-clock-o"></i> Menunggu pembayaran melalui ATM, Mobile Banking, atau Teller Bank Mitra ({{ invoice.bank_name }}). Status lunas diproses melalui callback bank / rekonsiliasi <b>Bagian Keuangan</b>.
                                         </div>
-                                        {% if current_role in ['admin_akademik', 'superadmin'] %}
+                                        {% if current_role in ['keuangan', 'superadmin'] %}
                                         <form action="/keuangan/rekonsiliasi/{{ invoice.id }}" method="POST">
                                             <input type="hidden" name="ref_no" value="ATM-PAY-SIM-{{ invoice.id }}">
-                                            <input type="hidden" name="notes" value="Verifikasi Pembayaran VA oleh Admin">
+                                            <input type="hidden" name="notes" value="Verifikasi Pembayaran VA oleh Bagian Keuangan">
                                             <button type="submit" class="btn btn-primary btn-block" style="font-weight:700;">
                                                 <i class="fa fa-check-square"></i> Proses Rekonsiliasi Lunas
                                             </button>
@@ -109,26 +126,51 @@
                         </div>
                     </div>
 
-                    <!-- CHANNEL GUIDE -->
+                    <!-- CHANNEL GUIDE & COURSE ITEMS BREAKDOWN (BR-07) -->
                     <div class="col-md-6">
                         <div class="panel panel-default">
                             <div class="panel-heading" style="font-weight:700; color:#212529;">
-                                <i class="fa fa-info-circle"></i> Tata Cara Pembayaran Bank Mitra
+                                <i class="fa fa-list"></i> Rincian Kelas yang Ditagihkan (BR-07)
+                            </div>
+                            <div class="panel-body" style="padding:12px;">
+                                <table class="table table-bordered table-condensed" style="font-size:12px; margin-bottom:10px;">
+                                    <thead>
+                                        <tr style="background:#f8f9fa;">
+                                            <th>Kode &amp; Mata Kuliah</th>
+                                            <th class="text-center">SKS</th>
+                                            <th class="text-center">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in items %}
+                                        <tr class="{% if item.status != 'Aktif' %}text-muted danger{% endif %}">
+                                            <td><b>{{ item.code }}</b> &mdash; {{ item.name }}</td>
+                                            <td class="text-center">{{ item.sks }}</td>
+                                            <td class="text-center">
+                                                {% if item.status == 'Aktif' %}
+                                                    <span class="label label-success">{{ item.course_status }}</span>
+                                                {% else %}
+                                                    <span class="label label-danger">{{ item.status }} (Tidak Ditagih)</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading" style="font-weight:700; color:#212529;">
+                                <i class="fa fa-info-circle"></i> Tata Cara Pembayaran Bank Mitra Resmi (BR-09)
                             </div>
                             <div class="panel-body" style="font-size:12px; line-height:1.6;">
-                                <p><b>1. Melalui Livin' by Mandiri / Mobile Banking:</b></p>
-                                <ol style="padding-left:18px;">
-                                    <li>Buka menu <b>Bayar / Pembayaran</b> &rarr; Pilih <b>Pendidikan</b>.</li>
-                                    <li>Pilih penyedia jasa <b>UIN Syarif Hidayatullah (Kode 8871)</b>.</li>
+                                <p><b>Bank Mitra Mendukung:</b> Bank Mandiri, BNI, BRI, BTN, dan BSI.</p>
+                                <ol style="padding-left:18px; margin-bottom:0;">
+                                    <li>Masuk ke aplikasi Mobile Banking / ATM <b>{{ invoice.bank_name }}</b>.</li>
+                                    <li>Pilih menu <b>Pembayaran &rarr; Pendidikan / Virtual Account Billing</b> (UIN Jakarta Kode 8871).</li>
                                     <li>Masukkan Nomor Virtual Account: <b>{{ invoice.va_number }}</b>.</li>
-                                    <li>Periksa rincian nama dan jumlah nominal tagihan, lalu konfirmasi pembayaran.</li>
-                                </ol>
-
-                                <p style="margin-top:15px;"><b>2. Melalui BSI Mobile / BNI / BRI:</b></p>
-                                <ol style="padding-left:18px;">
-                                    <li>Pilih menu <b>Virtual Account Billing</b>.</li>
-                                    <li>Masukkan nomor VA dan verifikasi kesesuaian data.</li>
-                                    <li>Simpan bukti transaksi pembayaran sebagai arsip.</li>
+                                    <li>Pastikan nominal tepat <b>Rp{{ "{:,}".format(invoice.amount).replace(',', '.') }}</b> sebelum batas waktu <b>{{ invoice.expires_at or payment_end }}</b>.</li>
                                 </ol>
                             </div>
                         </div>

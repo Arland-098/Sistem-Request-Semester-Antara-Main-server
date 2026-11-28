@@ -11,168 +11,196 @@
         <div class="col-padded">
             <h4 class="page-header">
                 Sistem Terpusat Pengajuan Semester Antara
-                <span class="pull-right badge-status status-dibuka" style="font-size:12px;">
+                <span class="pull-right badge-status {% if reg_status == 'Buka' %}status-dibuka{% else %}status-dibatalkan{% endif %}" style="font-size:12px;">
                     Periode Pendaftaran: <b>{{ reg_status }}</b> ({{ reg_start }} s.d {{ reg_end }})
                 </span>
             </h4>
 
             <div class="alert alert-info" role="alert" style="line-height: 1.6;">
                 <strong><i class="fa fa-info-circle"></i> Selamat Datang, {{ current_user.name }}!</strong><br>
-                Anda login sebagai <b>{{ current_role_label }}</b>. {% if current_role == 'mahasiswa' %}Berikut daftar mata kuliah Semester Antara yang tersedia untuk Anda berdasarkan <b>Keputusan Rektor UIN Syarif Hidayatullah Jakarta Nomor 686 Tahun 2025</b>.{% else %}Menu dan layanan di bawah ini disesuaikan secara otomatis dengan hak akses peran Anda berdasarkan <b>Keputusan Rektor UIN Syarif Hidayatullah Jakarta Nomor 686 Tahun 2025</b>.{% endif %}
+                Anda login sebagai <b>{{ current_role_label }}</b>.
                 {% if current_role == 'mahasiswa' %}
-                <div style="margin-top:10px;">
-                    <button type="button" id="btnOpenSaRules" class="btn btn-xs btn-primary" data-toggle="modal" data-target="#saRulesModal" style="font-weight:600; background:#24292e; border-color:#1a1a1a;">
-                        <i class="fa fa-book"></i> Lihat Aturan SA
-                    </button>
-                </div>
+                    Berikut pengumuman resmi serta daftar katalog mata kuliah Semester Antara yang tersedia berdasarkan <b>Keputusan Rektor UIN Syarif Hidayatullah Jakarta Nomor 686 Tahun 2025</b>.
+                    <div style="margin-top:10px;">
+                        <button type="button" id="btnOpenSaRules" class="btn btn-xs btn-primary" data-toggle="modal" data-target="#saRulesModal" style="font-weight:600; background:#24292e; border-color:#1a1a1a;">
+                            <i class="fa fa-book"></i> Lihat Aturan SA
+                        </button>
+                        <a href="/usulan" class="btn btn-xs btn-default" style="font-weight:600; margin-left:6px;">
+                            <i class="fa fa-lightbulb-o"></i> Usulkan MK Baru / Lintas Prodi
+                        </a>
+                    </div>
+                {% else %}
+                    Menu dan layanan di bawah ini disesuaikan secara otomatis dengan hak akses peran Anda berdasarkan alur resmi <b>SK Rektor UIN Syarif Hidayatullah Jakarta Nomor 686 Tahun 2025</b>.
                 {% endif %}
             </div>
 
             {% if current_role == 'mahasiswa' %}
+                {% if announcements %}
+                <div class="panel panel-default" style="border-left:4px solid #24292e; margin-bottom:20px;">
+                    <div class="panel-heading" style="background:#f8f9fa; font-weight:700; color:#212529;">
+                        <i class="fa fa-bullhorn text-primary"></i> Pengumuman Resmi Program Studi (FR-01)
+                    </div>
+                    <div class="panel-body" style="padding:12px 16px;">
+                        {% for ann in announcements %}
+                        <div style="{% if not loop.last %}border-bottom:1px dashed #e2e8f0; padding-bottom:10px; margin-bottom:10px;{% endif %}">
+                            <span class="label label-default" style="font-size:10px;">{{ ann.category }}</span>
+                            <b style="margin-left:6px; color:#1a202c;">{{ ann.title }}</b>
+                            <div style="font-size:12px; color:#4a5568; margin-top:4px; line-height:1.5;">
+                                {{ ann.content }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
                 <!-- KHUSUS ROLE MAHASISWA: LANGSUNG TAMPILKAN KATALOG MATA KULIAH -->
                 {% set catalog_action = '/' %}
                 {% include 'partials/_katalog_section.html' %}
             {% else %}
             <!-- MODULES & SERVICES TABLE FILTERED BY ROLE (NON-MAHASISWA) -->
             <h4 style="margin-top:30px; font-weight:700; color:#212529;">
-                Daftar Modul & Layanan Tersedia ({{ current_role_label }})
+                Daftar Modul &amp; Layanan Tersedia ({{ current_role_label }})
             </h4>
             <div class="table-responsive">
                 <table class="table table-bordered table-hover" style="font-size:12px;">
                     <thead style="background:#ecf0f2; color:#000;">
                         <tr>
-                            <th style="width: 190px;">Modul Layanan</th>
-                            <th style="width: 150px;">Peran</th>
+                            <th style="width: 210px;">Modul Layanan</th>
+                            <th style="width: 170px;">Peran</th>
                             <th>Deskripsi Fungsional</th>
-                            <th style="width: 110px;" class="text-center">Status</th>
-                            <th style="width: 150px;" class="text-center">Akses Langsung</th>
+                            <th style="width: 100px;" class="text-center">Status</th>
+                            <th style="width: 155px;" class="text-center">Akses Langsung</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% if current_role in ['superadmin'] %}
                         <tr>
-                            <td><b>Katalog Mata Kuliah</b></td>
+                            <td><b>Katalog &amp; Usulan MK</b></td>
                             <td>Mahasiswa</td>
-                            <td>Katalog resmi mata kuliah dibuka (Kode, Nama, SKS, Jadwal Sesi, Ruang Luring, Kuota, Dosen)</td>
+                            <td>Katalog resmi mata kuliah lintas Prodi serta usulan pembukaan MK internal/lintas Prodi (FR-02, FR-03)</td>
                             <td class="text-center"><span class="label label-success">Aktif</span></td>
                             <td class="text-center"><a href="/katalog" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Katalog MK</a></td>
                         </tr>
                         <tr>
-                            <td><b>Pengisian KRS Online</b></td>
+                            <td><b>Pengisian &amp; Revisi KRS</b></td>
                             <td>Mahasiswa</td>
-                            <td>Pengajuan request Semester Antara dengan validasi otomatis (Maks {{ max_sks }} SKS, anti-bentrok)</td>
+                            <td>Pengajuan KRS (Maks {{ max_sks }} SKS, Min Sem 4, Perbaikan C+..E / MK Baru IPK &ge; 3,00, anti-bentrok)</td>
                             <td class="text-center"><span class="label label-success">Aktif</span></td>
                             <td class="text-center"><a href="/krs" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Isi KRS</a></td>
                         </tr>
                         <tr>
-                            <td><b>Status & Tagihan VA</b></td>
+                            <td><b>Status &amp; Tagihan VA</b></td>
                             <td>Mahasiswa</td>
-                            <td>Pemantauan status pengajuan, rincian Virtual Account, dan cetak Kartu Rencana Studi sah</td>
+                            <td>Pemantauan status pengajuan, Virtual Account bank mitra, &amp; cetak KRS sah</td>
                             <td class="text-center"><span class="label label-success">Aktif</span></td>
-                            <td class="text-center"><a href="/tagihan" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Tagihan & VA</a></td>
+                            <td class="text-center"><a href="/tagihan" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Tagihan &amp; VA</a></td>
+                        </tr>
+                        {% endif %}
+
+                        {% if current_role in ['dpa', 'superadmin'] %}
+                        <tr>
+                            <td><b>Verifikasi KRS Mahasiswa Bimbingan</b></td>
+                            <td>Dosen PA (DPA)</td>
+                            <td>Memeriksa riwayat IPK, semester, status sanksi, &amp; rincian MK bimbingan lalu Setuju atau Tolak (UC-DPA-02)</td>
+                            <td class="text-center"><span class="label label-success">Aktif</span></td>
+                            <td class="text-center"><a href="/dpa" class="btn btn-xs btn-primary"><i class="fa fa-check-square-o"></i> Dasbor DPA</a></td>
                         </tr>
                         {% endif %}
 
                         {% if current_role in ['dosen', 'superadmin'] %}
                         <tr>
-                            <td><b>Kesediaan Mengajar & Dispensasi</b></td>
+                            <td><b>Kesediaan Mengajar &amp; Dispensasi</b></td>
                             <td>Dosen Pengampu</td>
-                            <td>Konfirmasi kesediaan mengajar mata kuliah diampu & kelas dispensasi (&lt; 10 peserta)</td>
+                            <td>Konfirmasi kesediaan mengajar reguler (FR-10) &amp; kelas dispensasi &lt; 10 peserta (FR-11 / SD-03)</td>
                             <td class="text-center"><span class="label label-success">Aktif</span></td>
-                            <td class="text-center"><a href="/dosen" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Dasbor Dosen</a></td>
+                            <td class="text-center"><a href="/dosen" class="btn btn-xs btn-primary"><i class="fa fa-external-link"></i> Dasbor Pengampu</a></td>
                         </tr>
                         <tr>
-                            <td><b>Persetujuan & Catatan Akademik</b></td>
+                            <td><b>Jadwal Definitif &amp; Peserta Lunas</b></td>
                             <td>Dosen Pengampu</td>
-                            <td>Melihat pengajuan mahasiswa pada mata kuliah terkait dan memberi persetujuan/catatan akademik</td>
+                            <td>Daftar jadwal kuliah resmi &amp; mahasiswa terdaftar yang sudah melunasi tagihan VA (FR-12)</td>
                             <td class="text-center"><span class="label label-success">Aktif</span></td>
-                            <td class="text-center"><a href="/dosen" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Review Pengajuan</a></td>
+                            <td class="text-center"><a href="/dosen#roster" class="btn btn-xs btn-default"><i class="fa fa-users"></i> Peserta Resmi</a></td>
                         </tr>
                         {% endif %}
 
-                        {% if current_role in ['kaprodi', 'superadmin'] %}
+                        {% if current_role in ['prodi', 'superadmin'] %}
                         <tr>
-                            <td><b>Verifikasi Seluruh Pengajuan</b></td>
-                            <td>Kaprodi / Koordinator</td>
-                            <td>Memverifikasi seluruh pengajuan KRS mahasiswa dan menerbitkan tagihan Virtual Account</td>
+                            <td><b>Pengumuman Resmi SA</b></td>
+                            <td>Program Studi</td>
+                            <td>Publikasi pengumuman, jadwal pelaksanaan, &amp; ketentuan Semester Antara untuk mahasiswa (FR-13)</td>
                             <td class="text-center"><span class="label label-success">Aktif</span></td>
-                            <td class="text-center"><a href="/dpa" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Verifikasi KRS</a></td>
+                            <td class="text-center"><a href="/prodi/pengumuman" class="btn btn-xs btn-default"><i class="fa fa-bullhorn"></i> Pengumuman</a></td>
                         </tr>
                         <tr>
                             <td><b>Pengaturan Periode</b></td>
-                            <td>Kaprodi / Koordinator</td>
-                            <td>Pengaturan periode pendaftaran, tanggal aktif, batas SKS, dan status Buka/Tutup</td>
+                            <td>Program Studi</td>
+                            <td>Atur jadwal usulan MK, pendaftaran KRS, batas pembayaran VA, kuota min, &amp; batas SKS (FR-14)</td>
                             <td class="text-center"><span class="label label-success">Aktif</span></td>
-                            <td class="text-center"><a href="/prodi/periode" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Atur Periode</a></td>
+                            <td class="text-center"><a href="/prodi/periode" class="btn btn-xs btn-default"><i class="fa fa-clock-o"></i> Atur Periode</a></td>
                         </tr>
                         <tr>
-                            <td><b>Jadwal & Ruang Kuliah</b></td>
-                            <td>Kaprodi / Koordinator</td>
-                            <td>Pengelolaan jadwal kuliah luring (hari & jam sesi) dan alokasi ruang kelas</td>
+                            <td><b>Usulan MK &amp; Lintas Prodi</b></td>
+                            <td>Program Studi</td>
+                            <td>Rekap usulan mahasiswa, penyetaraan kurikulum ekuivalensi MK, &amp; terbitkan kelas ke katalog (FR-15, FR-16)</td>
                             <td class="text-center"><span class="label label-success">Aktif</span></td>
-                            <td class="text-center"><a href="/prodi/jadwal_ruang" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Jadwal & Ruang</a></td>
+                            <td class="text-center"><a href="/prodi/usulan" class="btn btn-xs btn-default"><i class="fa fa-inbox"></i> Review Usulan</a></td>
                         </tr>
                         <tr>
-                            <td><b>Monitoring Status Kelas</b></td>
-                            <td>Kaprodi / Koordinator</td>
-                            <td>Pemantauan kuota pendaftar dan penetapan status kelas (Dibuka, Dispensasi Buka, Dibatalkan)</td>
+                            <td><b>Katalog MK &amp; Penugasan</b></td>
+                            <td>Program Studi</td>
+                            <td>Kelola penawaran mata kuliah resmi, kapasitas kuota kelas, &amp; penugasan dosen pengampu (FR-17)</td>
                             <td class="text-center"><span class="label label-success">Aktif</span></td>
-                            <td class="text-center"><a href="/prodi/monitoring" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Monitoring</a></td>
+                            <td class="text-center"><a href="/prodi/katalog" class="btn btn-xs btn-default"><i class="fa fa-list-alt"></i> Katalog MK</a></td>
                         </tr>
                         <tr>
-                            <td><b>Rekap & Ekspor Peserta</b></td>
-                            <td>Kaprodi / Admin TU</td>
-                            <td>Penutupan pendaftaran serta ekspor data rekapitulasi peserta resmi (CSV / Excel)</td>
+                            <td><b>Jadwal &amp; Ruang Kuliah</b></td>
+                            <td>Program Studi</td>
+                            <td>Pengelolaan jadwal kuliah tatap muka luring &amp; alokasi ruang kelas / laboratorium (FR-18)</td>
                             <td class="text-center"><span class="label label-success">Aktif</span></td>
-                            <td class="text-center"><a href="/prodi/rekap" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Rekap Peserta</a></td>
+                            <td class="text-center"><a href="/prodi/jadwal_ruang" class="btn btn-xs btn-default"><i class="fa fa-building-o"></i> Jadwal &amp; Ruang</a></td>
+                        </tr>
+                        <tr>
+                            <td><b>Evaluasi Kuota &amp; Status Kelas</b></td>
+                            <td>Program Studi</td>
+                            <td>Evaluasi pendaftar &ge; 10 atau dispensasi dosen setelah penutupan pendaftaran &amp; penetapan status kelas (UC-PRD-07)</td>
+                            <td class="text-center"><span class="label label-success">Aktif</span></td>
+                            <td class="text-center"><a href="/prodi/monitoring" class="btn btn-xs btn-primary"><i class="fa fa-bar-chart"></i> Evaluasi Kelas</a></td>
+                        </tr>
+                        <tr>
+                            <td><b>Penutupan &amp; Ekspor Peserta</b></td>
+                            <td>Program Studi</td>
+                            <td>Kunci pendaftaran (Auto-Check 3) &amp; ekspor rekapitulasi peserta resmi ke CSV/Excel (FR-20)</td>
+                            <td class="text-center"><span class="label label-success">Aktif</span></td>
+                            <td class="text-center"><a href="/prodi/rekap" class="btn btn-xs btn-default"><i class="fa fa-download"></i> Rekap Peserta</a></td>
                         </tr>
                         {% endif %}
 
-                        {% if current_role in ['admin_akademik', 'superadmin'] %}
+                        {% if current_role in ['keuangan', 'superadmin'] %}
                         <tr>
-                            <td><b>Data Master Mahasiswa</b></td>
-                            <td>Admin Akademik / TU</td>
-                            <td>Mengelola data induk mahasiswa (NIM, email, program studi, IPK, semester)</td>
+                            <td><b>Tagihan VA, Rekonsiliasi &amp; Expired</b></td>
+                            <td>Bagian Keuangan</td>
+                            <td>Monitor tagihan Virtual Account (Mandiri/BNI/BRI/BTN/BSI), rekonsiliasi lunas, &amp; cek kedaluwarsa (FR-22, FR-23, BR-10)</td>
                             <td class="text-center"><span class="label label-success">Aktif</span></td>
-                            <td class="text-center"><a href="/master/mahasiswa" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Master Mahasiswa</a></td>
-                        </tr>
-                        <tr>
-                            <td><b>Data Master Dosen</b></td>
-                            <td>Admin Akademik / TU</td>
-                            <td>Mengelola data induk dosen pengampu dan koordinator program studi</td>
-                            <td class="text-center"><span class="label label-success">Aktif</span></td>
-                            <td class="text-center"><a href="/master/dosen" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Master Dosen</a></td>
-                        </tr>
-                        <tr>
-                            <td><b>Data Master Mata Kuliah</b></td>
-                            <td>Admin Akademik / TU</td>
-                            <td>Mengelola katalog mata kuliah yang ditawarkan, kuota kelas, dan penugasan dosen</td>
-                            <td class="text-center"><span class="label label-success">Aktif</span></td>
-                            <td class="text-center"><a href="/prodi/katalog" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Master MK</a></td>
-                        </tr>
-                        <tr>
-                            <td><b>Administrasi Pengajuan & VA</b></td>
-                            <td>Admin Akademik / TU</td>
-                            <td>Memproses administrasi tagihan Virtual Account, rekonsiliasi pembayaran, & tarif SKS</td>
-                            <td class="text-center"><span class="label label-success">Aktif</span></td>
-                            <td class="text-center"><a href="/keuangan/pembayaran" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Proses VA</a></td>
+                            <td class="text-center"><a href="/keuangan/pembayaran" class="btn btn-xs btn-primary"><i class="fa fa-exchange"></i> Monitor VA</a></td>
                         </tr>
                         <tr>
                             <td><b>Tarif Biaya per SKS</b></td>
-                            <td>Admin Akademik / TU</td>
-                            <td>Pengaturan tarif biaya per SKS sesuai Keputusan Rektor No. 686 Tahun 2025</td>
+                            <td>Bagian Keuangan</td>
+                            <td>Penetapan tarif SKS Sarjana Reguler Non-Kesehatan (Rp220.000) &amp; Ilmu Kesehatan (Rp850.000) (BR-01)</td>
                             <td class="text-center"><span class="label label-success">Aktif</span></td>
-                            <td class="text-center"><a href="/keuangan/tarif" class="btn btn-xs btn-default"><i class="fa fa-external-link"></i> Tarif SKS</a></td>
+                            <td class="text-center"><a href="/keuangan/tarif" class="btn btn-xs btn-default"><i class="fa fa-calculator"></i> Tarif SKS</a></td>
                         </tr>
                         {% endif %}
 
                         {% if current_role == 'superadmin' %}
                         <tr>
-                            <td><b>Manajemen Pengguna & RBAC</b></td>
+                            <td><b>Manajemen Pengguna &amp; Data Master</b></td>
                             <td>Super Admin</td>
-                            <td>Mengelola seluruh akun pengguna, peran akses, status aktif, dan reset password</td>
+                            <td>Kelola seluruh akun RBAC, data master mahasiswa &amp; nilai historis, master dosen/DPA, dan master Prodi</td>
                             <td class="text-center"><span class="label label-primary">Super Admin</span></td>
-                            <td class="text-center"><a href="/admin/users" class="btn btn-xs btn-primary"><i class="fa fa-shield"></i> Kelola Pengguna</a></td>
+                            <td class="text-center"><a href="/admin/users" class="btn btn-xs btn-primary"><i class="fa fa-shield"></i> Kelola Sistem</a></td>
                         </tr>
                         {% endif %}
                     </tbody>

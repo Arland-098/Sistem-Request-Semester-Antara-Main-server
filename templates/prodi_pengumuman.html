@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block title %}Pengumuman Resmi SA - Program Studi{% endblock %}
+
+{% block breadcrumb %}
+<li><a href="#">Program Studi</a></li>
+<li class="active">Pengumuman &amp; Jadwal Resmi SA</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="col-padded">
+            <h4 class="page-header">
+                Publikasi Pengumuman, Jadwal &amp; Ketentuan Resmi Semester Antara (FR-13)
+            </h4>
+
+            <div class="alert alert-info" role="alert" style="font-size:13px;">
+                <strong><i class="fa fa-bullhorn"></i> Publikasi Resmi Prodi:</strong><br>
+                Setiap pengumuman berstatus <b>Aktif</b> akan tampil langsung pada halaman Beranda Mahasiswa sesuai kebutuhan <b>FR-01</b> &amp; <b>FR-13</b>.
+            </div>
+
+            <div class="row" style="margin-top:20px;">
+                <div class="col-md-5">
+                    <div class="panel panel-default" style="border-top:3px solid #24292e;">
+                        <div class="panel-heading" style="font-weight:700;">
+                            <i class="fa fa-plus-circle"></i> Buat Pengumuman Baru
+                        </div>
+                        <div class="panel-body">
+                            <form action="/prodi/pengumuman/add" method="POST">
+                                <div class="form-group">
+                                    <label>Kategori Pengumuman:</label>
+                                    <select name="category" class="form-control">
+                                        <option>Jadwal Resmi</option>
+                                        <option>Aturan Akademik</option>
+                                        <option>Evaluasi Kuota</option>
+                                        <option>Info Lintas Prodi</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Judul Pengumuman:</label>
+                                    <input type="text" name="title" class="form-control" required placeholder="Contoh: Jadwal Penutupan KRS & Pembayaran VA">
+                                </div>
+                                <div class="form-group">
+                                    <label>Isi Pengumuman:</label>
+                                    <textarea name="content" class="form-control" rows="4" required placeholder="Tuliskan informasi jadwal atau ketentuan resmi bagi mahasiswa..."></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-block" style="font-weight:700;">
+                                    <i class="fa fa-send"></i> Publikasikan Pengumuman
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-7">
+                    <h5 style="font-weight:700; margin-top:0;">Daftar Pengumuman Tersimpan</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" style="font-size:12.5px; vertical-align:middle;">
+                            <thead style="background:#ecf0f2; color:#000;">
+                                <tr>
+                                    <th>Kategori &amp; Isi Pengumuman</th>
+                                    <th class="text-center" style="width:90px;">Status</th>
+                                    <th class="text-center" style="width:130px;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ann in announcements %}
+                                <tr>
+                                    <td>
+                                        <span class="label label-default">{{ ann.category }}</span>
+                                        <b style="margin-left:4px;">{{ ann.title }}</b>
+                                        <div style="font-size:12px; color:#555; margin-top:4px;">{{ ann.content }}</div>
+                                    </td>
+                                    <td class="text-center">
+                                        {% if ann.is_active == 1 %}
+                                            <span class="label label-success">Aktif</span>
+                                        {% else %}
+                                            <span class="label label-default">Arsip</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <form action="/prodi/pengumuman/toggle/{{ ann.id }}" method="POST" style="display:inline-block;">
+                                            <button type="submit" class="btn btn-xs btn-default">
+                                                {% if ann.is_active == 1 %}Arsipkan{% else %}Aktifkan{% endif %}
+                                            </button>
+                                        </form>
+                                        <form action="/prodi/pengumuman/delete/{{ ann.id }}" method="POST" style="display:inline-block;">
+                                            <button type="submit" class="btn btn-xs btn-danger" onclick="return confirm('Hapus pengumuman ini?')">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

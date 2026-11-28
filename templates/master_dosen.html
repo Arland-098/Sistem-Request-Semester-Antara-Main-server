@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
-{% block title %}Data Master Dosen - Admin Akademik / TU{% endblock %}
+{% block title %}Data Master Dosen &amp; DPA - Super Admin{% endblock %}
 
 {% block breadcrumb %}
-<li><a href="#">Admin Akademik / TU</a></li>
-<li class="active">Data Master Dosen</li>
+<li><a href="#">Super Admin</a></li>
+<li class="active">Master Dosen Pengampu, DPA &amp; Admin Prodi</li>
 {% endblock %}
 
 {% block content %}
@@ -11,12 +11,12 @@
     <div class="col-lg-12">
         <div class="col-padded">
             <h4 class="page-header">
-                Pengelolaan Data Master Dosen Pengampu & Koordinator
+                Pengelolaan Data Master Dosen PA (DPA), Dosen Pengampu &amp; Pengelola Prodi
             </h4>
 
             <div class="alert alert-info" role="alert" style="font-size:13px;">
                 <strong><i class="fa fa-info-circle"></i> Petunjuk Pengelolaan:</strong><br>
-                Kelola daftar dosen pengampu dan koordinator program studi yang bertugas pada pelaksanaan Semester Antara.
+                Kelola akun serta peran tenaga pendidik (<b>Dosen Pembimbing Akademik / DPA</b>, <b>Dosen Pengampu Mata Kuliah</b>, dan <b>Program Studi / Admin Prodi</b>).
             </div>
 
             <div style="margin-bottom: 15px;">
@@ -34,7 +34,7 @@
                             <th>Nama Dosen</th>
                             <th>Username / Email</th>
                             <th>Program Studi</th>
-                            <th class="text-center" style="width:140px;">Peran</th>
+                            <th class="text-center" style="width:170px;">Peran</th>
                             <th class="text-center" style="width:130px;">Aksi</th>
                         </tr>
                     </thead>
@@ -76,7 +76,7 @@
                                                         <input type="text" name="nim_nip" class="form-control" value="{{ d.nim_nip }}" required>
                                                     </div>
                                                     <div class="form-group">
-                                                        <label>Nama Lengkap & Gelar:</label>
+                                                        <label>Nama Lengkap &amp; Gelar:</label>
                                                         <input type="text" name="name" class="form-control" value="{{ d.name }}" required>
                                                     </div>
                                                     <div class="form-group">
@@ -85,13 +85,18 @@
                                                     </div>
                                                     <div class="form-group">
                                                         <label>Program Studi:</label>
-                                                        <input type="text" name="prodi" class="form-control" value="{{ d.prodi }}" required>
+                                                        <select name="prodi_code" class="form-control">
+                                                            {% for p in programs %}
+                                                                <option value="{{ p.code }}" {% if d.prodi_code == p.code %}selected{% endif %}>{{ p.code }} - {{ p.name }}</option>
+                                                            {% endfor %}
+                                                        </select>
                                                     </div>
                                                     <div class="form-group">
                                                         <label>Peran Akademik:</label>
                                                         <select name="role" class="form-control">
-                                                            <option value="dosen" {% if d.role == 'dosen' %}selected{% endif %}>Dosen Pengampu</option>
-                                                            <option value="kaprodi" {% if d.role == 'kaprodi' %}selected{% endif %}>Kaprodi / Koordinator</option>
+                                                            <option value="dpa" {% if d.role == 'dpa' %}selected{% endif %}>Dosen Pembimbing Akademik (DPA)</option>
+                                                            <option value="dosen" {% if d.role == 'dosen' %}selected{% endif %}>Dosen Pengampu Mata Kuliah</option>
+                                                            <option value="prodi" {% if d.role == 'prodi' %}selected{% endif %}>Program Studi / Admin Prodi</option>
                                                         </select>
                                                     </div>
                                                     <div class="form-group">
@@ -138,7 +143,7 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label>Nama Lengkap & Gelar:</label>
+                                    <label>Nama Lengkap &amp; Gelar:</label>
                                     <input type="text" name="name" class="form-control" required placeholder="Contoh: Hendra Bayu Suseno, M.Kom.">
                                 </div>
                                 <div class="form-group">
@@ -149,15 +154,20 @@
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label>Program Studi:</label>
-                                            <input type="text" name="prodi" class="form-control" value="Teknik Informatika" required>
+                                            <select name="prodi_code" class="form-control">
+                                                {% for p in programs %}
+                                                    <option value="{{ p.code }}" {% if p.code == '60' %}selected{% endif %}>{{ p.code }} - {{ p.name }}</option>
+                                                {% endfor %}
+                                            </select>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label>Peran:</label>
                                             <select name="role" class="form-control">
-                                                <option value="dosen">Dosen Pengampu</option>
-                                                <option value="kaprodi">Kaprodi / Koordinator</option>
+                                                <option value="dpa">Dosen Pembimbing Akademik (DPA)</option>
+                                                <option value="dosen" selected>Dosen Pengampu Mata Kuliah</option>
+                                                <option value="prodi">Program Studi / Admin Prodi</option>
                                             </select>
                                         </div>
                                     </div>

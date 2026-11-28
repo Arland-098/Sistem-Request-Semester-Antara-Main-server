@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, render_template, request
 
 from routes.decorators import get_logged_in_user, login_required, normalize_role
-from services import get_courses_grouped_by_semester
+from services import get_announcements, get_courses_grouped_by_semester, get_programs
 
 main_bp = Blueprint('main', __name__)
 
@@ -13,15 +13,21 @@ def index():
     role = normalize_role(user['role']) if user else ''
 
     grouped_courses = {}
-    selected_prodi = '60'
+    announcements = []
+    programs = []
+    selected_prodi = request.args.get('prodi', '60')
+
     if role == 'mahasiswa':
-        grouped_courses = get_courses_grouped_by_semester()
-        selected_prodi = request.args.get('prodi', '60')
+        grouped_courses = get_courses_grouped_by_semester(prodi_code=selected_prodi)
+        announcements = get_announcements(active_only=True)
+        programs = get_programs(active_only=True)
 
     return render_template(
         'index.html',
         active_tab='home',
         grouped_courses=grouped_courses,
+        announcements=announcements,
+        programs=programs,
         selected_prodi=selected_prodi,
     )
 

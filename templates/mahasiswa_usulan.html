@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+{% block title %}Usulan Mata Kuliah Baru &amp; Lintas Prodi - Mahasiswa{% endblock %}
+
+{% block breadcrumb %}
+<li><a href="#">Mahasiswa</a></li>
+<li class="active">Usulan Mata Kuliah Baru &amp; Lintas Program Studi</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="col-padded">
+            <h4 class="page-header clearfix">
+                Usulan Pembukaan Mata Kuliah Baru &amp; Lintas Program Studi (AD-01 / FR-02)
+                <span class="pull-right label label-info" style="font-size:12px;">
+                    Periode Usulan: {{ proposal_start }} s.d. {{ proposal_end }}
+                </span>
+            </h4>
+
+            <div class="alert alert-info" role="alert" style="font-size:13px;">
+                <strong><i class="fa fa-info-circle"></i> Alur Pengusulan Mata Kuliah (AD-01):</strong><br>
+                Apabila mata kuliah yang ingin Anda ambil belum tersedia di katalog resmi, Anda dapat mengusulkan pembukaan kelas baru baik untuk <b>Program Studi Asal</b> maupun <b>Lintas Program Studi</b> (disertai data MK asal &amp; ringkasan silabus untuk koordinasi ekuivalensi Prodi).
+            </div>
+
+            <div class="row" style="margin-top:20px;">
+                <div class="col-md-5">
+                    <div class="panel panel-default" style="border-top:3px solid #24292e;">
+                        <div class="panel-heading" style="font-weight:700;">
+                            <i class="fa fa-plus-circle"></i> Formulir Usulan Mata Kuliah Baru
+                        </div>
+                        <div class="panel-body">
+                            <form action="/usulan" method="POST">
+                                <div class="form-group">
+                                    <label>Jenis Pengusulan:</label>
+                                    <select name="is_cross_prodi" id="isCrossProdiSelect" class="form-control" onchange="toggleCrossProdiFields()">
+                                        <option value="0">Usulan MK di Program Studi Asal ({{ student.prodi }})</option>
+                                        <option value="1">Usulan Mata Kuliah Lintas Program Studi (Mitra UIN)</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group" id="targetProdiGroup" style="display:none;">
+                                    <label>Program Studi Tujuan Penyelenggara:</label>
+                                    <select name="target_prodi_code" class="form-control">
+                                        {% for p in programs %}
+                                            {% if p.code != student.prodi_code %}
+                                                <option value="{{ p.code }}">{{ p.code }} - {{ p.name }} ({{ p.faculty }})</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-5">
+                                        <div class="form-group">
+                                            <label>Kode MK Usulan:</label>
+                                            <input type="text" name="course_code" class="form-control" required placeholder="Contoh: FST6091999" style="text-transform:uppercase;">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>SKS:</label>
+                                            <input type="number" name="sks" class="form-control" value="3" min="1" max="6" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label>Sem:</label>
+                                            <input type="number" name="semester_target" class="form-control" value="5" min="1" max="6" required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Nama Mata Kuliah yang Diusulkan:</label>
+                                    <input type="text" name="course_name" class="form-control" required placeholder="Contoh: Komputasi Awan Terapan">
+                                </div>
+
+                                <div id="crossProdiFields" style="display:none; background:#f8fafc; border:1px solid #dce1e7; border-radius:4px; padding:12px; margin-bottom:12px;">
+                                    <div style="font-weight:700; font-size:12px; margin-bottom:8px; color:#24292e;">
+                                        <i class="fa fa-exchange"></i> Data Penyetaraan Kurikulum (Ekuivalensi Lintas Prodi):
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <div class="form-group">
+                                                <label style="font-size:12px;">Kode MK Asal (Prodi Sendiri):</label>
+                                                <input type="text" name="origin_course_code" class="form-control input-sm" placeholder="Contoh: FST6091907">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <div class="form-group">
+                                                <label style="font-size:12px;">Nama MK Asal:</label>
+                                                <input type="text" name="origin_course_name" class="form-control input-sm" placeholder="Infrastruktur TI">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" style="margin-bottom:0;">
+                                        <label style="font-size:12px;">Ringkasan Silabus / Capaian Pembelajaran (untuk verifikasi ekuivalensi):</label>
+                                        <textarea name="syllabus_summary" class="form-control input-sm" rows="3" placeholder="Uraikan topik utama/RPS mata kuliah asal yang setara..."></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Alasan Urgensi Akademik:</label>
+                                    <textarea name="reason" class="form-control" rows="3" required placeholder="Contoh: Syarat kelulusan semester akhir / belum tersedia di katalog awal..."></textarea>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary btn-block" style="font-weight:700;">
+                                    <i class="fa fa-paper-plane"></i> Kirim Usulan Mata Kuliah
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-7">
+                    <h5 style="font-weight:700; color:#212529; margin-top:0;">
+                        <i class="fa fa-history"></i> Riwayat Usulan Mata Kuliah Anda
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" style="font-size:12px; vertical-align:middle;">
+                            <thead style="background:#ecf0f2; color:#000;">
+                                <tr>
+                                    <th>Kode Usulan</th>
+                                    <th>Mata Kuliah &amp; Prodi Tujuan</th>
+                                    <th class="text-center">Jenis</th>
+                                    <th class="text-center">Status Persetujuan</th>
+                                    <th>Catatan Program Studi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if not proposals %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted" style="padding:20px;">
+                                        Anda belum pernah mengajukan usulan mata kuliah baru.
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% for prop in proposals %}
+                                <tr>
+                                    <td><code>{{ prop.proposal_code }}</code></td>
+                                    <td>
+                                        <b>{{ prop.course_code }}</b> &mdash; {{ prop.course_name }} ({{ prop.sks }} SKS)<br>
+                                        <small class="text-muted">Prodi: {{ prop.target_prodi_name or prop.target_prodi_code }}</small>
+                                        {% if prop.origin_course_code %}
+                                            <br><small class="text-info">Setara: {{ prop.origin_course_code }} ({{ prop.origin_course_name }})</small>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if prop.is_cross_prodi == 1 %}
+                                            <span class="label label-info">Lintas Prodi</span>
+                                        {% else %}
+                                            <span class="label label-default">Prodi Asal</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if prop.status == 'Setuju' %}
+                                            <span class="label label-success"><i class="fa fa-check"></i> Disetujui &amp; Dibuka</span>
+                                        {% elif prop.status == 'Tolak' %}
+                                            <span class="label label-danger"><i class="fa fa-times"></i> Ditolak</span>
+                                        {% else %}
+                                            <span class="label label-warning"><i class="fa fa-clock-o"></i> Menunggu Persetujuan</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ prop.admin_notes or '-' }}
+                                        {% if prop.assigned_lecturer_name %}
+                                            <br><small class="text-success">Pengampu: {{ prop.assigned_lecturer_name }}</small>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h5 style="font-weight:700; color:#212529; margin-top:25px;">
+                        <i class="fa fa-exchange"></i> Daftar Kesetaraan Kurikulum Lintas Prodi (EKUIVALENSI_MK)
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-condensed" style="font-size:12px;">
+                            <thead style="background:#ecf0f2; color:#000;">
+                                <tr>
+                                    <th>MK Asal</th>
+                                    <th>MK Ekuivalen Tujuan</th>
+                                    <th class="text-center">SKS</th>
+                                    <th class="text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for eq in equivalences %}
+                                <tr>
+                                    <td>
+                                        <b>{{ eq.kode_mk_asal }}</b> &mdash; {{ eq.nama_mk_asal }}<br>
+                                        <small class="text-muted">{{ eq.prodi_asal_name or eq.prodi_asal_code }}</small>
+                                    </td>
+                                    <td>
+                                        <b>{{ eq.kode_mk_tujuan }}</b> &mdash; {{ eq.nama_mk_tujuan }}<br>
+                                        <small class="text-muted">{{ eq.prodi_tujuan_name or eq.prodi_tujuan_code }}</small>
+                                    </td>
+                                    <td class="text-center">{{ eq.sks }}</td>
+                                    <td class="text-center">
+                                        <span class="label {% if eq.status_ekuivalen == 'Valid' %}label-success{% else %}label-danger{% endif %}">{{ eq.status_ekuivalen }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function toggleCrossProdiFields() {
+    var val = document.getElementById('isCrossProdiSelect').value;
+    var show = (val === '1');
+    document.getElementById('targetProdiGroup').style.display = show ? 'block' : 'none';
+    document.getElementById('crossProdiFields').style.display = show ? 'block' : 'none';
+}
+</script>
+{% endblock %}

@@ -5,7 +5,7 @@ from config import Config
 from database import init_db
 from routes import register_blueprints
 from routes.decorators import ROLE_LABELS, get_logged_in_user, normalize_role
-from services import get_config
+from services import PARTNER_BANKS, get_config
 
 PUBLIC_ENDPOINTS = {'auth.login', 'auth.logout', 'main.health', 'static'}
 
@@ -49,11 +49,17 @@ def create_app(config_overrides: dict | None = None) -> Flask:
             'current_role': role,
             'current_role_label': ROLE_LABELS.get(role, role),
             'role_labels': ROLE_LABELS,
+            'partner_banks': PARTNER_BANKS,
             'active_semester': get_config('active_semester', 'Semester Antara 2026/2027'),
             'reg_status': get_config('registration_status', 'Buka'),
+            'proposal_start': get_config('proposal_start', '2026-06-20'),
+            'proposal_end': get_config('proposal_end', '2026-06-30'),
             'reg_start': get_config('registration_start', '2026-07-01'),
             'reg_end': get_config('registration_end', '2026-07-25'),
+            'payment_start': get_config('payment_start', '2026-07-26'),
+            'payment_end': get_config('payment_end', '2026-08-05'),
             'sks_rate': int(get_config('sks_rate', '220000') or 220000),
+            'sks_rate_kesehatan': int(get_config('sks_rate_kesehatan', '850000') or 850000),
             'max_sks': int(get_config('max_sks', '9') or 9),
             'min_quota': int(get_config('min_quota', '10') or 10),
         }

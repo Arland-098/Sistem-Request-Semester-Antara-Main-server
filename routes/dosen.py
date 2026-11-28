@@ -6,8 +6,7 @@ from services import (
     confirm_lecturer_teaching,
     get_course_by_id,
     get_courses_list,
-    get_lecturer_related_applications,
-    lecturer_review_application,
+    get_lecturer_official_roster,
 )
 
 dosen_bp = Blueprint('dosen', __name__)
@@ -24,13 +23,19 @@ def _resolve_lecturer_scope():
 @roles_required('dosen')
 def dashboard():
     lecturer_id, allow_any = _resolve_lecturer_scope()
-    courses = get_courses_list()
+    courses = get_courses_list(prodi_code='ALL')
     my_courses = courses if allow_any else [c for c in courses if c['lecturer_id'] == lecturer_id]
-    related_apps = get_lecturer_related_applications(None if allow_any else lecturer_id)
+    dispensation_courses = [
+        c for c in my_courses
+        if c['dispensation_requested'] == 1 or c['status'] == 'Menunggu Kebijakan Prodi'
+    ]
+    official_roster = get_lecturer_official_roster(None if allow_any else lecturer_id)
+
     return render_template(
         'dosen_dashboard.html',
         courses=my_courses,
-        related_apps=related_apps,
+        dispensation_courses=dispensation_courses,
+        official_roster=official_roster,
         active_tab='dosen',
     )
 
@@ -62,24 +67,9 @@ def dispensasi(course_id: int):
 
     agreed = request.form.get('agreed') == '1'
     confirm_lecturer_dispensation(course_id, agreed)
-    status_str = "BERSEDIA MENGAJAR KELAS DISPENSASI" if agreed else "MENOLAK KELAS DISPENSASI"
-    flash(f"Konfirmasi kelas dispensasi berhasil disimpan: {status_str}.", "info")
-    return redirect(url_for('dosen.dashboard'))
-
-
-@dosen_bp.route('/dosen/review/<int:app_id>', methods=['POST'])
-@roles_required('dosen')
-def review_application(app_id: int):
-    lecturer_id, allow_any = _resolve_lecturer_scope()
-    decision = request.form.get('decision', 'approve')
-    notes = request.form.get('notes', '')
-
-    success, message = lecturer_review_application(
-        app_id,
-        lecturer_id,
-        decision,
-        notes,
-        allow_any=allow_any,
+    status_str = "BERSEDIA MENGAJAR KELAS DISPENSASI" if agreed else "TIDAK BERSEDIA MENGAJAR KELAS DISPENSASI"
+    flash(
+        f"Konfirmasi kelas dispensasi berhasil dikirim ke Program Studi: {status_str} (SD-03).",
+        "info",
     )
-    flash(message, 'success' if success else 'danger')
     return redirect(url_for('dosen.dashboard'))

@@ -5,16 +5,18 @@ from services import get_user_by_id
 
 ROLE_LABELS = {
     'mahasiswa': 'Mahasiswa',
-    'dosen': 'Dosen Pengampu',
-    'kaprodi': 'Kaprodi / Koordinator',
-    'admin_akademik': 'Admin Akademik / TU',
+    'dpa': 'Dosen Pembimbing Akademik (DPA)',
+    'dosen': 'Dosen Pengampu Mata Kuliah',
+    'prodi': 'Program Studi / Admin Prodi',
+    'keuangan': 'Bagian Keuangan',
     'superadmin': 'Super Admin',
 }
 
 LEGACY_ROLE_ALIASES = {
-    'prodi': 'kaprodi',
-    'keuangan': 'admin_akademik',
-    'dpa': 'dosen',
+    'kaprodi': 'prodi',
+    'admin_prodi': 'prodi',
+    'admin_akademik': 'keuangan',
+    'admin_tu': 'keuangan',
 }
 
 

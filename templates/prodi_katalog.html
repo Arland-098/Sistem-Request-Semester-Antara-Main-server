@@ -3,7 +3,7 @@
 
 {% block breadcrumb %}
 <li><a href="#">Program Studi</a></li>
-<li class="active">Pengelolaan Katalog MK & Kuota</li>
+<li class="active">Pengelolaan Katalog MK &amp; Kuota</li>
 {% endblock %}
 
 {% block content %}
@@ -11,34 +11,32 @@
     <div class="col-lg-12">
         <div class="col-padded">
             <h4 class="page-header">
-                Pengelolaan Katalog Mata Kuliah & Kuota Kelas
+                Pengelolaan Katalog Mata Kuliah, Kuota &amp; Penugasan Dosen (FR-17)
             </h4>
 
             <div class="alert alert-info" role="alert" style="font-size:13px;">
                 <strong><i class="fa fa-info-circle"></i> Petunjuk Pengelolaan Katalog:</strong><br>
-                Program Studi dapat menambah mata kuliah baru yang ditawarkan pada Semester Antara, mengubah kapasitas kuota mahasiswa, menugaskan dosen pengampu, serta menghapus mata kuliah yang tidak jadi diselenggarakan.
+                Program Studi mengelola katalog resmi mata kuliah Semester Antara (termasuk kelas lintas Prodi), kapasitas ruangan/kuota, serta menugaskan calon dosen pengampu.
             </div>
 
-            <!-- ADD COURSE BUTTON -->
             <div style="margin-bottom: 15px;">
                 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addCourseModal" style="font-weight:700;">
                     <i class="fa fa-plus-circle"></i> Tambah Mata Kuliah Baru ke Katalog
                 </button>
             </div>
 
-            <!-- CATALOG TABLE -->
             <div class="table-responsive">
-                <table class="table table-bordered table-hover" style="font-size:13px; vertical-align:middle;">
+                <table class="table table-bordered table-hover" style="font-size:12.5px; vertical-align:middle;">
                     <thead style="background:#ecf0f2; color:#000;">
                         <tr>
                             <th class="text-center" style="width:40px;">No</th>
-                            <th style="width:90px;">Kode MK</th>
-                            <th>Nama Mata Kuliah</th>
-                            <th class="text-center" style="width:60px;">SKS</th>
+                            <th style="width:95px;">Kode MK</th>
+                            <th>Nama Mata Kuliah &amp; Program Studi</th>
+                            <th class="text-center" style="width:50px;">SKS</th>
                             <th>Dosen Pengampu Ditugaskan</th>
-                            <th class="text-center" style="width:90px;">Kapasitas Kuota</th>
-                            <th class="text-center" style="width:110px;">Status Kelas</th>
-                            <th class="text-center" style="width:140px;">Aksi Kelola</th>
+                            <th class="text-center" style="width:85px;">Kuota</th>
+                            <th class="text-center" style="width:120px;">Status Kelas</th>
+                            <th class="text-center" style="width:130px;">Aksi Kelola</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -46,17 +44,18 @@
                         <tr>
                             <td class="text-center">{{ loop.index }}</td>
                             <td><strong>{{ c.code }}</strong></td>
-                            <td><b>{{ c.name }}</b></td>
-                            <td class="text-center col-sks"><b style="color:#000; font-size:13px;">{{ c.sks }}</b></td>
+                            <td>
+                                <b>{{ c.name }}</b><br>
+                                <small class="text-muted">{{ c.prodi_name }} (Sem. {{ c.semester }})</small>
+                            </td>
+                            <td class="text-center col-sks"><b>{{ c.sks }}</b></td>
                             <td>
                                 <i class="fa fa-user-circle text-muted"></i> {{ c.lecturer_name or 'Belum Ditugaskan' }}
                                 {% if c.lecturer_agreed == 1 %}
                                     <span class="label label-success" style="font-size:10px;"><i class="fa fa-check"></i> Bersedia</span>
                                 {% endif %}
                             </td>
-                            <td class="text-center">
-                                <b>{{ c.quota }}</b> kursi
-                            </td>
+                            <td class="text-center"><b>{{ c.quota }}</b> kursi</td>
                             <td class="text-center">
                                 {% if c.status == 'Dibuka' %}
                                     <span class="badge-status status-dibuka">Dibuka</span>
@@ -64,23 +63,24 @@
                                     <span class="badge-status status-dispensasi">Dispensasi</span>
                                 {% elif c.status == 'Dibatalkan' %}
                                     <span class="badge-status status-dibatalkan">Dibatalkan</span>
+                                {% elif c.status == 'Menunggu Kebijakan Prodi' %}
+                                    <span class="badge-status status-menunggu">Evaluasi Prodi</span>
+                                {% elif c.status == 'Ditawarkan' %}
+                                    <span class="label label-info">Ditawarkan</span>
                                 {% else %}
                                     <span class="badge-status status-menunggu">Menunggu</span>
                                 {% endif %}
                             </td>
                             <td class="text-center">
-                                <!-- EDIT BUTTON -->
                                 <button type="button" class="btn btn-xs btn-primary" data-toggle="modal" data-target="#editModal{{ c.id }}" title="Edit Mata Kuliah">
                                     <i class="fa fa-pencil"></i> Edit
                                 </button>
-                                <!-- DELETE BUTTON -->
                                 <form action="/prodi/katalog/delete/{{ c.id }}" method="POST" style="display:inline-block;">
                                     <button type="submit" class="btn btn-xs btn-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus mata kuliah ini dari katalog?')" title="Hapus Mata Kuliah">
                                         <i class="fa fa-trash"></i>
                                     </button>
                                 </form>
 
-                                <!-- EDIT MODAL -->
                                 <div class="modal fade text-left" id="editModal{{ c.id }}" tabindex="-1" role="dialog">
                                     <div class="modal-dialog" role="document">
                                         <div class="modal-content">
@@ -90,6 +90,14 @@
                                                     <h4 class="modal-title"><i class="fa fa-pencil"></i> Edit Mata Kuliah: {{ c.code }}</h4>
                                                 </div>
                                                 <div class="modal-body">
+                                                    <div class="form-group">
+                                                        <label>Program Studi Pemilik:</label>
+                                                        <select name="prodi_code" class="form-control">
+                                                            {% for p in programs %}
+                                                                <option value="{{ p.code }}" {% if c.prodi_code == p.code %}selected{% endif %}>{{ p.code }} - {{ p.name }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
                                                     <div class="form-group">
                                                         <label>Nama Mata Kuliah:</label>
                                                         <input type="text" name="name" class="form-control" value="{{ c.name }}" required>
@@ -117,37 +125,36 @@
                                                         </select>
                                                     </div>
                                                     <div class="row">
-                                                         <div class="col-md-4">
-                                                             <div class="form-group">
-                                                                 <label>Paket Semester:</label>
-                                                                 <select name="semester" class="form-control">
-                                                                     {% for s in [1, 2, 3, 4, 5, 6] %}
-                                                                         <option value="{{ s }}" {% if c.semester == s %}selected{% endif %}>Semester {{ s }}</option>
-                                                                     {% endfor %}
-                                                                 </select>
-                                                             </div>
-                                                         </div>
-                                                         <div class="col-md-4">
-                                                             <div class="form-group">
-                                                                 <label>Kelas:</label>
-                                                                 <input type="text" name="class_name" class="form-control" value="{{ c.class_name or '1ATI' }}">
-                                                             </div>
-                                                         </div>
-                                                         <div class="col-md-4">
-                                                             <div class="form-group">
-                                                                 <label>Sifat (W/P):</label>
-                                                                 <select name="wp_type" class="form-control">
-                                                                     <option value="W" {% if (c.wp_type or 'W') == 'W' %}selected{% endif %}>Wajib (W)</option>
-                                                                     <option value="P" {% if c.wp_type == 'P' %}selected{% endif %}>Pilihan (P)</option>
-                                                                 </select>
-                                                             </div>
-                                                         </div>
-                                                     </div>
-                                                     <!-- Keep existing schedule & room in edit -->
-                                                     <input type="hidden" name="schedule_day" value="{{ c.schedule_day }}">
-                                                     <input type="hidden" name="schedule_time" value="{{ c.schedule_time }}">
-                                                     <input type="hidden" name="room" value="{{ c.room }}">
-                                                 </div>
+                                                        <div class="col-md-4">
+                                                            <div class="form-group">
+                                                                <label>Paket Semester:</label>
+                                                                <select name="semester" class="form-control">
+                                                                    {% for s in [1, 2, 3, 4, 5, 6] %}
+                                                                        <option value="{{ s }}" {% if c.semester == s %}selected{% endif %}>Semester {{ s }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <div class="form-group">
+                                                                <label>Kelas:</label>
+                                                                <input type="text" name="class_name" class="form-control" value="{{ c.class_name or '1ATI' }}">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <div class="form-group">
+                                                                <label>Sifat (W/P):</label>
+                                                                <select name="wp_type" class="form-control">
+                                                                    <option value="W" {% if (c.wp_type or 'W') == 'W' %}selected{% endif %}>Wajib (W)</option>
+                                                                    <option value="P" {% if c.wp_type == 'P' %}selected{% endif %}>Pilihan (P)</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <input type="hidden" name="schedule_day" value="{{ c.schedule_day }}">
+                                                    <input type="hidden" name="schedule_time" value="{{ c.schedule_time }}">
+                                                    <input type="hidden" name="room" value="{{ c.room }}">
+                                                </div>
                                                 <div class="modal-footer">
                                                     <button type="button" class="btn btn-default" data-dismiss="modal">Batal</button>
                                                     <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Simpan Perubahan</button>
@@ -173,6 +180,14 @@
                                 <h4 class="modal-title"><i class="fa fa-plus-circle"></i> Tambah Mata Kuliah Baru ke Katalog</h4>
                             </div>
                             <div class="modal-body">
+                                <div class="form-group">
+                                    <label>Program Studi Pemilik:</label>
+                                    <select name="prodi_code" class="form-control">
+                                        {% for p in programs %}
+                                            <option value="{{ p.code }}" {% if p.code == '60' %}selected{% endif %}>{{ p.code }} - {{ p.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="form-group">
@@ -208,11 +223,7 @@
                                         <div class="form-group">
                                             <label>Hari Perkuliahan:</label>
                                             <select name="schedule_day" class="form-control" required>
-                                                <option>Senin</option>
-                                                <option>Selasa</option>
-                                                <option>Rabu</option>
-                                                <option>Kamis</option>
-                                                <option>Jumat</option>
+                                                <option>Senin</option><option>Selasa</option><option>Rabu</option><option>Kamis</option><option>Jumat</option>
                                             </select>
                                         </div>
                                     </div>
@@ -274,7 +285,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 </div>

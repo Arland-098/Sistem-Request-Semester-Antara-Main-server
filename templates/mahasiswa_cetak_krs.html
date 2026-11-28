@@ -100,7 +100,7 @@
 
 <div class="no-print" style="background:#1a1a1a; color:white; padding:12px 20px; margin:-20px -20px 25px -20px; display:flex; justify-content:space-between; align-items:center;">
     <div>
-        <strong><i class="fa fa-print"></i> Mode Cetak Dokumen Sah Resmi</strong> &mdash; Status: Lunas & Disetujui DPA
+        <strong><i class="fa fa-print"></i> Mode Cetak Dokumen Sah Resmi</strong> &mdash; Status: Lunas &amp; Disetujui DPA
     </div>
     <div>
         <button onclick="window.print()" class="btn btn-warning" style="font-weight:bold; color:#000;">
@@ -113,7 +113,6 @@
 </div>
 
 <div class="container-fluid">
-    <!-- KOP SURAT RESMI UNIVERSITAS -->
     <div class="header-kop">
         <img src="{{ url_for('static', filename='img/logo_client.png') }}" alt="Logo UIN">
         <h2>KEMENTERIAN AGAMA REPUBLIK INDONESIA</h2>
@@ -122,13 +121,11 @@
         <p>Jl. Ir. H. Djuanda No. 95 Ciputat, Tangerang Selatan 15412 | Telp: (021) 7401925 | Website: fst.uinjkt.ac.id</p>
     </div>
 
-    <!-- DOCUMENT TITLE -->
     <div class="doc-title">
         <h4>KARTU RENCANA STUDI (KRS) SAH &mdash; SEMESTER ANTARA</h4>
-        <div style="font-size:12px;">Tahun Akademik 2026/2027 Berdasarkan SK Rektor No. 686 Tahun 2025</div>
+        <div style="font-size:12px;">{{ active_semester }} Berdasarkan SK Rektor No. 686 Tahun 2025</div>
     </div>
 
-    <!-- STUDENT IDENTITY -->
     <table class="table-meta" style="width:100%; margin-bottom:15px;">
         <tr>
             <td style="width: 18%;"><b>Nomor Induk Mahasiswa</b></td>
@@ -136,7 +133,7 @@
             <td style="width: 35%;">{{ student.nim_nip }}</td>
             <td style="width: 18%;"><b>Fakultas / Prodi</b></td>
             <td style="width: 2%;">:</td>
-            <td style="width: 25%;">Sains & Teknologi / {{ student.prodi }}</td>
+            <td style="width: 25%;">Sains &amp; Teknologi / {{ student.prodi }}</td>
         </tr>
         <tr>
             <td><b>Nama Lengkap</b></td>
@@ -144,19 +141,18 @@
             <td><b>{{ student.name }}</b></td>
             <td><b>Semester Tempuh / IPK</b></td>
             <td>:</td>
-            <td>Semester {{ student.semester }} / {{ student.ipk }}</td>
+            <td>Semester {{ student.semester }} / {{ "%.2f"|format(student.ipk or 0) }}</td>
         </tr>
         <tr>
             <td><b>Dosen Pembimbing (DPA)</b></td>
             <td>:</td>
-            <td>{{ student.dpa_name or 'Dr. Dewi Khairani, M.Sc.' }}</td>
+            <td>{{ student.dpa_name or 'Anif Hanifa Setianingrum, M.Si.' }}</td>
             <td><b>Status Administrasi</b></td>
             <td>:</td>
-            <td><span class="label label-success" style="font-size:11px;">LUNAS (VA: {{ invoice.va_number if invoice else '-' }})</span></td>
+            <td><span class="label label-success" style="font-size:11px;">LUNAS ({{ invoice.bank_name if invoice else '' }} VA: {{ invoice.va_number if invoice else '-' }})</span></td>
         </tr>
     </table>
 
-    <!-- COURSES TABLE -->
     <table class="table table-bordered table-krs">
         <thead>
             <tr>
@@ -174,7 +170,7 @@
             <tr>
                 <td class="text-center">{{ loop.index }}</td>
                 <td class="text-center"><b>{{ item.code }}</b></td>
-                <td>{{ item.name }}</td>
+                <td>{{ item.name }} <small>({{ item.jenis_pengambilan }})</small></td>
                 <td class="text-center">{{ item.sks }}</td>
                 <td>{{ item.schedule_day }}, {{ item.schedule_time }}</td>
                 <td>{{ item.room }}</td>
@@ -193,7 +189,6 @@
         </tfoot>
     </table>
 
-    <!-- SIGNATURES & VALIDATION SEAL -->
     <table class="sign-table" style="width:100%; margin-top:25px;">
         <tr>
             <td style="width:33%;">
@@ -202,11 +197,11 @@
                 <div style="height:65px; margin-top:10px;">
                     <span class="stamp-box">
                         <i class="fa fa-check-circle"></i> VERIFIED BY DPA<br>
-                        <small>{{ app.verified_at or '2026-07-10' }}</small>
+                        <small>{{ (app.verified_at ~ '')[:10] if app.verified_at else '2026-07-10' }}</small>
                     </span>
                 </div>
-                <u><b>{{ student.dpa_name or 'Dr. Dewi Khairani, M.Sc.' }}</b></u><br>
-                NIP. 197805122005012001
+                <u><b>{{ student.dpa_name or 'Anif Hanifa Setianingrum, M.Si.' }}</b></u><br>
+                NIP. {{ student.dpa_nip or '197904102006042001' }}
             </td>
             <td style="width:34%;">
                 Ciputat, {{ (app.submitted_at ~ '')[:10] if app.submitted_at else '-' }}<br>
@@ -219,7 +214,7 @@
             </td>
             <td style="width:33%;">
                 Mengesahkan,<br>
-                Ketua Program Studi Teknik Informatika<br>
+                Ketua Program Studi {{ student.prodi }}<br>
                 <div style="height:65px; margin-top:10px;">
                     <span class="stamp-box" style="border-color:#333333;">
                         <i class="fa fa-university"></i> UIN SYARIF HIDAYATULLAH<br>
@@ -233,7 +228,7 @@
     </table>
 
     <div style="margin-top:20px; font-size:10px; color:#666; border-top:1px dashed #bbb; padding-top:6px;">
-        <i>Catatan: Dokumen ini diterbitkan secara sah dan otomatis melalui Sistem Informasi Akademik Terintegrasi (Portal Akademik e-Semesta) UIN Syarif Hidayatullah Jakarta. Keaslian data dapat diverifikasi melalui pemindaian QR Code di atas.</i>
+        <i>Catatan: Dokumen ini diterbitkan secara sah dan otomatis melalui Sistem Informasi Akademik Terintegrasi (Portal Akademik e-Semesta) UIN Syarif Hidayatullah Jakarta.</i>
     </div>
 </div>
 

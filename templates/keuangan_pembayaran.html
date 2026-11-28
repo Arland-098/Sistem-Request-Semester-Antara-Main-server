@@ -1,47 +1,67 @@
 {% extends 'base.html' %}
-{% block title %}Pemantauan Tagihan VA & Rekonsiliasi - Bagian Keuangan{% endblock %}
+{% block title %}Pemantauan Tagihan VA, Rekonsiliasi &amp; Kedaluwarsa - Bagian Keuangan{% endblock %}
 
 {% block breadcrumb %}
 <li><a href="#">Bagian Keuangan</a></li>
-<li class="active">Pemantauan Tagihan VA & Rekonsiliasi Manual</li>
+<li class="active">Pemantauan Tagihan VA, Rekonsiliasi &amp; Expired</li>
 {% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-lg-12">
         <div class="col-padded">
-            <h4 class="page-header">
-                Pemantauan Virtual Account & Rekonsiliasi Pembayaran
+            <h4 class="page-header clearfix">
+                Pemantauan Virtual Account, Rekonsiliasi Manual &amp; Cek Kedaluwarsa (FR-22, FR-23, BR-10)
+                <span class="pull-right label label-default" style="font-size:12px;">
+                    Masa Bayar: {{ payment_start }} s.d. {{ payment_end }}
+                </span>
             </h4>
 
             <div class="alert alert-info" role="alert" style="font-size:13px;">
-                <strong><i class="fa fa-info-circle"></i> Petunjuk Pemantauan & Rekonsiliasi:</strong><br>
-                Sistem secara otomatis menerbitkan nomor Virtual Account bank mitra. Bagian Keuangan dapat memantau status pembayaran secara real-time dan melakukan <b>rekonsiliasi manual</b> bagi transaksi yang memerlukan konfirmasi bukti bayar bank mitra.
+                <strong><i class="fa fa-info-circle"></i> Aturan Penagihan &amp; Rekonsiliasi (BR-08, BR-09, BR-10):</strong><br>
+                Tagihan Virtual Account hanya terbit untuk pengajuan <b>Disetujui DPA</b> yang kelasnya telah resmi ditetapkan <b>Dibuka / Dispensasi Buka</b> setelah pendaftaran ditutup.
+                Pembayaran melewati batas waktu (<i>WaktuExpired</i>) ditandai <b>Expired</b> sehingga hak kepesertaan kelas dinyatakan <b>Gugur</b> (<b>Auto-Check 5</b>).
             </div>
 
-            <!-- INVOICES TABLE -->
+            <div class="well well-sm" style="display:flex; justify-content:space-between; align-items:center; background:#f8f9fa; flex-wrap:wrap; gap:10px;">
+                <div style="font-size:12.5px;">
+                    <b>Tindakan Batch Keuangan:</b> Sinkronkan penerbitan VA bagi kelas yang baru dibuka Prodi atau jalankan pemeriksaan kedaluwarsa.
+                </div>
+                <div>
+                    <form action="/keuangan/sync_va" method="POST" style="display:inline-block;">
+                        <button type="submit" class="btn btn-primary btn-sm" style="font-weight:700;">
+                            <i class="fa fa-refresh"></i> Terbitkan VA Kelas Resmi Buka (BR-08)
+                        </button>
+                    </form>
+                    <form action="/keuangan/check_expired" method="POST" style="display:inline-block; margin-left:6px;">
+                        <button type="submit" class="btn btn-warning btn-sm" style="font-weight:700;">
+                            <i class="fa fa-hourglass-end"></i> Jalankan Auto-Check 5 (Expired)
+                        </button>
+                    </form>
+                </div>
+            </div>
+
             <div class="table-responsive" style="margin-top:20px;">
-                <table class="table table-bordered table-hover" style="font-size:13px; vertical-align:middle;">
+                <table class="table table-bordered table-hover" style="font-size:12.5px; vertical-align:middle;">
                     <thead style="background:#ecf0f2; color:#000;">
                         <tr>
                             <th class="text-center" style="width:35px;">No</th>
                             <th style="width:105px;">NIM</th>
-                            <th>Nama Mahasiswa</th>
-                            <th class="text-center" style="width:65px;">Total SKS</th>
-                            <th>Nomor Virtual Account</th>
-                            <th>Bank Mitra</th>
+                            <th>Mahasiswa &amp; Rumpun</th>
+                            <th class="text-center" style="width:55px;">SKS</th>
+                            <th>Nomor VA &amp; Bank Mitra</th>
                             <th>Nominal Tagihan</th>
                             <th class="text-center" style="width:110px;">Status Bayar</th>
-                            <th>Waktu Pelunasan / Ref</th>
-                            <th class="text-center" style="width:140px;">Aksi Rekonsiliasi</th>
+                            <th>Batas Waktu / Pelunasan</th>
+                            <th class="text-center" style="width:190px;">Aksi Keuangan</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% if not invoices %}
                         <tr>
-                            <td colspan="10" class="text-center text-muted" style="padding:25px;">
+                            <td colspan="9" class="text-center text-muted" style="padding:25px;">
                                 <i class="fa fa-info-circle fa-2x"></i><br>
-                                Belum ada faktur tagihan Virtual Account yang diterbitkan oleh sistem.
+                                Belum ada faktur tagihan Virtual Account yang diterbitkan. (Tutup pendaftaran &amp; tetapkan status kelas Dibuka di Program Studi terlebih dahulu.)
                             </td>
                         </tr>
                         {% endif %}
@@ -50,38 +70,49 @@
                         <tr>
                             <td class="text-center">{{ loop.index }}</td>
                             <td><strong>{{ inv.nim_nip }}</strong></td>
-                            <td><b>{{ inv.student_name }}</b></td>
-                            <td class="text-center col-sks"><b style="color:#000; font-size:13px;">{{ inv.total_sks }} SKS</b></td>
+                            <td>
+                                <b>{{ inv.student_name }}</b><br>
+                                <small class="text-muted">{{ inv.prodi }} ({{ inv.rumpun_ilmu }})</small>
+                            </td>
+                            <td class="text-center col-sks"><b>{{ inv.total_sks }}</b></td>
                             <td>
                                 <span style="font-family:monospace; font-weight:bold; color:#212529; background:#e9ecef; padding:2px 6px; border-radius:3px;">
                                     {{ inv.va_number }}
-                                </span>
+                                </span><br>
+                                <small class="text-muted">{{ inv.bank_name }}</small>
                             </td>
-                            <td>{{ inv.bank_name }}</td>
                             <td style="font-weight:bold; color:#212529;">
                                 Rp{{ "{:,}".format(inv.amount).replace(',', '.') }}
                             </td>
                             <td class="text-center">
                                 {% if inv.status == 'Lunas' %}
                                     <span class="label label-success"><i class="fa fa-check"></i> Lunas</span>
+                                {% elif inv.status == 'Expired' %}
+                                    <span class="label label-danger"><i class="fa fa-hourglass-end"></i> Expired</span>
                                 {% else %}
                                     <span class="label label-warning"><i class="fa fa-clock-o"></i> Belum Lunas</span>
                                 {% endif %}
                             </td>
                             <td>
                                 {% if inv.status == 'Lunas' %}
-                                    <small class="text-success">{{ inv.paid_at }}<br>{{ inv.reconciliation_notes or 'Online' }}</small>
+                                    <small class="text-success">{{ inv.paid_at }}<br>{{ inv.reconciliation_notes or 'Online VA' }}</small>
+                                {% elif inv.status == 'Expired' %}
+                                    <small class="text-danger">Gugur ({{ inv.reconciliation_notes or 'Expired' }})</small>
                                 {% else %}
-                                    <span class="text-muted">-</span>
+                                    <small class="text-muted">Batas: {{ inv.expires_at or (payment_end ~ ' 23:59:59') }}</small>
                                 {% endif %}
                             </td>
                             <td class="text-center">
-                                {% if inv.status != 'Lunas' %}
+                                {% if inv.status == 'Belum Lunas' %}
                                     <button type="button" class="btn btn-xs btn-primary" data-toggle="modal" data-target="#reconcileModal{{ inv.id }}">
                                         <i class="fa fa-check-square"></i> Rekonsiliasi
                                     </button>
+                                    <form action="/keuangan/expire/{{ inv.id }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Tandai tagihan {{ inv.va_number }} sebagai Expired? Kepesertaan mahasiswa akan digugurkan (BR-10).')">
+                                        <button type="submit" class="btn btn-xs btn-danger" title="Tandai Expired (BR-10)">
+                                            <i class="fa fa-ban"></i> Expired
+                                        </button>
+                                    </form>
 
-                                    <!-- RECONCILIATION MODAL -->
                                     <div class="modal fade text-left" id="reconcileModal{{ inv.id }}" tabindex="-1" role="dialog">
                                         <div class="modal-dialog" role="document">
                                             <div class="modal-content">
@@ -92,17 +123,17 @@
                                                     </div>
                                                     <div class="modal-body">
                                                         <p>Mahasiswa: <b>{{ inv.student_name }}</b> ({{ inv.nim_nip }})</p>
-                                                        <p>Nomor Virtual Account: <b>{{ inv.va_number }}</b></p>
+                                                        <p>Nomor Virtual Account: <b>{{ inv.va_number }}</b> ({{ inv.bank_name }})</p>
                                                         <p>Jumlah Tagihan: <b>Rp{{ "{:,}".format(inv.amount).replace(',', '.') }}</b></p>
-                                                        
+
                                                         <div class="form-group">
                                                             <label>Nomor Referensi Transaksi Bank / Jurnal Mutasi:</label>
-                                                            <input type="text" name="ref_no" class="form-control" required placeholder="Contoh: MANDIRI-MUT-20260710-98213">
+                                                            <input type="text" name="ref_no" class="form-control" required placeholder="Contoh: MANDIRI-MUT-20260728-98213">
                                                         </div>
 
                                                         <div class="form-group">
                                                             <label>Catatan Rekonsiliasi / Keterangan Tambahan:</label>
-                                                            <input type="text" name="notes" class="form-control" placeholder="Validasi mutasi rekening koran BNI/Mandiri">
+                                                            <input type="text" name="notes" class="form-control" placeholder="Validasi mutasi rekening koran {{ inv.bank_name }}">
                                                         </div>
                                                     </div>
                                                     <div class="modal-footer">
@@ -113,8 +144,10 @@
                                             </div>
                                         </div>
                                     </div>
+                                {% elif inv.status == 'Lunas' %}
+                                    <span class="text-muted" style="font-size:11px;"><i class="fa fa-check-circle text-success"></i> Selesai Lunas</span>
                                 {% else %}
-                                    <span class="text-muted" style="font-size:11px;"><i class="fa fa-check-circle text-success"></i> Selesai Rekonsiliasi</span>
+                                    <span class="text-danger" style="font-size:11px;"><i class="fa fa-times-circle"></i> Gugur / Expired</span>
                                 {% endif %}
                             </td>
                         </tr>
@@ -122,7 +155,6 @@
                     </tbody>
                 </table>
             </div>
-
         </div>
     </div>
 </div>

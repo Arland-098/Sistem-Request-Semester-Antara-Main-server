@@ -65,7 +65,7 @@
 <body>
 
 <div class="login-wrapper">
-    <div class="container" style="max-width: 980px;">
+    <div class="container" style="max-width: 1040px;">
         <div class="row">
             <div class="col-md-5" style="margin-bottom: 20px;">
                 <div class="login-card">
@@ -82,7 +82,7 @@
                             <i class="fa fa-lock"></i> Masuk ke Sistem
                         </h4>
                         <p class="text-muted" style="font-size:12px; margin-bottom:18px;">
-                            Silakan login menggunakan akun <b>Username / Email / NIM</b> dan password sesuai peran Anda.
+                            Silakan login menggunakan akun <b>Username / Email / NIM / NIP</b> dan password sesuai peran Anda.
                         </p>
 
                         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -107,7 +107,7 @@
                                     <span class="input-group-addon"><i class="fa fa-user"></i></span>
                                     <input type="text" id="identifier" name="identifier" class="form-control"
                                            value="{{ last_identifier }}" required autofocus
-                                           placeholder="Contoh: 1084729301 atau kaprodi@uinjkt.ac.id">
+                                           placeholder="Contoh: 1084729301 atau dpa@uinjkt.ac.id">
                                 </div>
                             </div>
 
@@ -131,10 +131,10 @@
             <div class="col-md-7">
                 <div class="demo-box">
                     <h5 style="margin-top:0; font-weight:700; color:#1a1a1a;">
-                        <i class="fa fa-id-card-o"></i> Daftar Akun Demo (Presentasi & Pengujian RBAC)
+                        <i class="fa fa-id-card-o"></i> Daftar 6 Akun Demo (5 Aktor Resmi PDF + Super Admin)
                     </h5>
                     <p style="font-size:12px; color:#4a5568; margin-bottom:12px;">
-                        Gunakan salah satu dari 5 akun berikut (login bisa memakai <b>Username</b> maupun <b>Email</b>). Klik tombol <b>Isi</b> untuk mengisi formulir login secara otomatis.
+                        Gunakan salah satu akun berikut sesuai peran (login bisa memakai <b>Username</b> maupun <b>Email</b>). Klik <b>Isi</b> untuk mengisi formulir login secara otomatis.
                     </p>
 
                     <div class="table-responsive">

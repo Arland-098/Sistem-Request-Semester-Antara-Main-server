@@ -164,33 +164,41 @@ def _ensure_sqlite_table_columns(conn: CompatConnection, table: str, cols: dict[
 
 def _init_postgres_schema(conn: CompatConnection) -> None:
     def _is_ready() -> bool:
-        tbl_row = conn.execute("SELECT to_regclass('public.invoices') AS tbl").fetchone()
-        if not (tbl_row and tbl_row['tbl']):
+        tbl_cnt = conn.execute(
+            """
+            SELECT COUNT(*) AS cnt FROM information_schema.tables
+            WHERE table_schema = 'public'
+              AND table_name IN (
+                  'invoices', 'programs', 'announcements',
+                  'student_grades', 'course_equivalences', 'course_proposals'
+              )
+            """
+        ).fetchone()['cnt']
+        if tbl_cnt < 6:
             return False
 
-        col_email = conn.execute(
+        col_cnt = conn.execute(
             """
-            SELECT 1 FROM information_schema.columns
-            WHERE table_schema = 'public' AND table_name = 'users' AND column_name = 'email'
+            SELECT COUNT(*) AS cnt FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND (
+                  (table_name = 'users' AND column_name = 'status_sanksi')
+                  OR (table_name = 'courses' AND column_name = 'dispensation_requested')
+                  OR (table_name = 'krs_applications' AND column_name = 'preferred_bank')
+                  OR (table_name = 'krs_items' AND column_name = 'jenis_pengambilan')
+                  OR (table_name = 'invoices' AND column_name = 'expires_at')
+              )
             """
-        ).fetchone()
-        col_lec = conn.execute(
-            """
-            SELECT 1 FROM information_schema.columns
-            WHERE table_schema = 'public' AND table_name = 'krs_applications' AND column_name = 'lecturer_approval'
-            """
-        ).fetchone()
-        if not (col_email and col_lec):
+        ).fetchone()['cnt']
+        if col_cnt < 5:
             return False
 
         cfg_cnt = conn.execute("SELECT COUNT(*) AS cnt FROM system_config").fetchone()['cnt']
-        has_superadmin = conn.execute(
-            "SELECT 1 FROM users WHERE username = 'superadmin'"
-        ).fetchone()
-        has_new_student = conn.execute(
-            "SELECT 1 FROM users WHERE username = '1084729301'"
-        ).fetchone()
-        return bool(cfg_cnt >= 7 and has_superadmin and has_new_student)
+        has_dpa = conn.execute("SELECT 1 FROM users WHERE username = 'dpa1' AND role = 'dpa'").fetchone()
+        has_prodi = conn.execute("SELECT 1 FROM users WHERE username = 'prodi' AND role = 'prodi'").fetchone()
+        has_keu = conn.execute("SELECT 1 FROM users WHERE username = 'keuangan' AND role = 'keuangan'").fetchone()
+        has_super = conn.execute("SELECT 1 FROM users WHERE username = 'superadmin'").fetchone()
+        return bool(cfg_cnt >= 10 and has_dpa and has_prodi and has_keu and has_super)
 
     if _is_ready():
         conn.commit()
@@ -209,6 +217,16 @@ def _init_postgres_schema(conn: CompatConnection) -> None:
     ''')
 
     conn.execute('''
+    CREATE TABLE IF NOT EXISTS programs (
+        code TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        faculty TEXT NOT NULL,
+        rumpun_ilmu TEXT NOT NULL DEFAULT 'Sarjana Reguler',
+        status_buka_sa TEXT NOT NULL DEFAULT 'Menyelenggarakan'
+    )
+    ''')
+
+    conn.execute('''
     CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         username TEXT UNIQUE NOT NULL,
@@ -217,16 +235,24 @@ def _init_postgres_schema(conn: CompatConnection) -> None:
         nim_nip TEXT NOT NULL,
         role TEXT NOT NULL,
         prodi TEXT NOT NULL,
+        prodi_code TEXT DEFAULT '60',
         ipk DOUBLE PRECISION DEFAULT 0.0,
         semester INTEGER DEFAULT 1,
+        status_sanksi TEXT DEFAULT 'Aktif Bebas Sanksi',
         dpa_id INTEGER,
         avatar TEXT,
         email TEXT,
+        jabatan_fungsional TEXT,
+        no_hp TEXT,
         is_active INTEGER DEFAULT 1
     )
     ''')
     conn.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS email TEXT")
     conn.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active INTEGER DEFAULT 1")
+    conn.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS prodi_code TEXT DEFAULT '60'")
+    conn.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS status_sanksi TEXT DEFAULT 'Aktif Bebas Sanksi'")
+    conn.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS jabatan_fungsional TEXT")
+    conn.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS no_hp TEXT")
 
     conn.execute('''
     CREATE TABLE IF NOT EXISTS courses (
@@ -238,14 +264,89 @@ def _init_postgres_schema(conn: CompatConnection) -> None:
         schedule_time TEXT NOT NULL,
         room TEXT NOT NULL,
         quota INTEGER NOT NULL DEFAULT 30,
+        min_quota INTEGER NOT NULL DEFAULT 10,
         lecturer_id INTEGER REFERENCES users(id),
         lecturer_name TEXT,
+        prodi_code TEXT NOT NULL DEFAULT '60',
+        prodi_name TEXT NOT NULL DEFAULT 'Teknik Informatika',
         status TEXT NOT NULL DEFAULT 'Menunggu',
         lecturer_agreed INTEGER DEFAULT 0,
         lecturer_dispensation_agreed INTEGER DEFAULT 0,
+        dispensation_requested INTEGER DEFAULT 0,
+        allow_cross_prodi INTEGER DEFAULT 1,
         semester INTEGER DEFAULT 1,
         class_name TEXT DEFAULT '1ATI',
         wp_type TEXT DEFAULT 'W'
+    )
+    ''')
+    conn.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS min_quota INTEGER DEFAULT 10")
+    conn.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS prodi_code TEXT DEFAULT '60'")
+    conn.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS prodi_name TEXT DEFAULT 'Teknik Informatika'")
+    conn.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS dispensation_requested INTEGER DEFAULT 0")
+    conn.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS allow_cross_prodi INTEGER DEFAULT 1")
+
+    conn.execute('''
+    CREATE TABLE IF NOT EXISTS student_grades (
+        id SERIAL PRIMARY KEY,
+        student_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        course_code TEXT NOT NULL,
+        grade TEXT NOT NULL,
+        semester_taken INTEGER DEFAULT 1,
+        UNIQUE(student_id, course_code)
+    )
+    ''')
+
+    conn.execute('''
+    CREATE TABLE IF NOT EXISTS announcements (
+        id SERIAL PRIMARY KEY,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        category TEXT NOT NULL DEFAULT 'Jadwal & Ketentuan',
+        is_active INTEGER NOT NULL DEFAULT 1,
+        created_by INTEGER REFERENCES users(id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+
+    conn.execute('''
+    CREATE TABLE IF NOT EXISTS course_equivalences (
+        id SERIAL PRIMARY KEY,
+        equivalence_code TEXT UNIQUE NOT NULL,
+        kode_mk_asal TEXT NOT NULL,
+        nama_mk_asal TEXT NOT NULL,
+        prodi_asal_code TEXT NOT NULL,
+        kode_mk_tujuan TEXT NOT NULL,
+        nama_mk_tujuan TEXT NOT NULL,
+        prodi_tujuan_code TEXT NOT NULL,
+        sks INTEGER NOT NULL DEFAULT 3,
+        status_ekuivalen TEXT NOT NULL DEFAULT 'Valid',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+
+    conn.execute('''
+    CREATE TABLE IF NOT EXISTS course_proposals (
+        id SERIAL PRIMARY KEY,
+        proposal_code TEXT UNIQUE NOT NULL,
+        student_id INTEGER NOT NULL REFERENCES users(id),
+        target_prodi_code TEXT NOT NULL DEFAULT '60',
+        course_code TEXT NOT NULL,
+        course_name TEXT NOT NULL,
+        sks INTEGER NOT NULL DEFAULT 3,
+        semester_target INTEGER NOT NULL DEFAULT 1,
+        is_cross_prodi INTEGER NOT NULL DEFAULT 0,
+        origin_course_code TEXT,
+        origin_course_name TEXT,
+        syllabus_summary TEXT,
+        reason TEXT,
+        status TEXT NOT NULL DEFAULT 'Menunggu Persetujuan',
+        prodi_asal_status TEXT NOT NULL DEFAULT 'Menunggu',
+        prodi_tujuan_status TEXT NOT NULL DEFAULT 'Menunggu',
+        equivalence_note TEXT,
+        admin_notes TEXT,
+        lecturer_id INTEGER REFERENCES users(id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        reviewed_at TIMESTAMP
     )
     ''')
 
@@ -256,13 +357,19 @@ def _init_postgres_schema(conn: CompatConnection) -> None:
         semester_period TEXT NOT NULL,
         total_sks INTEGER NOT NULL DEFAULT 0,
         status TEXT NOT NULL DEFAULT 'Draft',
+        status_final TEXT NOT NULL DEFAULT 'Draft',
         dpa_notes TEXT,
+        dpa_verified_by INTEGER,
+        preferred_bank TEXT DEFAULT 'Bank Mandiri',
         lecturer_approval TEXT DEFAULT 'Menunggu',
         lecturer_notes TEXT,
         submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         verified_at TIMESTAMP
     )
     ''')
+    conn.execute("ALTER TABLE krs_applications ADD COLUMN IF NOT EXISTS status_final TEXT DEFAULT 'Draft'")
+    conn.execute("ALTER TABLE krs_applications ADD COLUMN IF NOT EXISTS dpa_verified_by INTEGER")
+    conn.execute("ALTER TABLE krs_applications ADD COLUMN IF NOT EXISTS preferred_bank TEXT DEFAULT 'Bank Mandiri'")
     conn.execute(
         "ALTER TABLE krs_applications ADD COLUMN IF NOT EXISTS lecturer_approval TEXT DEFAULT 'Menunggu'"
     )
@@ -274,10 +381,16 @@ def _init_postgres_schema(conn: CompatConnection) -> None:
         application_id INTEGER NOT NULL REFERENCES krs_applications(id) ON DELETE CASCADE,
         course_id INTEGER NOT NULL REFERENCES courses(id),
         status TEXT NOT NULL DEFAULT 'Aktif',
+        jenis_pengambilan TEXT NOT NULL DEFAULT 'Perbaikan Nilai',
+        nilai_lama TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(application_id, course_id)
     )
     ''')
+    conn.execute(
+        "ALTER TABLE krs_items ADD COLUMN IF NOT EXISTS jenis_pengambilan TEXT DEFAULT 'Perbaikan Nilai'"
+    )
+    conn.execute("ALTER TABLE krs_items ADD COLUMN IF NOT EXISTS nilai_lama TEXT")
 
     conn.execute('''
     CREATE TABLE IF NOT EXISTS invoices (
@@ -289,11 +402,13 @@ def _init_postgres_schema(conn: CompatConnection) -> None:
         amount INTEGER NOT NULL,
         status TEXT NOT NULL DEFAULT 'Belum Lunas',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        expires_at TIMESTAMP,
         paid_at TIMESTAMP,
         payment_channel TEXT,
         reconciliation_notes TEXT
     )
     ''')
+    conn.execute("ALTER TABLE invoices ADD COLUMN IF NOT EXISTS expires_at TIMESTAMP")
 
     seed_initial_data(conn)
     conn.commit()
@@ -310,6 +425,16 @@ def _init_sqlite_schema(conn: CompatConnection) -> None:
     ''')
 
     conn.execute('''
+    CREATE TABLE IF NOT EXISTS programs (
+        code TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        faculty TEXT NOT NULL,
+        rumpun_ilmu TEXT NOT NULL DEFAULT 'Sarjana Reguler',
+        status_buka_sa TEXT NOT NULL DEFAULT 'Menyelenggarakan'
+    )
+    ''')
+
+    conn.execute('''
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT UNIQUE NOT NULL,
@@ -318,11 +443,15 @@ def _init_sqlite_schema(conn: CompatConnection) -> None:
         nim_nip TEXT NOT NULL,
         role TEXT NOT NULL,
         prodi TEXT NOT NULL,
+        prodi_code TEXT DEFAULT '60',
         ipk REAL DEFAULT 0.0,
         semester INTEGER DEFAULT 1,
+        status_sanksi TEXT DEFAULT 'Aktif Bebas Sanksi',
         dpa_id INTEGER,
         avatar TEXT,
         email TEXT,
+        jabatan_fungsional TEXT,
+        no_hp TEXT,
         is_active INTEGER DEFAULT 1
     )
     ''')
@@ -332,6 +461,10 @@ def _init_sqlite_schema(conn: CompatConnection) -> None:
         {
             'email': 'TEXT',
             'is_active': 'INTEGER DEFAULT 1',
+            'prodi_code': "TEXT DEFAULT '60'",
+            'status_sanksi': "TEXT DEFAULT 'Aktif Bebas Sanksi'",
+            'jabatan_fungsional': 'TEXT',
+            'no_hp': 'TEXT',
         },
     )
 
@@ -345,11 +478,16 @@ def _init_sqlite_schema(conn: CompatConnection) -> None:
         schedule_time TEXT NOT NULL,
         room TEXT NOT NULL,
         quota INTEGER NOT NULL DEFAULT 30,
+        min_quota INTEGER NOT NULL DEFAULT 10,
         lecturer_id INTEGER,
         lecturer_name TEXT,
+        prodi_code TEXT NOT NULL DEFAULT '60',
+        prodi_name TEXT NOT NULL DEFAULT 'Teknik Informatika',
         status TEXT NOT NULL DEFAULT 'Menunggu',
         lecturer_agreed INTEGER DEFAULT 0,
         lecturer_dispensation_agreed INTEGER DEFAULT 0,
+        dispensation_requested INTEGER DEFAULT 0,
+        allow_cross_prodi INTEGER DEFAULT 1,
         semester INTEGER DEFAULT 1,
         class_name TEXT DEFAULT '1ATI',
         wp_type TEXT DEFAULT 'W',
@@ -363,8 +501,82 @@ def _init_sqlite_schema(conn: CompatConnection) -> None:
             'semester': 'INTEGER DEFAULT 1',
             'class_name': "TEXT DEFAULT '1ATI'",
             'wp_type': "TEXT DEFAULT 'W'",
+            'min_quota': 'INTEGER DEFAULT 10',
+            'prodi_code': "TEXT DEFAULT '60'",
+            'prodi_name': "TEXT DEFAULT 'Teknik Informatika'",
+            'dispensation_requested': 'INTEGER DEFAULT 0',
+            'allow_cross_prodi': 'INTEGER DEFAULT 1',
         },
     )
+
+    conn.execute('''
+    CREATE TABLE IF NOT EXISTS student_grades (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        student_id INTEGER NOT NULL,
+        course_code TEXT NOT NULL,
+        grade TEXT NOT NULL,
+        semester_taken INTEGER DEFAULT 1,
+        FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE,
+        UNIQUE(student_id, course_code)
+    )
+    ''')
+
+    conn.execute('''
+    CREATE TABLE IF NOT EXISTS announcements (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        category TEXT NOT NULL DEFAULT 'Jadwal & Ketentuan',
+        is_active INTEGER NOT NULL DEFAULT 1,
+        created_by INTEGER,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (created_by) REFERENCES users(id)
+    )
+    ''')
+
+    conn.execute('''
+    CREATE TABLE IF NOT EXISTS course_equivalences (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        equivalence_code TEXT UNIQUE NOT NULL,
+        kode_mk_asal TEXT NOT NULL,
+        nama_mk_asal TEXT NOT NULL,
+        prodi_asal_code TEXT NOT NULL,
+        kode_mk_tujuan TEXT NOT NULL,
+        nama_mk_tujuan TEXT NOT NULL,
+        prodi_tujuan_code TEXT NOT NULL,
+        sks INTEGER NOT NULL DEFAULT 3,
+        status_ekuivalen TEXT NOT NULL DEFAULT 'Valid',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+
+    conn.execute('''
+    CREATE TABLE IF NOT EXISTS course_proposals (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        proposal_code TEXT UNIQUE NOT NULL,
+        student_id INTEGER NOT NULL,
+        target_prodi_code TEXT NOT NULL DEFAULT '60',
+        course_code TEXT NOT NULL,
+        course_name TEXT NOT NULL,
+        sks INTEGER NOT NULL DEFAULT 3,
+        semester_target INTEGER NOT NULL DEFAULT 1,
+        is_cross_prodi INTEGER NOT NULL DEFAULT 0,
+        origin_course_code TEXT,
+        origin_course_name TEXT,
+        syllabus_summary TEXT,
+        reason TEXT,
+        status TEXT NOT NULL DEFAULT 'Menunggu Persetujuan',
+        prodi_asal_status TEXT NOT NULL DEFAULT 'Menunggu',
+        prodi_tujuan_status TEXT NOT NULL DEFAULT 'Menunggu',
+        equivalence_note TEXT,
+        admin_notes TEXT,
+        lecturer_id INTEGER,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        reviewed_at TIMESTAMP,
+        FOREIGN KEY (student_id) REFERENCES users(id),
+        FOREIGN KEY (lecturer_id) REFERENCES users(id)
+    )
+    ''')
 
     conn.execute('''
     CREATE TABLE IF NOT EXISTS krs_applications (
@@ -373,7 +585,10 @@ def _init_sqlite_schema(conn: CompatConnection) -> None:
         semester_period TEXT NOT NULL,
         total_sks INTEGER NOT NULL DEFAULT 0,
         status TEXT NOT NULL DEFAULT 'Draft',
+        status_final TEXT NOT NULL DEFAULT 'Draft',
         dpa_notes TEXT,
+        dpa_verified_by INTEGER,
+        preferred_bank TEXT DEFAULT 'Bank Mandiri',
         lecturer_approval TEXT DEFAULT 'Menunggu',
         lecturer_notes TEXT,
         submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -385,6 +600,9 @@ def _init_sqlite_schema(conn: CompatConnection) -> None:
         conn,
         'krs_applications',
         {
+            'status_final': "TEXT DEFAULT 'Draft'",
+            'dpa_verified_by': 'INTEGER',
+            'preferred_bank': "TEXT DEFAULT 'Bank Mandiri'",
             'lecturer_approval': "TEXT DEFAULT 'Menunggu'",
             'lecturer_notes': 'TEXT',
         },
@@ -396,12 +614,22 @@ def _init_sqlite_schema(conn: CompatConnection) -> None:
         application_id INTEGER NOT NULL,
         course_id INTEGER NOT NULL,
         status TEXT NOT NULL DEFAULT 'Aktif',
+        jenis_pengambilan TEXT NOT NULL DEFAULT 'Perbaikan Nilai',
+        nilai_lama TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (application_id) REFERENCES krs_applications(id) ON DELETE CASCADE,
         FOREIGN KEY (course_id) REFERENCES courses(id),
         UNIQUE(application_id, course_id)
     )
     ''')
+    _ensure_sqlite_table_columns(
+        conn,
+        'krs_items',
+        {
+            'jenis_pengambilan': "TEXT DEFAULT 'Perbaikan Nilai'",
+            'nilai_lama': 'TEXT',
+        },
+    )
 
     conn.execute('''
     CREATE TABLE IF NOT EXISTS invoices (
@@ -413,6 +641,7 @@ def _init_sqlite_schema(conn: CompatConnection) -> None:
         amount INTEGER NOT NULL,
         status TEXT NOT NULL DEFAULT 'Belum Lunas',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        expires_at TIMESTAMP,
         paid_at TIMESTAMP,
         payment_channel TEXT,
         reconciliation_notes TEXT,
@@ -420,6 +649,13 @@ def _init_sqlite_schema(conn: CompatConnection) -> None:
         FOREIGN KEY (student_id) REFERENCES users(id)
     )
     ''')
+    _ensure_sqlite_table_columns(
+        conn,
+        'invoices',
+        {
+            'expires_at': 'TIMESTAMP',
+        },
+    )
 
     seed_initial_data(conn)
     conn.commit()
